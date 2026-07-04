@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SociosRouteImport } from './routes/socios'
 import { Route as ReservasRouteImport } from './routes/reservas'
 import { Route as PrsRouteImport } from './routes/prs'
+import { Route as FeedRouteImport } from './routes/feed'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ConfiguracionRouteImport } from './routes/configuracion'
 import { Route as ClasesRouteImport } from './routes/clases'
@@ -30,6 +31,11 @@ const ReservasRoute = ReservasRouteImport.update({
 const PrsRoute = PrsRouteImport.update({
   id: '/prs',
   path: '/prs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeedRoute = FeedRouteImport.update({
+  id: '/feed',
+  path: '/feed',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/clases': typeof ClasesRoute
   '/configuracion': typeof ConfiguracionRoute
   '/dashboard': typeof DashboardRoute
+  '/feed': typeof FeedRoute
   '/prs': typeof PrsRoute
   '/reservas': typeof ReservasRoute
   '/socios': typeof SociosRoute
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/clases': typeof ClasesRoute
   '/configuracion': typeof ConfiguracionRoute
   '/dashboard': typeof DashboardRoute
+  '/feed': typeof FeedRoute
   '/prs': typeof PrsRoute
   '/reservas': typeof ReservasRoute
   '/socios': typeof SociosRoute
@@ -77,6 +85,7 @@ export interface FileRoutesById {
   '/clases': typeof ClasesRoute
   '/configuracion': typeof ConfiguracionRoute
   '/dashboard': typeof DashboardRoute
+  '/feed': typeof FeedRoute
   '/prs': typeof PrsRoute
   '/reservas': typeof ReservasRoute
   '/socios': typeof SociosRoute
@@ -88,6 +97,7 @@ export interface FileRouteTypes {
     | '/clases'
     | '/configuracion'
     | '/dashboard'
+    | '/feed'
     | '/prs'
     | '/reservas'
     | '/socios'
@@ -97,6 +107,7 @@ export interface FileRouteTypes {
     | '/clases'
     | '/configuracion'
     | '/dashboard'
+    | '/feed'
     | '/prs'
     | '/reservas'
     | '/socios'
@@ -106,6 +117,7 @@ export interface FileRouteTypes {
     | '/clases'
     | '/configuracion'
     | '/dashboard'
+    | '/feed'
     | '/prs'
     | '/reservas'
     | '/socios'
@@ -116,6 +128,7 @@ export interface RootRouteChildren {
   ClasesRoute: typeof ClasesRoute
   ConfiguracionRoute: typeof ConfiguracionRoute
   DashboardRoute: typeof DashboardRoute
+  FeedRoute: typeof FeedRoute
   PrsRoute: typeof PrsRoute
   ReservasRoute: typeof ReservasRoute
   SociosRoute: typeof SociosRoute
@@ -142,6 +155,13 @@ declare module '@tanstack/react-router' {
       path: '/prs'
       fullPath: '/prs'
       preLoaderRoute: typeof PrsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/feed': {
+      id: '/feed'
+      path: '/feed'
+      fullPath: '/feed'
+      preLoaderRoute: typeof FeedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -180,6 +200,7 @@ const rootRouteChildren: RootRouteChildren = {
   ClasesRoute: ClasesRoute,
   ConfiguracionRoute: ConfiguracionRoute,
   DashboardRoute: DashboardRoute,
+  FeedRoute: FeedRoute,
   PrsRoute: PrsRoute,
   ReservasRoute: ReservasRoute,
   SociosRoute: SociosRoute,
