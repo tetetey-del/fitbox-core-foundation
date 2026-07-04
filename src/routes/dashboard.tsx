@@ -46,6 +46,7 @@ function DashboardPage() {
   const { currentUser, currentTenant, tenantUsers } = useAuth();
   const navigate = useNavigate();
   useDataVersion();
+  const modules = useModules();
 
   const templates = useMemo(() => classTemplatesRepo.list(), []);
   const templateById = useMemo(() => new Map(templates.map((t) => [t.id, t])), [templates]);
