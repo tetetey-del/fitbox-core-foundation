@@ -354,7 +354,10 @@ export type NotificationType =
   | "waitlist_promoted"
   | "membership_expiring"
   | "session_cancelled"
-  | "new_post";
+  | "new_post"
+  | "challenge_completed"
+  | "program_assigned"
+  | "order_ready";
 
 export interface Notification extends BaseEntity {
   tenantId: string;
