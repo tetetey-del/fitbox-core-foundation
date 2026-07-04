@@ -160,6 +160,12 @@ function ClasesPage() {
         <TabsContent value="sesiones">
           <UpcomingSessions templates={templates} coaches={coaches} />
         </TabsContent>
+
+        <TabsContent value="wod">
+          <div className="rounded-lg border border-border bg-card p-5 max-w-3xl">
+            <WodEditor />
+          </div>
+        </TabsContent>
       </Tabs>
 
       <TemplateDialog
