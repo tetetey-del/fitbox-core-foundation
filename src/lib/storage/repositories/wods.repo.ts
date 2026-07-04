@@ -1,3 +1,8 @@
+/**
+ * @file WODs publicados asociados a fecha y sesiones.
+ *
+ * Scoped por tenant.
+ */
 import type { Wod } from "@/types";
 import { sessionStore } from "../session";
 import { BaseRepo } from "./base.repo";

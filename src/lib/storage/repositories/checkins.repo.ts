@@ -1,3 +1,8 @@
+/**
+ * @file Check-ins de asistencia a una sesión reservada.
+ *
+ * Scoped por tenant. Un check-in referencia siempre un booking confirmado.
+ */
 import type { CheckIn } from "@/types";
 import { sessionStore } from "../session";
 import { BaseRepo } from "./base.repo";

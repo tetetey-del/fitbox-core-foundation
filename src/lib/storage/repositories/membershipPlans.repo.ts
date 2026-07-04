@@ -1,3 +1,8 @@
+/**
+ * @file Planes de membresía del box (ilimitado / créditos).
+ *
+ * Scoped por tenant. `active=false` oculta el plan de nuevas altas pero mantiene el histórico de suscripciones.
+ */
 import type { MembershipPlan } from "@/types";
 import { sessionStore } from "../session";
 import { BaseRepo } from "./base.repo";

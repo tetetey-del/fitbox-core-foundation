@@ -1,3 +1,8 @@
+/**
+ * @file Reservas de clase (confirmed/waitlist/cancelled).
+ *
+ * Scoped por tenant. Los servicios de booking mantienen la coherencia de plazas y posiciones de waitlist; nunca escribir aquí sin pasar por booking.service.
+ */
 import type { Booking } from "@/types";
 import { sessionStore } from "../session";
 import { BaseRepo } from "./base.repo";
