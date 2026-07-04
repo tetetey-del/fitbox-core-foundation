@@ -306,10 +306,12 @@ function MemberDashboard({ userId, membership, membershipStatus, plan }: MemberD
   }, [userId]);
 
   const lastPRs = useMemo(() => getLastPRs(userId, 3), [userId]);
+  const todayWod = useMemo(() => getPublishedWodByDate(toDateKey(new Date())), []);
 
   return (
     <div className="grid gap-6 lg:grid-cols-3">
       <div className="lg:col-span-1 space-y-4">
+        {todayWod && <WodViewer wod={todayWod} defaultOpen />}
         <div className="rounded-lg border border-border bg-card p-5">
           <div className="text-xs uppercase tracking-wide text-muted-foreground mb-2">Mi membresía</div>
           {membership ? (
