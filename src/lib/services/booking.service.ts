@@ -2,9 +2,11 @@ import type { Booking, ClassSession, UserRole } from "@/types";
 import { bookingsRepo } from "@/lib/storage/repositories/bookings.repo";
 import { checkinsRepo } from "@/lib/storage/repositories/checkins.repo";
 import { classSessionsRepo } from "@/lib/storage/repositories/classSessions.repo";
+import { classTemplatesRepo } from "@/lib/storage/repositories/classTemplates.repo";
 import { tenantsRepo } from "@/lib/storage/repositories/tenants.repo";
-import { hoursBetween, sessionStart } from "@/lib/date";
+import { hoursBetween, sessionStart, formatDate } from "@/lib/date";
 import { consumeCredit, inspectCredits, refundCredit } from "./membership.service";
+import { notify } from "./notifications.service";
 
 const DEFAULT_CANCELLATION_HOURS = 2;
 
