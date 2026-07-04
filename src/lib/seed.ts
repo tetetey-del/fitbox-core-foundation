@@ -75,8 +75,13 @@ export function createTenantWithSeed(input: {
     );
   }
 
+  // Catálogo de ejercicios por defecto
+  const exercisesRepo = exercisesRepoFor(tenant.id);
+  DEFAULT_EXERCISES.forEach((d) => exercisesRepo.create({ tenantId: tenant.id, isCustom: false, ...d }));
+
   return { tenant, owner, users: [owner, ...extras] };
 }
+
 
 /** Seed completo: box, usuarios, plantillas, sesiones y algunas reservas. */
 export function loadDemoData(): SeedResult {
