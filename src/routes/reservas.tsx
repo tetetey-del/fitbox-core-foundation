@@ -102,9 +102,55 @@ function ReservasPage() {
     }
     notifyDataChanged();
   };
+  const renderDayColumn = (d: Date, opts: { showHeader?: boolean } = { showHeader: true }) => {
+    const key = toDateKey(d);
+    const items = byDay.get(key) ?? [];
+    const isToday = key === toDateKey(new Date());
+    const showHeader = opts.showHeader !== false;
+    return (
+      <div key={key} className="min-w-0">
+        {showHeader && (
+          <div
+            className={`mb-2 flex items-center gap-2 text-xs font-medium ${
+              isToday ? "text-brand" : "text-muted-foreground"
+            }`}
+            style={isToday ? { color: "var(--brand)" } : undefined}
+          >
+            <CalendarDays className="h-3.5 w-3.5" strokeWidth={1.5} />
+            {formatDayHeader(d)}
+          </div>
+        )}
+        <div className="space-y-2">
+          {items.length === 0 && (
+            <div className="rounded-md border border-dashed border-border/60 p-6 text-center text-xs text-muted-foreground">
+              Sin clases programadas
+            </div>
+          )}
+          {items.map((s) => {
+            const tpl = templateById.get(s.templateId);
+            const coach = s.coachId ? userById.get(s.coachId) : undefined;
+            const myBooking = currentUser ? getUserBooking(s.id, currentUser.id) : null;
+            return (
+              <div key={s.id} className="space-y-1.5">
+                <SessionCard
+                  session={s}
+                  template={tpl}
+                  coach={coach}
+                  onClick={() => handleCardClick(s)}
+                  active={selectedId === s.id}
+                />
+                {!isStaff && <MemberBadge sessionId={s.id} myBookingId={myBooking?.id} />}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <AppLayout>
+
       <PageHeader
         title="Reservas"
         description="Calendario semanal de clases. Reserva, cancela o gestiona asistentes."
