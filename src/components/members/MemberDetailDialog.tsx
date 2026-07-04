@@ -32,7 +32,7 @@ import { AssignPlanDialog } from "./AssignPlanDialog";
 import { PaymentDialog } from "./PaymentDialog";
 import { MembershipBadge } from "./MembershipBadge";
 import { CreditsBadge } from "./CreditsBadge";
-import { formatDate, toDateKey, parseDateKey } from "@/lib/date";
+import { formatDate, toDateKey } from "@/lib/date";
 
 interface Props {
   open: boolean;
