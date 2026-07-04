@@ -24,9 +24,9 @@ import type { Booking, ClassSession } from "@/types";
 import {
   bookSession,
   cancelBooking,
-  getSessionOccupancy,
   getUserBooking,
 } from "@/lib/services/booking.service";
+
 
 
 import { getPublishedWodByDate } from "@/lib/services/wods.service";
