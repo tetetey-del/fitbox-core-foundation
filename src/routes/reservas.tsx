@@ -72,6 +72,43 @@ function ReservasPage() {
     return m;
   }, [days, sessionsThisWeek]);
 
+  // Precalcula ocupaciones y reservas propias UNA vez por render (evita
+  // O(N sesiones) llamadas a getSessionOccupancy / getUserBooking).
+  const { occByS, myBookingByS } = useMemo(() => {
+    const allBookings = bookingsRepo
+      .list()
+      .filter((b) => b.status !== "cancelled");
+    const bySession = new Map<string, Booking[]>();
+    for (const b of allBookings) {
+      const arr = bySession.get(b.sessionId) ?? [];
+      arr.push(b);
+      bySession.set(b.sessionId, arr);
+    }
+    const occ = new Map<string, { confirmed: Booking[]; waitlist: Booking[]; capacity: number; free: number }>();
+    const mine = new Map<string, Booking>();
+    for (const s of sessionsThisWeek) {
+      const list = bySession.get(s.id) ?? [];
+      const confirmed = list
+        .filter((b) => b.status === "confirmed")
+        .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+      const waitlist = list
+        .filter((b) => b.status === "waitlist")
+        .sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+      occ.set(s.id, {
+        confirmed,
+        waitlist,
+        capacity: s.capacity,
+        free: Math.max(0, s.capacity - confirmed.length),
+      });
+      if (currentUser) {
+        const own = list.find((b) => b.userId === currentUser.id);
+        if (own) mine.set(s.id, own);
+      }
+    }
+    return { occByS: occ, myBookingByS: mine };
+  }, [sessionsThisWeek, currentUser]);
+
+
   const selected = selectedId
     ? sessionsThisWeek.find((s) => s.id === selectedId) ?? null
     : null;
