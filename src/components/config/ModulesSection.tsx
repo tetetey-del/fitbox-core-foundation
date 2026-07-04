@@ -13,6 +13,10 @@ const DESCRIPTIONS: Record<keyof TenantModules, { label: string; desc: string }>
   prs: { label: "PRs", desc: "Marcas personales, historial y leaderboard del box." },
   feed: { label: "Feed", desc: "Muro con avisos, consejos, recetas y WOD del día." },
   pagos: { label: "Pagos", desc: "Precios, cobros y visibilidad de importes en la app." },
+  challenges: { label: "Retos", desc: "Retos de asistencia y benchmarks con ranking." },
+  programs: { label: "Rutinas", desc: "Programas semanales asignables a socios." },
+  shop: { label: "Tienda", desc: "Catálogo del box con pedidos y recogida presencial." },
+  health: { label: "Salud", desc: "Registro de peso, % graso y evolución del socio." },
 };
 
 export function ModulesSection() {

@@ -9,7 +9,10 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TiendaRouteImport } from './routes/tienda'
 import { Route as SociosRouteImport } from './routes/socios'
+import { Route as RutinasRouteImport } from './routes/rutinas'
+import { Route as RetosRouteImport } from './routes/retos'
 import { Route as ReservasRouteImport } from './routes/reservas'
 import { Route as RegistroRouteImport } from './routes/registro'
 import { Route as RecuperarRouteImport } from './routes/recuperar'
@@ -30,9 +33,24 @@ import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
 import { Route as LegalAvisoLegalRouteImport } from './routes/legal.aviso-legal'
 import { Route as InvitacionCodeRouteImport } from './routes/invitacion.$code'
 
+const TiendaRoute = TiendaRouteImport.update({
+  id: '/tienda',
+  path: '/tienda',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SociosRoute = SociosRouteImport.update({
   id: '/socios',
   path: '/socios',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RutinasRoute = RutinasRouteImport.update({
+  id: '/rutinas',
+  path: '/rutinas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RetosRoute = RetosRouteImport.update({
+  id: '/retos',
+  path: '/retos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReservasRoute = ReservasRouteImport.update({
@@ -144,7 +162,10 @@ export interface FileRoutesByFullPath {
   '/recuperar': typeof RecuperarRoute
   '/registro': typeof RegistroRoute
   '/reservas': typeof ReservasRoute
+  '/retos': typeof RetosRoute
+  '/rutinas': typeof RutinasRoute
   '/socios': typeof SociosRoute
+  '/tienda': typeof TiendaRoute
   '/invitacion/$code': typeof InvitacionCodeRoute
   '/legal/aviso-legal': typeof LegalAvisoLegalRoute
   '/legal/cookies': typeof LegalCookiesRoute
@@ -166,7 +187,10 @@ export interface FileRoutesByTo {
   '/recuperar': typeof RecuperarRoute
   '/registro': typeof RegistroRoute
   '/reservas': typeof ReservasRoute
+  '/retos': typeof RetosRoute
+  '/rutinas': typeof RutinasRoute
   '/socios': typeof SociosRoute
+  '/tienda': typeof TiendaRoute
   '/invitacion/$code': typeof InvitacionCodeRoute
   '/legal/aviso-legal': typeof LegalAvisoLegalRoute
   '/legal/cookies': typeof LegalCookiesRoute
@@ -189,7 +213,10 @@ export interface FileRoutesById {
   '/recuperar': typeof RecuperarRoute
   '/registro': typeof RegistroRoute
   '/reservas': typeof ReservasRoute
+  '/retos': typeof RetosRoute
+  '/rutinas': typeof RutinasRoute
   '/socios': typeof SociosRoute
+  '/tienda': typeof TiendaRoute
   '/invitacion/$code': typeof InvitacionCodeRoute
   '/legal/aviso-legal': typeof LegalAvisoLegalRoute
   '/legal/cookies': typeof LegalCookiesRoute
@@ -213,7 +240,10 @@ export interface FileRouteTypes {
     | '/recuperar'
     | '/registro'
     | '/reservas'
+    | '/retos'
+    | '/rutinas'
     | '/socios'
+    | '/tienda'
     | '/invitacion/$code'
     | '/legal/aviso-legal'
     | '/legal/cookies'
@@ -235,7 +265,10 @@ export interface FileRouteTypes {
     | '/recuperar'
     | '/registro'
     | '/reservas'
+    | '/retos'
+    | '/rutinas'
     | '/socios'
+    | '/tienda'
     | '/invitacion/$code'
     | '/legal/aviso-legal'
     | '/legal/cookies'
@@ -257,7 +290,10 @@ export interface FileRouteTypes {
     | '/recuperar'
     | '/registro'
     | '/reservas'
+    | '/retos'
+    | '/rutinas'
     | '/socios'
+    | '/tienda'
     | '/invitacion/$code'
     | '/legal/aviso-legal'
     | '/legal/cookies'
@@ -280,7 +316,10 @@ export interface RootRouteChildren {
   RecuperarRoute: typeof RecuperarRoute
   RegistroRoute: typeof RegistroRoute
   ReservasRoute: typeof ReservasRoute
+  RetosRoute: typeof RetosRoute
+  RutinasRoute: typeof RutinasRoute
   SociosRoute: typeof SociosRoute
+  TiendaRoute: typeof TiendaRoute
   InvitacionCodeRoute: typeof InvitacionCodeRoute
   LegalAvisoLegalRoute: typeof LegalAvisoLegalRoute
   LegalCookiesRoute: typeof LegalCookiesRoute
@@ -292,11 +331,32 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tienda': {
+      id: '/tienda'
+      path: '/tienda'
+      fullPath: '/tienda'
+      preLoaderRoute: typeof TiendaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/socios': {
       id: '/socios'
       path: '/socios'
       fullPath: '/socios'
       preLoaderRoute: typeof SociosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rutinas': {
+      id: '/rutinas'
+      path: '/rutinas'
+      fullPath: '/rutinas'
+      preLoaderRoute: typeof RutinasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/retos': {
+      id: '/retos'
+      path: '/retos'
+      fullPath: '/retos'
+      preLoaderRoute: typeof RetosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reservas': {
@@ -448,7 +508,10 @@ const rootRouteChildren: RootRouteChildren = {
   RecuperarRoute: RecuperarRoute,
   RegistroRoute: RegistroRoute,
   ReservasRoute: ReservasRoute,
+  RetosRoute: RetosRoute,
+  RutinasRoute: RutinasRoute,
   SociosRoute: SociosRoute,
+  TiendaRoute: TiendaRoute,
   InvitacionCodeRoute: InvitacionCodeRoute,
   LegalAvisoLegalRoute: LegalAvisoLegalRoute,
   LegalCookiesRoute: LegalCookiesRoute,

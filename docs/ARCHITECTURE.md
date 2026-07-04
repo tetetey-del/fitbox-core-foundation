@@ -111,3 +111,14 @@ Las mutaciones se propagan con `notifyDataChanged()` que dispara un
 `CustomEvent`. Las páginas suscritas se refrescan. Es un sustituto de
 Realtime que — cuando migremos a Supabase — se reemplaza por
 `supabase.channel(...).on('postgres_changes', ...)` sin tocar los servicios.
+
+## Fase 11 — Pack de fidelización
+
+Cuatro módulos nuevos que siguen el patrón estándar (tipos → repos scoped → servicios → rutas):
+
+- **Retos** (`challenges`) — `challenges.repo.ts` (challenges + challenge_participants) y `challenges.service.ts`. Progreso automático: los retos de asistencia leen `check-ins` dentro del periodo; los benchmark leen `personal_records` del ejercicio. `refreshChallenges()` se dispara desde el dashboard del member y desde `/retos` al cargar; cierra retos vencidos y emite `challenge_completed`.
+- **Rutinas** (`programs`) — `programs.repo.ts` (programs, program_sessions, program_assignments, program_progress) y `programs.service.ts`. Bloques idénticos al modelo de WODs. Al asignar un programa se notifica con `program_assigned`.
+- **Tienda** (`shop`) — `products.repo.ts` + `orders.repo.ts` y `shop.service.ts`. `createOrder` valida stock y descuenta; `setOrderStatus("cancelado")` repone. `setOrderStatus("listo")` notifica con `order_ready`. Marcado de pago sólo visible si el módulo `pagos` está activo.
+- **Salud** (`health`) — `bodyMetrics.repo.ts` y `health.service.ts`. La UI vive en la pestaña "Progreso" de `/mi-cuenta` con gráficas de Recharts cargadas perezosamente. Toggle `showHealthToCoach` en el perfil (default `false`) controla visibilidad para staff.
+
+Backup subido a `BACKUP_SCHEMA_VERSION = 2` con las 9 colecciones nuevas; se mantiene compatibilidad de import con v1 (los campos ausentes se importan como arrays vacíos y se remapean IDs por colección).

@@ -1,22 +1,29 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Award } from "lucide-react";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthError } from "@/lib/services/auth.service";
 import { updateUserById } from "@/lib/storage/repositories/users.repo";
 import { bookingsRepo } from "@/lib/storage/repositories/bookings.repo";
 import { classSessionsRepo } from "@/lib/storage/repositories/classSessions.repo";
 import { getActiveMembership, getPlan } from "@/lib/services/membership.service";
+import { getUserBadges } from "@/lib/services/challenges.service";
 import { MEMBER_GOAL_LABEL, type MemberGoal } from "@/types";
 import { MembershipBadge } from "@/components/members/MembershipBadge";
 import { CreditsBadge } from "@/components/members/CreditsBadge";
 import { formatDate } from "@/lib/date";
 import { toDateKey } from "@/lib/date";
+import { useModules } from "@/hooks/useModules";
+import { useDataVersion } from "@/lib/data-bus";
+
+const ProgressPanel = lazy(() => import("@/components/health/ProgressPanel"));
 
 export const Route = createFileRoute("/mi-cuenta")({
   head: () => ({ meta: [{ title: "Mi cuenta — FitBox" }] }),
@@ -25,6 +32,8 @@ export const Route = createFileRoute("/mi-cuenta")({
 
 function MyAccountPage() {
   const { session, currentUser, refresh, changePassword } = useAuth();
+  const modules = useModules();
+  useDataVersion();
 
   if (!session || !currentUser) return null;
 
@@ -41,64 +50,107 @@ function MyAccountPage() {
     .sort((a, b) => (a.s.date + a.s.startTime).localeCompare(b.s.date + b.s.startTime))
     .slice(0, 5);
 
+  const badges = modules.challenges ? getUserBadges(currentUser.id) : [];
+
   return (
     <AppLayout>
-      <PageHeader title="Mi cuenta" description="Tus datos, tu membresía y tu seguridad." />
+      <PageHeader title="Mi cuenta" description="Tus datos, tu membresía y tu progreso." />
 
-      <div className="grid gap-6 max-w-3xl">
-        <ProfileCard onSaved={refresh} />
-        <div className="rounded-lg border border-border bg-card p-5">
-          <h2 className="text-sm font-medium mb-3">Mi membresía</h2>
-          {membership && plan ? (
-            <div className="space-y-2 text-sm">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="font-medium">{plan.name}</span>
-                <MembershipBadge status={membership.status === "active" ? "active" : "expired"} />
-                <CreditsBadge userId={currentUser.id} />
+      <Tabs defaultValue="perfil" className="max-w-3xl">
+        <TabsList>
+          <TabsTrigger value="perfil">Perfil</TabsTrigger>
+          {modules.health && <TabsTrigger value="progreso">Progreso</TabsTrigger>}
+          <TabsTrigger value="seguridad">Seguridad</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="perfil" className="grid gap-6">
+          <ProfileCard onSaved={refresh} />
+          <div className="rounded-lg border border-border bg-card p-5">
+            <h2 className="text-sm font-medium mb-3">Mi membresía</h2>
+            {membership && plan ? (
+              <div className="space-y-2 text-sm">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-medium">{plan.name}</span>
+                  <MembershipBadge status={membership.status === "active" ? "active" : "expired"} />
+                  <CreditsBadge userId={currentUser.id} />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Vigencia: {formatDate(membership.startDate)} → {formatDate(membership.endDate)}
+                </p>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Vigencia: {formatDate(membership.startDate)} → {formatDate(membership.endDate)}
-              </p>
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">Sin plan activo. Habla con tu box.</p>
-          )}
-        </div>
-        <div className="rounded-lg border border-border bg-card p-5">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-medium">Próximas reservas</h2>
-            <Button asChild variant="ghost" size="sm">
-              <Link to="/reservas">Ver todas</Link>
-            </Button>
+            ) : (
+              <p className="text-sm text-muted-foreground">Sin plan activo. Habla con tu box.</p>
+            )}
           </div>
-          {upcoming.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No tienes reservas próximas.</p>
-          ) : (
-            <div className="divide-y divide-border">
-              {upcoming.map(({ b, s }) => (
-                <div key={b.id} className="py-2 text-sm flex items-center justify-between">
-                  <div>
-                    <div className="font-medium">{formatDate(s.date)} · {s.startTime}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {b.status === "waitlist" ? `Lista de espera · #${b.position ?? "?"}` : "Confirmada"}
+          <div className="rounded-lg border border-border bg-card p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-medium">Próximas reservas</h2>
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/reservas">Ver todas</Link>
+              </Button>
+            </div>
+            {upcoming.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No tienes reservas próximas.</p>
+            ) : (
+              <div className="divide-y divide-border">
+                {upcoming.map(({ b, s }) => (
+                  <div key={b.id} className="py-2 text-sm flex items-center justify-between">
+                    <div>
+                      <div className="font-medium">{formatDate(s.date)} · {s.startTime}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {b.status === "waitlist" ? `Lista de espera · #${b.position ?? "?"}` : "Confirmada"}
+                      </div>
                     </div>
                   </div>
+                ))}
+              </div>
+            )}
+          </div>
+          {modules.challenges && (
+            <div className="rounded-lg border border-border bg-card p-5">
+              <h2 className="text-sm font-medium mb-3 flex items-center gap-2">
+                <Award className="h-4 w-4" strokeWidth={1.5} /> Mis insignias
+              </h2>
+              {badges.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Completa retos para ganar insignias.</p>
+              ) : (
+                <div className="flex flex-wrap gap-3">
+                  {badges.map(({ challenge, completedAt }) => (
+                    <div key={challenge.id} className="rounded-md border border-border p-3 min-w-[140px] text-center">
+                      <div className="text-2xl">{challenge.badge}</div>
+                      <div className="text-sm font-medium mt-1">{challenge.title}</div>
+                      <div className="text-xs text-muted-foreground">{formatDate(completedAt.slice(0, 10))}</div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
           )}
-        </div>
-        <ChangePasswordCard changePassword={changePassword} />
-      </div>
+        </TabsContent>
+
+        {modules.health && (
+          <TabsContent value="progreso">
+            <Suspense fallback={<div className="text-sm text-muted-foreground p-6">Cargando…</div>}>
+              <ProgressPanel userId={currentUser.id} tenantId={session.tenantId} canEdit />
+            </Suspense>
+          </TabsContent>
+        )}
+
+        <TabsContent value="seguridad">
+          <ChangePasswordCard changePassword={changePassword} />
+        </TabsContent>
+      </Tabs>
     </AppLayout>
   );
 }
 
 function ProfileCard({ onSaved }: { onSaved: () => void }) {
   const { session, currentUser } = useAuth();
+  const modules = useModules();
   const [name, setName] = useState(currentUser?.name ?? "");
   const [avatar, setAvatar] = useState(currentUser?.avatar ?? "");
   const [goal, setGoal] = useState<MemberGoal>(currentUser?.profile?.goal ?? "general");
+  const [showHealth, setShowHealth] = useState<boolean>(currentUser?.profile?.showHealthToCoach ?? false);
   const [saving, setSaving] = useState(false);
 
   if (!session || !currentUser) return null;
@@ -108,7 +160,7 @@ function ProfileCard({ onSaved }: { onSaved: () => void }) {
     updateUserById(session.tenantId, session.userId, {
       name: name.trim() || currentUser.name,
       avatar: avatar || undefined,
-      profile: { ...currentUser.profile, goal },
+      profile: { ...currentUser.profile, goal, showHealthToCoach: showHealth },
     });
     toast.success("Perfil actualizado");
     onSaved();
@@ -140,6 +192,17 @@ function ProfileCard({ onSaved }: { onSaved: () => void }) {
           ))}
         </div>
       </FieldRow>
+      {modules.health && currentUser.role === "member" && (
+        <div className="flex items-start justify-between gap-3 rounded-md border border-border p-3">
+          <div className="min-w-0">
+            <div className="text-sm font-medium">Compartir mi progreso con el coach</div>
+            <p className="text-xs text-muted-foreground">
+              Si lo activas, tus coaches podrán ver tus mediciones desde tu ficha.
+            </p>
+          </div>
+          <Switch checked={showHealth} onCheckedChange={setShowHealth} />
+        </div>
+      )}
       <div className="flex justify-end">
         <Button onClick={save} disabled={saving}>
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Guardar cambios"}

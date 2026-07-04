@@ -8,6 +8,9 @@ import {
   Settings,
   Newspaper,
   User as UserIcon,
+  Award,
+  ClipboardList,
+  ShoppingBag,
 } from "lucide-react";
 import type { UserRole } from "@/types";
 import { useRole } from "@/hooks/useRole";
@@ -30,6 +33,9 @@ const STAFF_NAV: NavItem[] = [
   { label: "Socios", to: "/socios", icon: Users, roles: ["admin", "coach"], module: "socios" },
   { label: "Clases", to: "/clases", icon: Dumbbell, roles: ["admin", "coach"], module: "reservas" },
   { label: "PRs", to: "/prs", icon: Trophy, roles: ["admin", "coach"], module: "prs" },
+  { label: "Retos", to: "/retos", icon: Award, roles: ["admin", "coach"], module: "challenges" },
+  { label: "Rutinas", to: "/rutinas", icon: ClipboardList, roles: ["admin", "coach"], module: "programs" },
+  { label: "Tienda", to: "/tienda", icon: ShoppingBag, roles: ["admin", "coach"], module: "shop" },
   { label: "Configuración", to: "/configuracion", icon: Settings, roles: ["admin"] },
 ];
 
@@ -37,6 +43,9 @@ const MEMBER_NAV: NavItem[] = [
   { label: "Feed", to: "/feed", icon: Newspaper, roles: ["member"], module: "feed" },
   { label: "Reservas", to: "/reservas", icon: CalendarDays, roles: ["member"], module: "reservas" },
   { label: "PRs", to: "/prs", icon: Trophy, roles: ["member"], module: "prs" },
+  { label: "Retos", to: "/retos", icon: Award, roles: ["member"], module: "challenges" },
+  { label: "Rutinas", to: "/rutinas", icon: ClipboardList, roles: ["member"], module: "programs" },
+  { label: "Tienda", to: "/tienda", icon: ShoppingBag, roles: ["member"], module: "shop" },
   { label: "Mi cuenta", to: "/mi-cuenta", icon: UserIcon, roles: ["member"] },
 ];
 

@@ -26,6 +26,10 @@ export interface TenantModules {
   prs: boolean;
   feed: boolean;
   pagos: boolean;
+  challenges: boolean;
+  programs: boolean;
+  shop: boolean;
+  health: boolean;
 }
 
 export const DEFAULT_MODULES: TenantModules = {
@@ -34,6 +38,10 @@ export const DEFAULT_MODULES: TenantModules = {
   prs: true,
   feed: true,
   pagos: true,
+  challenges: true,
+  programs: true,
+  shop: true,
+  health: true,
 };
 
 export interface TenantSettings {
@@ -67,6 +75,8 @@ export const MEMBER_GOAL_LABEL: Record<MemberGoal, string> = {
 export interface UserProfile {
   goal?: MemberGoal;
   bio?: string;
+  /** Si el socio permite al staff ver sus métricas de salud. Default false. */
+  showHealthToCoach?: boolean;
 }
 
 export interface User extends BaseEntity {
@@ -344,7 +354,10 @@ export type NotificationType =
   | "waitlist_promoted"
   | "membership_expiring"
   | "session_cancelled"
-  | "new_post";
+  | "new_post"
+  | "challenge_completed"
+  | "program_assigned"
+  | "order_ready";
 
 export interface Notification extends BaseEntity {
   tenantId: string;
@@ -356,4 +369,144 @@ export interface Notification extends BaseEntity {
   linkTo?: string;
   /** Clave estable para evitar duplicados (ej: `expiring:<membershipId>`). */
   dedupeKey?: string;
+}
+
+// ---- Retos ----
+
+export type ChallengeType = "attendance" | "benchmark";
+export type ChallengeStatus = "draft" | "active" | "finished";
+
+export interface Challenge extends BaseEntity {
+  tenantId: string;
+  title: string;
+  description: string;
+  type: ChallengeType;
+  /** attendance → nº de check-ins objetivo; benchmark → exerciseId */
+  goal: number | string;
+  startDate: string; // YYYY-MM-DD
+  endDate: string;
+  status: ChallengeStatus;
+  badge: string; // emoji o nombre lucide
+}
+
+export interface ChallengeParticipant extends BaseEntity {
+  tenantId: string;
+  challengeId: string;
+  userId: string;
+  progress: number;
+  completedAt?: string;
+}
+
+// ---- Rutinas / Programas ----
+
+export type ProgramLevel = "iniciacion" | "intermedio" | "avanzado";
+export const PROGRAM_LEVEL_LABEL: Record<ProgramLevel, string> = {
+  iniciacion: "Iniciación",
+  intermedio: "Intermedio",
+  avanzado: "Avanzado",
+};
+
+export interface Program extends BaseEntity {
+  tenantId: string;
+  title: string;
+  description: string;
+  weeks: number;
+  level: ProgramLevel;
+  createdBy: string;
+}
+
+export interface ProgramSession extends BaseEntity {
+  tenantId: string;
+  programId: string;
+  weekNumber: number;
+  dayNumber: number; // 1..7
+  title: string;
+  blocks: WodBlock[];
+}
+
+export type AssignmentStatus = "active" | "completed" | "abandoned";
+
+export interface ProgramAssignment extends BaseEntity {
+  tenantId: string;
+  programId: string;
+  userId: string;
+  assignedBy: string;
+  startDate: string; // YYYY-MM-DD
+  status: AssignmentStatus;
+}
+
+export interface ProgramProgress extends BaseEntity {
+  tenantId: string;
+  assignmentId: string;
+  programSessionId: string;
+  completedAt: string;
+  notes?: string;
+}
+
+// ---- Tienda ----
+
+export type ProductCategory = "ropa" | "suplementacion" | "accesorios" | "otro";
+export const PRODUCT_CATEGORY_LABEL: Record<ProductCategory, string> = {
+  ropa: "Ropa",
+  suplementacion: "Suplementación",
+  accesorios: "Accesorios",
+  otro: "Otro",
+};
+
+export interface Product extends BaseEntity {
+  tenantId: string;
+  name: string;
+  description: string;
+  price: number;
+  imageUrl?: string;
+  category: ProductCategory;
+  /** null = ilimitado */
+  stock: number | null;
+  active: boolean;
+}
+
+export interface OrderItem {
+  productId: string;
+  qty: number;
+  priceAtOrder: number;
+  name: string;
+}
+
+export type OrderStatus = "pendiente" | "listo" | "entregado" | "cancelado";
+export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
+  pendiente: "Pendiente",
+  listo: "Listo para recoger",
+  entregado: "Entregado",
+  cancelado: "Cancelado",
+};
+
+export interface Order extends BaseEntity {
+  tenantId: string;
+  userId: string;
+  items: OrderItem[];
+  total: number;
+  status: OrderStatus;
+  pickupNotes?: string;
+  paidAt?: string;
+}
+
+// ---- Salud / Progreso ----
+
+export interface BodyMeasurements {
+  chest?: number;
+  waist?: number;
+  hip?: number;
+  arm?: number;
+  thigh?: number;
+}
+
+export interface BodyMetric extends BaseEntity {
+  tenantId: string;
+  userId: string;
+  date: string; // YYYY-MM-DD
+  weightKg?: number;
+  bodyFatPct?: number;
+  restingHr?: number;
+  measurements?: BodyMeasurements;
+  notes?: string;
 }
