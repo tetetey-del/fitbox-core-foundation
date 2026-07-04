@@ -238,7 +238,7 @@ export function importTenantData(payload: BackupPayload): ImportResult {
   );
 
   // 4. Escribir por bloque (replaceAll sobre colección vacía del nuevo tenant)
-  const write = <T extends { id: string }>(repo: BaseRepo<T>, list: T[]) => repo.replaceAll(list);
+  const write = <T extends BaseEntity>(repo: BaseRepo<T>, list: T[]) => repo.replaceAll(list);
 
   // users repo scoped por sesión: usamos BaseRepo con getTenantId fijo
   const usersRepoForTenant = new BaseRepo<User>("users", {
