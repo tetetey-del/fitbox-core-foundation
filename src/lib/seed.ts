@@ -239,8 +239,26 @@ function seedClassesFor({ tenant, users }: SeedResult) {
     });
   }
 
+  // Pagos históricos adicionales (últimos 5 meses) para alimentar la gráfica
+  // de ingresos: simulamos cuotas mensuales del box.
+  for (let m = 5; m >= 2; m--) {
+    const d = addMonths(today, -m);
+    if (ana) paymentsRepo.create({
+      tenantId: tenant.id, userId: ana.id,
+      amount: plan12.priceMonthly, method: "domiciliacion",
+      date: toDateKey(d), notes: "Cuota mensual",
+    });
+    if (diego) paymentsRepo.create({
+      tenantId: tenant.id, userId: diego.id,
+      amount: planUnlimited.priceMonthly, method: "tarjeta",
+      date: toDateKey(d), notes: "Cuota mensual",
+    });
+  }
+
   // El plan de 8 clases queda disponible para futuros socios
   void plan8;
+
+
 
 
   const defs: Array<Omit<ClassTemplate, keyof import("@/types").BaseEntity | "tenantId">> = [
