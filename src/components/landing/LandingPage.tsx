@@ -611,7 +611,15 @@ function Pricing({ onCreate }: { onCreate: () => void }) {
   const [annual, setAnnual] = useState(false);
   const price = (m: number) => (annual ? Math.round(m * 12 * 0.8) : m);
   return (
-    <section id="pricing" className="mx-auto max-w-6xl px-4 sm:px-6 py-20 sm:py-24">
+    <section id="pricing" className="relative mx-auto max-w-6xl px-4 sm:px-6 py-20 sm:py-24 overflow-hidden">
+      <div
+        aria-hidden
+        className="absolute inset-x-0 top-0 -z-10 h-full fb-gradient-anim"
+        style={{
+          background:
+            "radial-gradient(45% 45% at 50% 20%, rgba(16,185,129,0.14) 0%, transparent 70%), radial-gradient(35% 40% at 15% 70%, rgba(249,115,22,0.08) 0%, transparent 70%)",
+        }}
+      />
       <div className="text-center max-w-2xl mx-auto">
         <Reveal>
           <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">Planes que crecen contigo</h2>
@@ -636,61 +644,78 @@ function Pricing({ onCreate }: { onCreate: () => void }) {
               className={`px-4 h-8 rounded-full font-medium transition-colors flex items-center gap-1.5 ${annual ? "bg-foreground text-background" : "text-muted-foreground"}`}
             >
               Anual
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#F97316]/15 text-[#F97316] font-semibold">
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#10B981]/15 text-[#10B981] font-semibold">
                 -20%
               </span>
             </button>
           </div>
         </Reveal>
       </div>
-      <div className="mt-12 grid gap-4 lg:grid-cols-3">
+      <div className="mt-12 grid gap-5 lg:grid-cols-3">
         {PLANS.map((p, i) => (
           <Reveal key={p.name} delay={i * 80}>
-            <div
-              className={`relative rounded-xl border p-6 h-full flex flex-col ${
-                p.featured
-                  ? "border-[#F97316]/60 bg-gradient-to-b from-[#F97316]/10 to-transparent"
-                  : "border-border bg-card"
-              }`}
-            >
-              {p.featured && (
-                <span className="absolute -top-3 left-6 rounded-full bg-[#F97316] text-background text-[10px] font-semibold px-2.5 py-1 uppercase tracking-wide">
-                  Más popular
-                </span>
-              )}
-              <h3 className="text-lg font-semibold tracking-tight">{p.name}</h3>
-              <p className="mt-1 text-xs text-muted-foreground">{p.desc}</p>
-              <div className="mt-5 flex items-baseline gap-1.5">
-                <span className="text-4xl font-semibold tracking-tight">{price(p.monthly)}€</span>
-                <span className="text-xs text-muted-foreground">/ {annual ? "año" : "mes"}</span>
-              </div>
-              {annual && (
-                <div className="text-[11px] text-[#F97316] mt-1">
-                  Equivale a {Math.round(p.monthly * 0.8)}€/mes
+            {p.featured ? (
+              <div className="relative h-full rounded-xl p-[1.5px] bg-gradient-to-br from-[#F97316] via-[#EC4899] to-[#8B5CF6]">
+                <div className="relative rounded-[10px] bg-card p-6 h-full flex flex-col">
+                  <span className="absolute -top-3 left-6 rounded-full bg-gradient-to-r from-[#F97316] to-[#EC4899] text-white text-[10px] font-semibold px-2.5 py-1 uppercase tracking-wide shadow-lg">
+                    Más popular
+                  </span>
+                  <PlanBody plan={p} price={price(p.monthly)} annual={annual} onCreate={onCreate} accent="#F97316" />
                 </div>
-              )}
-              <ul className="mt-6 space-y-2.5 flex-1">
-                {p.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-sm">
-                    <Check className="h-4 w-4 mt-0.5 text-[#F97316] shrink-0" strokeWidth={1.5} />
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-              <Button
-                className="mt-6 h-10"
-                variant={p.featured ? "default" : "outline"}
-                onClick={onCreate}
-              >
-                Empezar con {p.name}
-              </Button>
-            </div>
+              </div>
+            ) : (
+              <div className="relative rounded-xl border border-border bg-card p-6 h-full flex flex-col transition-colors hover:border-[#10B981]/40">
+                <PlanBody plan={p} price={price(p.monthly)} annual={annual} onCreate={onCreate} accent="#10B981" />
+              </div>
+            )}
           </Reveal>
         ))}
       </div>
     </section>
   );
 }
+
+function PlanBody({
+  plan,
+  price,
+  annual,
+  onCreate,
+  accent,
+}: {
+  plan: Plan;
+  price: number;
+  annual: boolean;
+  onCreate: () => void;
+  accent: string;
+}) {
+  return (
+    <>
+      <h3 className="text-lg font-semibold tracking-tight">{plan.name}</h3>
+      <p className="mt-1 text-xs text-muted-foreground">{plan.desc}</p>
+      <div className="mt-5 flex items-baseline gap-1.5">
+        <span className="text-4xl font-semibold tracking-tight">{price}€</span>
+        <span className="text-xs text-muted-foreground">/ {annual ? "año" : "mes"}</span>
+      </div>
+      {annual && (
+        <div className="text-[11px] mt-1" style={{ color: accent }}>
+          Equivale a {Math.round(plan.monthly * 0.8)}€/mes
+        </div>
+      )}
+      <ul className="mt-6 space-y-2.5 flex-1">
+        {plan.features.map((f) => (
+          <li key={f} className="flex items-start gap-2 text-sm">
+            <Check className="h-4 w-4 mt-0.5 shrink-0" style={{ color: accent }} strokeWidth={1.5} />
+            <span>{f}</span>
+          </li>
+        ))}
+      </ul>
+      <Button className="mt-6 h-10" variant={plan.featured ? "default" : "outline"} onClick={onCreate}>
+        Empezar con {plan.name}
+      </Button>
+    </>
+  );
+}
+
 
 // ================== Testimonios ==================
 const TESTIMONIALS = [
