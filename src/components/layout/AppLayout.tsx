@@ -14,7 +14,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (ready && !session) navigate({ to: "/" });
+    if (ready && !session) navigate({ to: "/login" });
   }, [ready, session, navigate]);
 
   useEffect(() => {
@@ -34,7 +34,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
             {currentTenant.name} está temporalmente desactivado por la plataforma.
             Contacta con soporte para más información.
           </p>
-          <Button className="mt-6" variant="outline" onClick={() => { logout(); navigate({ to: "/" }); }}>
+          <Button className="mt-6" variant="outline" onClick={() => { logout(); navigate({ to: "/login" }); }}>
             Cerrar sesión
           </Button>
         </div>

@@ -22,6 +22,19 @@ export const superAdminsStore = {
   getById(id: string): SuperAdmin | null {
     return this.list().find((s) => s.id === id) ?? null;
   },
+  findByEmail(email: string): SuperAdmin | null {
+    const needle = email.trim().toLowerCase();
+    return this.list().find((s) => s.email.toLowerCase() === needle) ?? null;
+  },
+  update(id: string, patch: Partial<SuperAdmin>): SuperAdmin | null {
+    const list = this.list();
+    const idx = list.findIndex((s) => s.id === id);
+    if (idx === -1) return null;
+    const updated = { ...list[idx], ...patch };
+    list[idx] = updated;
+    set(SUPERADMINS_KEY, list);
+    return updated;
+  },
   replaceAll(list: SuperAdmin[]) {
     set(SUPERADMINS_KEY, list);
   },

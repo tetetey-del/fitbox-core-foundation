@@ -11,13 +11,24 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SociosRouteImport } from './routes/socios'
 import { Route as ReservasRouteImport } from './routes/reservas'
+import { Route as RegistroRouteImport } from './routes/registro'
+import { Route as RecuperarRouteImport } from './routes/recuperar'
 import { Route as PrsRouteImport } from './routes/prs'
+import { Route as MiCuentaRouteImport } from './routes/mi-cuenta'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as FeedRouteImport } from './routes/feed'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ConfiguracionRouteImport } from './routes/configuracion'
 import { Route as ClasesRouteImport } from './routes/clases'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as OnboardingOwnerRouteImport } from './routes/onboarding.owner'
+import { Route as OnboardingMemberRouteImport } from './routes/onboarding.member'
+import { Route as LegalTerminosRouteImport } from './routes/legal.terminos'
+import { Route as LegalPrivacidadRouteImport } from './routes/legal.privacidad'
+import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
+import { Route as LegalAvisoLegalRouteImport } from './routes/legal.aviso-legal'
+import { Route as InvitacionCodeRouteImport } from './routes/invitacion.$code'
 
 const SociosRoute = SociosRouteImport.update({
   id: '/socios',
@@ -29,9 +40,29 @@ const ReservasRoute = ReservasRouteImport.update({
   path: '/reservas',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RegistroRoute = RegistroRouteImport.update({
+  id: '/registro',
+  path: '/registro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecuperarRoute = RecuperarRouteImport.update({
+  id: '/recuperar',
+  path: '/recuperar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrsRoute = PrsRouteImport.update({
   id: '/prs',
   path: '/prs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MiCuentaRoute = MiCuentaRouteImport.update({
+  id: '/mi-cuenta',
+  path: '/mi-cuenta',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeedRoute = FeedRouteImport.update({
@@ -64,6 +95,41 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OnboardingOwnerRoute = OnboardingOwnerRouteImport.update({
+  id: '/onboarding/owner',
+  path: '/onboarding/owner',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingMemberRoute = OnboardingMemberRouteImport.update({
+  id: '/onboarding/member',
+  path: '/onboarding/member',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalTerminosRoute = LegalTerminosRouteImport.update({
+  id: '/legal/terminos',
+  path: '/legal/terminos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalPrivacidadRoute = LegalPrivacidadRouteImport.update({
+  id: '/legal/privacidad',
+  path: '/legal/privacidad',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalCookiesRoute = LegalCookiesRouteImport.update({
+  id: '/legal/cookies',
+  path: '/legal/cookies',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalAvisoLegalRoute = LegalAvisoLegalRouteImport.update({
+  id: '/legal/aviso-legal',
+  path: '/legal/aviso-legal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InvitacionCodeRoute = InvitacionCodeRouteImport.update({
+  id: '/invitacion/$code',
+  path: '/invitacion/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -72,9 +138,20 @@ export interface FileRoutesByFullPath {
   '/configuracion': typeof ConfiguracionRoute
   '/dashboard': typeof DashboardRoute
   '/feed': typeof FeedRoute
+  '/login': typeof LoginRoute
+  '/mi-cuenta': typeof MiCuentaRoute
   '/prs': typeof PrsRoute
+  '/recuperar': typeof RecuperarRoute
+  '/registro': typeof RegistroRoute
   '/reservas': typeof ReservasRoute
   '/socios': typeof SociosRoute
+  '/invitacion/$code': typeof InvitacionCodeRoute
+  '/legal/aviso-legal': typeof LegalAvisoLegalRoute
+  '/legal/cookies': typeof LegalCookiesRoute
+  '/legal/privacidad': typeof LegalPrivacidadRoute
+  '/legal/terminos': typeof LegalTerminosRoute
+  '/onboarding/member': typeof OnboardingMemberRoute
+  '/onboarding/owner': typeof OnboardingOwnerRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -83,9 +160,20 @@ export interface FileRoutesByTo {
   '/configuracion': typeof ConfiguracionRoute
   '/dashboard': typeof DashboardRoute
   '/feed': typeof FeedRoute
+  '/login': typeof LoginRoute
+  '/mi-cuenta': typeof MiCuentaRoute
   '/prs': typeof PrsRoute
+  '/recuperar': typeof RecuperarRoute
+  '/registro': typeof RegistroRoute
   '/reservas': typeof ReservasRoute
   '/socios': typeof SociosRoute
+  '/invitacion/$code': typeof InvitacionCodeRoute
+  '/legal/aviso-legal': typeof LegalAvisoLegalRoute
+  '/legal/cookies': typeof LegalCookiesRoute
+  '/legal/privacidad': typeof LegalPrivacidadRoute
+  '/legal/terminos': typeof LegalTerminosRoute
+  '/onboarding/member': typeof OnboardingMemberRoute
+  '/onboarding/owner': typeof OnboardingOwnerRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -95,9 +183,20 @@ export interface FileRoutesById {
   '/configuracion': typeof ConfiguracionRoute
   '/dashboard': typeof DashboardRoute
   '/feed': typeof FeedRoute
+  '/login': typeof LoginRoute
+  '/mi-cuenta': typeof MiCuentaRoute
   '/prs': typeof PrsRoute
+  '/recuperar': typeof RecuperarRoute
+  '/registro': typeof RegistroRoute
   '/reservas': typeof ReservasRoute
   '/socios': typeof SociosRoute
+  '/invitacion/$code': typeof InvitacionCodeRoute
+  '/legal/aviso-legal': typeof LegalAvisoLegalRoute
+  '/legal/cookies': typeof LegalCookiesRoute
+  '/legal/privacidad': typeof LegalPrivacidadRoute
+  '/legal/terminos': typeof LegalTerminosRoute
+  '/onboarding/member': typeof OnboardingMemberRoute
+  '/onboarding/owner': typeof OnboardingOwnerRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -108,9 +207,20 @@ export interface FileRouteTypes {
     | '/configuracion'
     | '/dashboard'
     | '/feed'
+    | '/login'
+    | '/mi-cuenta'
     | '/prs'
+    | '/recuperar'
+    | '/registro'
     | '/reservas'
     | '/socios'
+    | '/invitacion/$code'
+    | '/legal/aviso-legal'
+    | '/legal/cookies'
+    | '/legal/privacidad'
+    | '/legal/terminos'
+    | '/onboarding/member'
+    | '/onboarding/owner'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -119,9 +229,20 @@ export interface FileRouteTypes {
     | '/configuracion'
     | '/dashboard'
     | '/feed'
+    | '/login'
+    | '/mi-cuenta'
     | '/prs'
+    | '/recuperar'
+    | '/registro'
     | '/reservas'
     | '/socios'
+    | '/invitacion/$code'
+    | '/legal/aviso-legal'
+    | '/legal/cookies'
+    | '/legal/privacidad'
+    | '/legal/terminos'
+    | '/onboarding/member'
+    | '/onboarding/owner'
   id:
     | '__root__'
     | '/'
@@ -130,9 +251,20 @@ export interface FileRouteTypes {
     | '/configuracion'
     | '/dashboard'
     | '/feed'
+    | '/login'
+    | '/mi-cuenta'
     | '/prs'
+    | '/recuperar'
+    | '/registro'
     | '/reservas'
     | '/socios'
+    | '/invitacion/$code'
+    | '/legal/aviso-legal'
+    | '/legal/cookies'
+    | '/legal/privacidad'
+    | '/legal/terminos'
+    | '/onboarding/member'
+    | '/onboarding/owner'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -142,9 +274,20 @@ export interface RootRouteChildren {
   ConfiguracionRoute: typeof ConfiguracionRoute
   DashboardRoute: typeof DashboardRoute
   FeedRoute: typeof FeedRoute
+  LoginRoute: typeof LoginRoute
+  MiCuentaRoute: typeof MiCuentaRoute
   PrsRoute: typeof PrsRoute
+  RecuperarRoute: typeof RecuperarRoute
+  RegistroRoute: typeof RegistroRoute
   ReservasRoute: typeof ReservasRoute
   SociosRoute: typeof SociosRoute
+  InvitacionCodeRoute: typeof InvitacionCodeRoute
+  LegalAvisoLegalRoute: typeof LegalAvisoLegalRoute
+  LegalCookiesRoute: typeof LegalCookiesRoute
+  LegalPrivacidadRoute: typeof LegalPrivacidadRoute
+  LegalTerminosRoute: typeof LegalTerminosRoute
+  OnboardingMemberRoute: typeof OnboardingMemberRoute
+  OnboardingOwnerRoute: typeof OnboardingOwnerRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -163,11 +306,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReservasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/registro': {
+      id: '/registro'
+      path: '/registro'
+      fullPath: '/registro'
+      preLoaderRoute: typeof RegistroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recuperar': {
+      id: '/recuperar'
+      path: '/recuperar'
+      fullPath: '/recuperar'
+      preLoaderRoute: typeof RecuperarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/prs': {
       id: '/prs'
       path: '/prs'
       fullPath: '/prs'
       preLoaderRoute: typeof PrsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mi-cuenta': {
+      id: '/mi-cuenta'
+      path: '/mi-cuenta'
+      fullPath: '/mi-cuenta'
+      preLoaderRoute: typeof MiCuentaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/feed': {
@@ -212,6 +383,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/onboarding/owner': {
+      id: '/onboarding/owner'
+      path: '/onboarding/owner'
+      fullPath: '/onboarding/owner'
+      preLoaderRoute: typeof OnboardingOwnerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/member': {
+      id: '/onboarding/member'
+      path: '/onboarding/member'
+      fullPath: '/onboarding/member'
+      preLoaderRoute: typeof OnboardingMemberRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/terminos': {
+      id: '/legal/terminos'
+      path: '/legal/terminos'
+      fullPath: '/legal/terminos'
+      preLoaderRoute: typeof LegalTerminosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/privacidad': {
+      id: '/legal/privacidad'
+      path: '/legal/privacidad'
+      fullPath: '/legal/privacidad'
+      preLoaderRoute: typeof LegalPrivacidadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/cookies': {
+      id: '/legal/cookies'
+      path: '/legal/cookies'
+      fullPath: '/legal/cookies'
+      preLoaderRoute: typeof LegalCookiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/aviso-legal': {
+      id: '/legal/aviso-legal'
+      path: '/legal/aviso-legal'
+      fullPath: '/legal/aviso-legal'
+      preLoaderRoute: typeof LegalAvisoLegalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invitacion/$code': {
+      id: '/invitacion/$code'
+      path: '/invitacion/$code'
+      fullPath: '/invitacion/$code'
+      preLoaderRoute: typeof InvitacionCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -222,9 +442,20 @@ const rootRouteChildren: RootRouteChildren = {
   ConfiguracionRoute: ConfiguracionRoute,
   DashboardRoute: DashboardRoute,
   FeedRoute: FeedRoute,
+  LoginRoute: LoginRoute,
+  MiCuentaRoute: MiCuentaRoute,
   PrsRoute: PrsRoute,
+  RecuperarRoute: RecuperarRoute,
+  RegistroRoute: RegistroRoute,
   ReservasRoute: ReservasRoute,
   SociosRoute: SociosRoute,
+  InvitacionCodeRoute: InvitacionCodeRoute,
+  LegalAvisoLegalRoute: LegalAvisoLegalRoute,
+  LegalCookiesRoute: LegalCookiesRoute,
+  LegalPrivacidadRoute: LegalPrivacidadRoute,
+  LegalTerminosRoute: LegalTerminosRoute,
+  OnboardingMemberRoute: OnboardingMemberRoute,
+  OnboardingOwnerRoute: OnboardingOwnerRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

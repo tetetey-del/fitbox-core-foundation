@@ -1,12 +1,11 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
   Dumbbell,
   CalendarDays,
   Users,
   Trophy,
   ArrowRight,
-  Shield,
   Newspaper,
   Palette,
   LayoutGrid,
@@ -18,101 +17,33 @@ import {
   Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { useAuth } from "@/contexts/AuthContext";
-import { tenantsRepo } from "@/lib/storage/repositories/tenants.repo";
-import { listUsersOfTenant } from "@/lib/storage/repositories/users.repo";
-import { createTenantWithSeed } from "@/lib/seed";
-import { superAdminsStore } from "@/lib/storage/superadmins";
-
-type Mode = "create" | "enter" | "platform" | null;
 
 export function LandingPage() {
-  const [mode, setMode] = useState<Mode>(null);
-  const { login, loginAsSuperAdmin } = useAuth();
   const navigate = useNavigate();
-
-  const openCreate = () => setMode("create");
-  const goDashboard = () => navigate({ to: "/dashboard" });
+  const goRegister = () => navigate({ to: "/registro" });
+  const goLogin = () => navigate({ to: "/login" });
 
   return (
     <div className="min-h-dvh bg-background text-foreground flex flex-col overflow-x-hidden">
-      <TopNav onEnter={() => setMode("enter")} onCreate={openCreate} />
+      <TopNav onEnter={goLogin} onCreate={goRegister} />
       <main className="flex-1">
-        <Hero onCreate={openCreate} onEnter={() => setMode("enter")} />
+        <Hero onCreate={goRegister} onEnter={goLogin} />
         <SocialProof />
         <Features />
         <HowItWorks />
-        <PwaSection onCreate={openCreate} />
-        <Pricing onCreate={openCreate} />
+        <PwaSection onCreate={goRegister} />
+        <Pricing onCreate={goRegister} />
         <Testimonials />
         <FAQ />
-        <FinalCta onCreate={openCreate} />
+        <FinalCta onCreate={goRegister} />
       </main>
-      <Footer onPlatform={() => setMode("platform")} />
-
-
-      <Dialog open={mode !== null} onOpenChange={(o) => !o && setMode(null)}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>
-              {mode === "create"
-                ? "Crear mi box"
-                : mode === "enter"
-                  ? "Entrar en un box"
-                  : "Acceso plataforma"}
-            </DialogTitle>
-          </DialogHeader>
-          {mode === "create" && (
-            <CreateBoxForm
-              onCancel={() => setMode(null)}
-              onCreated={(tenantId, userId) => {
-                login(tenantId, userId);
-                goDashboard();
-              }}
-            />
-          )}
-          {mode === "enter" && (
-            <EnterBoxForm
-              onCancel={() => setMode(null)}
-              onEnter={(tenantId, userId) => {
-                login(tenantId, userId);
-                goDashboard();
-              }}
-              onCreate={openCreate}
-            />
-          )}
-          {mode === "platform" && (
-            <PlatformForm
-              onCancel={() => setMode(null)}
-              onEnter={(id) => {
-                loginAsSuperAdmin(id);
-                navigate({ to: "/admin" });
-              }}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+      <Footer />
     </div>
   );
 }
@@ -122,7 +53,9 @@ function Reveal({ children, delay = 0 }: { children: ReactNode; delay?: number }
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
   useEffect(() => {
-    const reduce = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduce =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduce) {
       setVisible(true);
       return;
@@ -152,7 +85,6 @@ function Reveal({ children, delay = 0 }: { children: ReactNode; delay?: number }
   );
 }
 
-
 // ================== TopNav ==================
 function TopNav({ onEnter, onCreate }: { onEnter: () => void; onCreate: () => void }) {
   return (
@@ -167,7 +99,7 @@ function TopNav({ onEnter, onCreate }: { onEnter: () => void; onCreate: () => vo
         <a href="#faq" className="hover:text-foreground transition-colors">FAQ</a>
       </nav>
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="sm" onClick={onEnter}>Entrar</Button>
+        <Button variant="ghost" size="sm" onClick={onEnter}>Iniciar sesión</Button>
         <Button size="sm" className="hidden sm:inline-flex" onClick={onCreate}>
           Crear mi box
         </Button>
@@ -185,11 +117,10 @@ function Hero({ onCreate, onEnter }: { onCreate: () => void; onEnter: () => void
         className="absolute inset-0 -z-10 fb-gradient-anim"
         style={{
           background:
-            "radial-gradient(60% 55% at 20% 0%, rgba(249,115,22,0.28) 0%, transparent 60%), radial-gradient(45% 45% at 85% 20%, rgba(236,72,153,0.22) 0%, transparent 65%), radial-gradient(50% 50% at 60% 90%, rgba(56,189,248,0.15) 0%, transparent 70%)",
+            "radial-gradient(65% 55% at 20% 0%, rgba(249,115,22,0.32) 0%, transparent 60%), radial-gradient(50% 50% at 85% 15%, rgba(251,146,60,0.22) 0%, transparent 65%), radial-gradient(60% 55% at 55% 100%, rgba(234,88,12,0.18) 0%, transparent 70%)",
         }}
       />
       <div className="mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-24 grid gap-12 lg:grid-cols-2 items-center">
-
         <div>
           <Reveal>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-[#F97316]/30 bg-[#F97316]/10 px-3 py-1 text-xs text-[#F97316] font-medium">
@@ -200,11 +131,10 @@ function Hero({ onCreate, onEnter }: { onCreate: () => void; onEnter: () => void
             <h1 className="mt-6 text-4xl sm:text-6xl font-semibold tracking-tighter leading-[1.05]">
               Gestiona tu box
               <br />
-              <span className="bg-gradient-to-r from-[#F97316] via-[#EC4899] to-[#8B5CF6] bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-[#F97316] via-[#FB923C] to-[#FCD34D] bg-clip-text text-transparent">
                 como un atleta entrena.
               </span>
             </h1>
-
           </Reveal>
           <Reveal delay={160}>
             <p className="mt-5 max-w-xl text-sm sm:text-base text-muted-foreground">
@@ -266,13 +196,12 @@ function MockupPreview() {
     <div ref={ref} className="relative" style={{ transform: `translateY(${offset}px)`, transition: "transform 120ms linear" }}>
       <div
         aria-hidden
-        className="absolute -inset-6 rounded-3xl blur-2xl opacity-50"
+        className="absolute -inset-6 rounded-3xl blur-2xl opacity-60"
         style={{
           background:
-            "linear-gradient(135deg, rgba(249,115,22,0.4), rgba(236,72,153,0.28) 60%, rgba(139,92,246,0.15))",
+            "linear-gradient(135deg, rgba(249,115,22,0.45), rgba(251,146,60,0.30) 55%, rgba(252,211,77,0.18))",
         }}
       />
-
       <div className="relative rounded-xl border border-border bg-card/80 backdrop-blur p-4 shadow-2xl">
         <div className="flex items-center gap-1.5 pb-3 border-b border-border">
           <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/30" />
@@ -315,8 +244,8 @@ function MockupPreview() {
             </div>
           ))}
         </div>
-        <div className="mt-3 rounded-md border border-border p-2">
-          <div className="text-[10px] font-medium text-muted-foreground uppercase">
+        <div className="mt-3 rounded-md border border-[#F97316]/30 bg-[#F97316]/5 p-2">
+          <div className="text-[10px] font-medium uppercase text-[#F97316]">
             WOD del día · Fran
           </div>
           <div className="text-[11px] mt-1">
@@ -328,7 +257,7 @@ function MockupPreview() {
   );
 }
 
-// ================== Social proof / métricas ==================
+// ================== Social proof ==================
 function useCounter(target: number, duration = 1200) {
   const [n, setN] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
@@ -381,12 +310,12 @@ function SocialProof() {
 
 // ================== Features ==================
 const FEATURES = [
-  { icon: CalendarDays, title: "Reservas con waitlist", desc: "Calendario semanal, lista de espera automática, check-ins y ventana de cancelación configurable.", color: "#38BDF8", tint: "rgba(56,189,248,0.14)", ring: "rgba(56,189,248,0.35)" },
-  { icon: Users, title: "Socios y créditos", desc: "Planes ilimitados o por créditos, renovaciones, historial de pagos y estado a un vistazo.", color: "#22D3EE", tint: "rgba(34,211,238,0.14)", ring: "rgba(34,211,238,0.35)" },
-  { icon: Trophy, title: "PRs y leaderboard", desc: "Registra marcas, revisa la evolución con gráficas y saca ránkings del box por ejercicio.", color: "#F59E0B", tint: "rgba(245,158,11,0.14)", ring: "rgba(245,158,11,0.35)" },
-  { icon: Newspaper, title: "Feed del box", desc: "Publica avisos, WODs, consejos y recetas. Notifica a tus socios sin depender de WhatsApp.", color: "#EC4899", tint: "rgba(236,72,153,0.14)", ring: "rgba(236,72,153,0.35)" },
-  { icon: Palette, title: "Temas y branding", desc: "Cinco temas listos, tu color de marca y tu logo. Que la app sea tu box, no un genérico más.", color: "#8B5CF6", tint: "rgba(139,92,246,0.14)", ring: "rgba(139,92,246,0.35)" },
-  { icon: LayoutGrid, title: "Panel multi-box", desc: "Gestiona varios boxes desde un único panel. Métricas globales, impersonación y control total.", color: "#10B981", tint: "rgba(16,185,129,0.14)", ring: "rgba(16,185,129,0.35)" },
+  { icon: CalendarDays, title: "Reservas con waitlist", desc: "Calendario semanal, lista de espera automática, check-ins y ventana de cancelación configurable." },
+  { icon: Users, title: "Socios y créditos", desc: "Planes ilimitados o por créditos, renovaciones, historial de pagos y estado a un vistazo." },
+  { icon: Trophy, title: "PRs y leaderboard", desc: "Registra marcas, revisa la evolución con gráficas y saca ránkings del box por ejercicio." },
+  { icon: Newspaper, title: "Feed del box", desc: "Publica avisos, WODs, consejos y recetas. Notifica a tus socios sin depender de WhatsApp." },
+  { icon: Palette, title: "Temas y branding", desc: "Cinco temas listos, tu color de marca y tu logo. Que la app sea tu box, no un genérico más." },
+  { icon: LayoutGrid, title: "Panel multi-box", desc: "Gestiona varios boxes desde un único panel. Métricas globales, impersonación y control total." },
 ];
 
 function Features() {
@@ -395,7 +324,7 @@ function Features() {
       <div
         aria-hidden
         className="absolute inset-x-0 top-1/3 -z-10 h-64 blur-3xl opacity-40"
-        style={{ background: "radial-gradient(50% 100% at 50% 50%, rgba(56,189,248,0.18), transparent 70%)" }}
+        style={{ background: "radial-gradient(50% 100% at 50% 50%, rgba(249,115,22,0.18), transparent 70%)" }}
       />
       <div className="max-w-2xl">
         <Reveal>
@@ -411,22 +340,19 @@ function Features() {
         </Reveal>
       </div>
       <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {FEATURES.map(({ icon: Icon, title, desc, color, tint, ring }, i) => (
+        {FEATURES.map(({ icon: Icon, title, desc }, i) => (
           <Reveal key={title} delay={i * 80}>
             <div
-              className="group relative rounded-xl border border-border bg-card p-6 h-full transition-all duration-300 hover:-translate-y-0.5"
-              style={{ ["--fb-ring" as string]: ring }}
-              onMouseEnter={(e) => (e.currentTarget.style.borderColor = ring)}
-              onMouseLeave={(e) => (e.currentTarget.style.borderColor = "")}
+              className="group relative rounded-xl border border-border bg-card p-6 h-full transition-all duration-300 hover:-translate-y-0.5 hover:border-[#F97316]/40"
             >
               <div
                 aria-hidden
                 className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-                style={{ boxShadow: `0 0 0 1px ${ring}, 0 24px 48px -20px ${ring}` }}
+                style={{ boxShadow: "0 0 0 1px rgba(249,115,22,0.35), 0 24px 48px -20px rgba(249,115,22,0.35)" }}
               />
               <div
-                className="inline-flex items-center justify-center h-10 w-10 rounded-lg"
-                style={{ background: tint, color, boxShadow: `inset 0 0 0 1px ${ring}` }}
+                className="inline-flex items-center justify-center h-10 w-10 rounded-lg bg-[#F97316]/10 text-[#F97316]"
+                style={{ boxShadow: "inset 0 0 0 1px rgba(249,115,22,0.28)" }}
               >
                 <Icon className="h-5 w-5" strokeWidth={1.5} />
               </div>
@@ -440,7 +366,7 @@ function Features() {
   );
 }
 
-// ================== PWA Section ==================
+// ================== PWA ==================
 function PwaSection({ onCreate }: { onCreate: () => void }) {
   const items = [
     { icon: Download, title: "Instalable en el móvil", desc: "Sin App Store ni descargas. Añádela a tu pantalla de inicio en un toque." },
@@ -454,20 +380,20 @@ function PwaSection({ onCreate }: { onCreate: () => void }) {
         className="absolute inset-0 -z-10 fb-gradient-anim"
         style={{
           background:
-            "radial-gradient(50% 60% at 20% 30%, rgba(56,189,248,0.12) 0%, transparent 70%), radial-gradient(45% 55% at 80% 70%, rgba(139,92,246,0.10) 0%, transparent 70%)",
+            "radial-gradient(50% 60% at 20% 30%, rgba(249,115,22,0.14) 0%, transparent 70%), radial-gradient(45% 55% at 80% 70%, rgba(251,146,60,0.12) 0%, transparent 70%)",
         }}
       />
       <div className="mx-auto max-w-6xl px-4 sm:px-6 py-20 sm:py-24 grid gap-12 lg:grid-cols-2 items-center">
         <div>
           <Reveal>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#38BDF8]/30 bg-[#38BDF8]/10 px-3 py-1 text-xs text-[#38BDF8] font-medium">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#F97316]/30 bg-[#F97316]/10 px-3 py-1 text-xs text-[#F97316] font-medium">
               <Smartphone className="h-3.5 w-3.5" strokeWidth={1.5} />
               Funciona como app
             </span>
           </Reveal>
           <Reveal delay={80}>
             <h2 className="mt-5 text-3xl sm:text-4xl font-semibold tracking-tight">
-              Una <span className="bg-gradient-to-r from-[#38BDF8] to-[#8B5CF6] bg-clip-text text-transparent">Progressive Web App</span> real.
+              Una <span className="bg-gradient-to-r from-[#F97316] to-[#FCD34D] bg-clip-text text-transparent">Progressive Web App</span> real.
             </h2>
           </Reveal>
           <Reveal delay={140}>
@@ -480,7 +406,7 @@ function PwaSection({ onCreate }: { onCreate: () => void }) {
             {items.map(({ icon: Icon, title, desc }, i) => (
               <Reveal key={title} delay={200 + i * 80}>
                 <div className="flex items-start gap-3">
-                  <div className="h-9 w-9 shrink-0 rounded-lg bg-[#38BDF8]/10 text-[#38BDF8] flex items-center justify-center" style={{ boxShadow: "inset 0 0 0 1px rgba(56,189,248,0.3)" }}>
+                  <div className="h-9 w-9 shrink-0 rounded-lg bg-[#F97316]/10 text-[#F97316] flex items-center justify-center" style={{ boxShadow: "inset 0 0 0 1px rgba(249,115,22,0.28)" }}>
                     <Icon className="h-4 w-4" strokeWidth={1.5} />
                   </div>
                   <div>
@@ -503,11 +429,11 @@ function PwaSection({ onCreate }: { onCreate: () => void }) {
             <div
               aria-hidden
               className="absolute -inset-8 rounded-[3rem] blur-2xl opacity-60"
-              style={{ background: "linear-gradient(135deg, rgba(56,189,248,0.35), rgba(139,92,246,0.25))" }}
+              style={{ background: "linear-gradient(135deg, rgba(249,115,22,0.4), rgba(251,146,60,0.25))" }}
             />
             <div className="relative rounded-[2.2rem] border border-border/80 bg-card p-3 shadow-2xl">
               <div className="rounded-[1.6rem] border border-border/70 bg-background overflow-hidden aspect-[9/19] flex flex-col">
-                <div className="h-8 bg-background-subtle border-b border-border/50 flex items-center justify-center">
+                <div className="h-8 bg-background/60 border-b border-border/50 flex items-center justify-center">
                   <div className="h-1 w-16 rounded-full bg-muted-foreground/30" />
                 </div>
                 <div className="flex-1 p-4 space-y-3">
@@ -527,13 +453,13 @@ function PwaSection({ onCreate }: { onCreate: () => void }) {
                     </div>
                     <div className="mt-1 text-[9px] text-muted-foreground">9/12 · reservada</div>
                   </div>
-                  <div className="rounded-lg border border-[#EC4899]/40 bg-[#EC4899]/5 p-2.5">
-                    <div className="text-[10px] font-medium text-[#EC4899]">WOD · Fran</div>
+                  <div className="rounded-lg border border-[#F97316]/30 bg-[#F97316]/5 p-2.5">
+                    <div className="text-[10px] font-medium text-[#F97316]">WOD · Fran</div>
                     <div className="text-[9px] text-muted-foreground mt-0.5">21-15-9 Thrusters + Pull-ups</div>
                   </div>
-                  <div className="rounded-lg border border-[#38BDF8]/40 bg-[#38BDF8]/5 p-2.5">
-                    <div className="text-[10px] font-medium text-[#38BDF8]">PR</div>
-                    <div className="text-[9px] text-muted-foreground mt-0.5">Back Squat · 120kg 🔥</div>
+                  <div className="rounded-lg border border-[#F97316]/20 bg-[#F97316]/5 p-2.5">
+                    <div className="text-[10px] font-medium text-[#F97316]">PR</div>
+                    <div className="text-[9px] text-muted-foreground mt-0.5">Back Squat · 120kg</div>
                   </div>
                 </div>
               </div>
@@ -544,7 +470,6 @@ function PwaSection({ onCreate }: { onCreate: () => void }) {
     </section>
   );
 }
-
 
 // ================== How it works ==================
 const STEPS = [
@@ -570,7 +495,7 @@ function HowItWorks() {
         <div className="grid gap-4 sm:grid-cols-3">
           {STEPS.map((s, i) => (
             <Reveal key={s.n} delay={i * 100}>
-              <div className="rounded-xl border border-border bg-background p-6 h-full">
+              <div className="rounded-xl border border-border bg-background p-6 h-full transition-colors hover:border-[#F97316]/40">
                 <div className="text-xs font-mono text-[#F97316]">{s.n}</div>
                 <h3 className="mt-2 text-base font-semibold tracking-tight">{s.title}</h3>
                 <p className="mt-1.5 text-sm text-muted-foreground">{s.desc}</p>
@@ -623,7 +548,7 @@ function Pricing({ onCreate }: { onCreate: () => void }) {
         className="absolute inset-x-0 top-0 -z-10 h-full fb-gradient-anim"
         style={{
           background:
-            "radial-gradient(45% 45% at 50% 20%, rgba(16,185,129,0.14) 0%, transparent 70%), radial-gradient(35% 40% at 15% 70%, rgba(249,115,22,0.08) 0%, transparent 70%)",
+            "radial-gradient(45% 45% at 50% 20%, rgba(249,115,22,0.16) 0%, transparent 70%), radial-gradient(35% 40% at 15% 70%, rgba(251,146,60,0.10) 0%, transparent 70%), radial-gradient(35% 40% at 85% 70%, rgba(252,211,77,0.10) 0%, transparent 70%)",
         }}
       />
       <div className="text-center max-w-2xl mx-auto">
@@ -650,7 +575,7 @@ function Pricing({ onCreate }: { onCreate: () => void }) {
               className={`px-4 h-8 rounded-full font-medium transition-colors flex items-center gap-1.5 ${annual ? "bg-foreground text-background" : "text-muted-foreground"}`}
             >
               Anual
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#10B981]/15 text-[#10B981] font-semibold">
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#F97316]/15 text-[#F97316] font-semibold">
                 -20%
               </span>
             </button>
@@ -661,17 +586,17 @@ function Pricing({ onCreate }: { onCreate: () => void }) {
         {PLANS.map((p, i) => (
           <Reveal key={p.name} delay={i * 80}>
             {p.featured ? (
-              <div className="relative h-full rounded-xl p-[1.5px] bg-gradient-to-br from-[#F97316] via-[#EC4899] to-[#8B5CF6]">
+              <div className="relative h-full rounded-xl p-[1.5px] bg-gradient-to-br from-[#F97316] via-[#FB923C] to-[#FCD34D]">
                 <div className="relative rounded-[10px] bg-card p-6 h-full flex flex-col">
-                  <span className="absolute -top-3 left-6 rounded-full bg-gradient-to-r from-[#F97316] to-[#EC4899] text-white text-[10px] font-semibold px-2.5 py-1 uppercase tracking-wide shadow-lg">
+                  <span className="absolute -top-3 left-6 rounded-full bg-gradient-to-r from-[#F97316] to-[#FB923C] text-white text-[10px] font-semibold px-2.5 py-1 uppercase tracking-wide shadow-lg">
                     Más popular
                   </span>
-                  <PlanBody plan={p} price={price(p.monthly)} annual={annual} onCreate={onCreate} accent="#F97316" />
+                  <PlanBody plan={p} price={price(p.monthly)} annual={annual} onCreate={onCreate} />
                 </div>
               </div>
             ) : (
-              <div className="relative rounded-xl border border-border bg-card p-6 h-full flex flex-col transition-colors hover:border-[#10B981]/40">
-                <PlanBody plan={p} price={price(p.monthly)} annual={annual} onCreate={onCreate} accent="#10B981" />
+              <div className="relative rounded-xl border border-border bg-card p-6 h-full flex flex-col transition-colors hover:border-[#F97316]/40">
+                <PlanBody plan={p} price={price(p.monthly)} annual={annual} onCreate={onCreate} />
               </div>
             )}
           </Reveal>
@@ -686,13 +611,11 @@ function PlanBody({
   price,
   annual,
   onCreate,
-  accent,
 }: {
   plan: Plan;
   price: number;
   annual: boolean;
   onCreate: () => void;
-  accent: string;
 }) {
   return (
     <>
@@ -703,14 +626,14 @@ function PlanBody({
         <span className="text-xs text-muted-foreground">/ {annual ? "año" : "mes"}</span>
       </div>
       {annual && (
-        <div className="text-[11px] mt-1" style={{ color: accent }}>
+        <div className="text-[11px] mt-1 text-[#F97316]">
           Equivale a {Math.round(plan.monthly * 0.8)}€/mes
         </div>
       )}
       <ul className="mt-6 space-y-2.5 flex-1">
         {plan.features.map((f) => (
           <li key={f} className="flex items-start gap-2 text-sm">
-            <Check className="h-4 w-4 mt-0.5 shrink-0" style={{ color: accent }} strokeWidth={1.5} />
+            <Check className="h-4 w-4 mt-0.5 shrink-0 text-[#F97316]" strokeWidth={1.5} />
             <span>{f}</span>
           </li>
         ))}
@@ -721,7 +644,6 @@ function PlanBody({
     </>
   );
 }
-
 
 // ================== Testimonios ==================
 const TESTIMONIALS = [
@@ -762,7 +684,7 @@ function Testimonials() {
                   “{t.quote}”
                 </blockquote>
                 <figcaption className="mt-6 pt-4 border-t border-border/60 flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#F97316] to-[#c2410c] flex items-center justify-center text-background text-xs font-semibold">
+                  <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#F97316] to-[#c2410c] flex items-center justify-center text-white text-xs font-semibold">
                     {t.name.split(" ").map((p) => p[0]).slice(0, 2).join("")}
                   </div>
                   <div className="text-xs">
@@ -824,7 +746,7 @@ function FinalCta({ onCreate }: { onCreate: () => void }) {
         className="absolute inset-0 -z-10 opacity-70"
         style={{
           background:
-            "radial-gradient(50% 60% at 50% 50%, rgba(249,115,22,0.18) 0%, transparent 70%)",
+            "radial-gradient(50% 60% at 50% 50%, rgba(249,115,22,0.20) 0%, transparent 70%)",
         }}
       />
       <div className="mx-auto max-w-3xl px-4 sm:px-6 py-24 text-center">
@@ -850,7 +772,7 @@ function FinalCta({ onCreate }: { onCreate: () => void }) {
 }
 
 // ================== Footer ==================
-function Footer({ onPlatform }: { onPlatform: () => void }) {
+function Footer() {
   return (
     <footer className="border-t border-border/60 bg-background">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 py-10 grid gap-8 sm:grid-cols-4 text-sm">
@@ -863,216 +785,56 @@ function Footer({ onPlatform }: { onPlatform: () => void }) {
             Software todo-en-uno para boxes de CrossFit y gimnasios boutique.
           </p>
         </div>
-        <FooterCol title="Producto" items={["Reservas", "Socios", "PRs", "Feed"]} />
-        <FooterCol title="Empresa" items={["Sobre nosotros", "Blog", "Contacto", "Legal"]} />
-        <FooterCol title="Soporte" items={["Ayuda", "Estado", "Roadmap", "Contacto"]} />
+        <FooterCol
+          title="Producto"
+          items={[
+            { label: "Funciones", href: "#features" },
+            { label: "Precios", href: "#pricing" },
+            { label: "FAQ", href: "#faq" },
+          ]}
+        />
+        <FooterCol
+          title="Cuenta"
+          items={[
+            { label: "Crear cuenta", to: "/registro" },
+            { label: "Iniciar sesión", to: "/login" },
+            { label: "Recuperar contraseña", to: "/recuperar" },
+          ]}
+        />
+        <FooterCol
+          title="Legal"
+          items={[
+            { label: "Privacidad", to: "/legal/privacidad" },
+            { label: "Cookies", to: "/legal/cookies" },
+            { label: "Términos", to: "/legal/terminos" },
+            { label: "Aviso legal", to: "/legal/aviso-legal" },
+          ]}
+        />
       </div>
       <div className="border-t border-border/60 py-4 text-center text-[11px] text-muted-foreground">
-        © {new Date().getFullYear()} FitBox · Demo local, los datos se guardan en tu navegador ·{" "}
-        <button
-          type="button"
-          onClick={onPlatform}
-          className="underline underline-offset-2 hover:text-foreground"
-        >
-          Acceso plataforma
-        </button>
+        © {new Date().getFullYear()} FitBox · Demo local, los datos se guardan en tu navegador
       </div>
     </footer>
   );
 }
 
-function FooterCol({ title, items }: { title: string; items: string[] }) {
+interface FooterItem { label: string; href?: string; to?: string }
+
+function FooterCol({ title, items }: { title: string; items: FooterItem[] }) {
   return (
     <div>
       <div className="text-xs font-semibold mb-3">{title}</div>
       <ul className="space-y-2 text-xs text-muted-foreground">
         {items.map((i) => (
-          <li key={i}>
-            <a href="#" className="hover:text-foreground transition-colors">{i}</a>
+          <li key={i.label}>
+            {i.to ? (
+              <Link to={i.to} className="hover:text-foreground transition-colors">{i.label}</Link>
+            ) : (
+              <a href={i.href} className="hover:text-foreground transition-colors">{i.label}</a>
+            )}
           </li>
         ))}
       </ul>
-    </div>
-  );
-}
-
-// ================== Formularios ==================
-
-function CreateBoxForm({
-  onCancel,
-  onCreated,
-}: {
-  onCancel: () => void;
-  onCreated: (tenantId: string, userId: string) => void;
-}) {
-  const [name, setName] = useState("");
-  const [ownerName, setOwnerName] = useState("");
-  const [email, setEmail] = useState("");
-  const [brandColor, setBrandColor] = useState("#F97316");
-
-  const canSubmit = name && ownerName && email;
-
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!canSubmit) return;
-    const { tenant, owner } = createTenantWithSeed({
-      name,
-      ownerName,
-      ownerEmail: email,
-      brandColor,
-    });
-    onCreated(tenant.id, owner.id);
-  };
-
-  return (
-    <form onSubmit={submit} className="space-y-4">
-      <Field label="Nombre del box">
-        <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="CrossFit Norte" autoFocus />
-      </Field>
-      <Field label="Tu nombre">
-        <Input value={ownerName} onChange={(e) => setOwnerName(e.target.value)} placeholder="Sergio Torres" />
-      </Field>
-      <Field label="Email">
-        <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="tu@email.com" />
-      </Field>
-      <Field label="Color de marca">
-        <div className="flex items-center gap-3">
-          <input
-            type="color"
-            aria-label="Color de marca"
-            value={brandColor}
-            onChange={(e) => setBrandColor(e.target.value)}
-            className="h-10 w-14 rounded-md border border-border bg-background cursor-pointer"
-          />
-          <Input value={brandColor} onChange={(e) => setBrandColor(e.target.value)} />
-        </div>
-      </Field>
-      <div className="flex gap-2 pt-1">
-        <Button type="submit" className="flex-1 h-10" disabled={!canSubmit}>
-          Crear box
-        </Button>
-        <Button type="button" variant="ghost" onClick={onCancel}>
-          Cancelar
-        </Button>
-      </div>
-    </form>
-  );
-}
-
-function EnterBoxForm({
-  onCancel,
-  onEnter,
-  onCreate,
-}: {
-  onCancel: () => void;
-  onEnter: (tenantId: string, userId: string) => void;
-  onCreate: () => void;
-}) {
-  const tenants = useMemo(() => tenantsRepo.list(), []);
-  const [tenantId, setTenantId] = useState<string>(tenants[0]?.id ?? "");
-  const users = useMemo(() => (tenantId ? listUsersOfTenant(tenantId) : []), [tenantId]);
-  const [userId, setUserId] = useState<string>("");
-
-  if (tenants.length === 0) {
-    return (
-      <div className="space-y-4 text-center">
-        <p className="text-sm text-muted-foreground">
-          Todavía no hay ningún box en este navegador. Crea uno para empezar.
-        </p>
-        <div className="flex gap-2 justify-center">
-          <Button onClick={onCreate}>Crear mi box</Button>
-          <Button variant="ghost" onClick={onCancel}>Cancelar</Button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      <Field label="Box">
-        <Select value={tenantId} onValueChange={(v) => { setTenantId(v); setUserId(""); }}>
-          <SelectTrigger className="h-10"><SelectValue placeholder="Selecciona un box" /></SelectTrigger>
-          <SelectContent>
-            {tenants.map((t) => (
-              <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </Field>
-      <Field label="Usuario">
-        <Select value={userId} onValueChange={setUserId}>
-          <SelectTrigger className="h-10"><SelectValue placeholder="Selecciona un usuario" /></SelectTrigger>
-          <SelectContent>
-            {users.map((u) => (
-              <SelectItem key={u.id} value={u.id}>{u.name} — {u.role}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </Field>
-      <div className="flex gap-2 pt-1">
-        <Button
-          className="flex-1 h-10"
-          disabled={!tenantId || !userId}
-          onClick={() => onEnter(tenantId, userId)}
-        >
-          Entrar
-        </Button>
-        <Button variant="ghost" onClick={onCancel}>Cancelar</Button>
-      </div>
-    </div>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="space-y-1.5">
-      <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
-      {children}
-    </div>
-  );
-}
-
-function PlatformForm({
-  onCancel,
-  onEnter,
-}: {
-  onCancel: () => void;
-  onEnter: (superAdminId: string) => void;
-}) {
-  const admins = useMemo(() => superAdminsStore.list(), []);
-  const [id, setId] = useState<string>(admins[0]?.id ?? "");
-
-  if (admins.length === 0) {
-    return (
-      <div className="text-sm text-muted-foreground space-y-4 text-center">
-        <p>Aún no hay super admins registrados en este navegador.</p>
-        <Button variant="ghost" onClick={onCancel}>Cerrar</Button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-start gap-2 rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
-        <Shield className="h-4 w-4 mt-0.5 shrink-0" strokeWidth={1.5} />
-        <span>Acceso reservado al equipo de la plataforma. Sin contraseña en modo demo.</span>
-      </div>
-      <Field label="Super admin">
-        <Select value={id} onValueChange={setId}>
-          <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            {admins.map((a) => (
-              <SelectItem key={a.id} value={a.id}>{a.name} — {a.email}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </Field>
-      <div className="flex gap-2 pt-1">
-        <Button className="flex-1 h-10" disabled={!id} onClick={() => onEnter(id)}>
-          Entrar al panel
-        </Button>
-        <Button variant="ghost" onClick={onCancel}>Cancelar</Button>
-      </div>
     </div>
   );
 }

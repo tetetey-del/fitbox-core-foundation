@@ -16,6 +16,9 @@ import { superAdminsStore } from "./storage/superadmins";
 import { DEFAULT_EXERCISES } from "./services/prs.service";
 import { addDays, addMonths, startOfWeek, toDateKey } from "./date";
 import { buildKey, get, set } from "./storage/db";
+import { hashPassword } from "./crypto";
+import { usersRepoFor } from "./storage/repositories/users.repo";
+import { createInvitation } from "./services/invitations.service";
 import type { Exercise, MembershipPlan, PostType, Tenant, ThemeId, User, WodBlock } from "@/types";
 import { DEFAULT_MODULES } from "@/types";
 
@@ -99,11 +102,20 @@ export function bootstrapDemoIfNeeded(): void {
   if (get<boolean>(SEEDED_KEY, false)) return;
   if (get<boolean>(DEMO_CLEARED_KEY, false)) return;
 
-  // Super admin demo
+  // Ejecuta el trabajo asíncrono (hash de passwords). No bloquea la UI:
+  // los datos aparecen tras el primer tick y las páginas usan useDataVersion.
+  void seedAsync();
+}
+
+async function seedAsync(): Promise<void> {
+  const demoHash = await hashPassword("demo1234");
+
+  // Super admin demo con password
   if (superAdminsStore.list().length === 0) {
     superAdminsStore.create({
       name: "Isaac Plataforma",
       email: "isaac@fitbox.io",
+      passwordHash: demoHash,
     });
   }
 
@@ -115,13 +127,21 @@ export function bootstrapDemoIfNeeded(): void {
     brandColor: "#F97316",
     themeId: "dark-carbon",
   });
+  applyPasswordToUsers(norte.tenant.id, demoHash);
   seedClassesFor(norte);
   seedPRsFor(norte);
   seedFeedFor(norte);
   seedWodsFor(norte);
   seedNotificationsFor(norte);
+  // Invitación demo pendiente
+  createInvitation({
+    tenantId: norte.tenant.id,
+    invitedBy: norte.owner.id,
+    role: "member",
+    email: "invitado@ejemplo.com",
+  });
 
-  // Box secundario, más pequeño y con otro tema
+  // Box secundario
   const sur = createTenantWithSeed({
     name: "Box Sur",
     ownerName: "Marta Ríos",
@@ -130,12 +150,25 @@ export function bootstrapDemoIfNeeded(): void {
     themeId: "light-clean",
     extras: false,
   });
-  // Un coach y un socio
   createUserInTenant(sur.tenant.id, { name: "Carla Coach", email: "carla@boxsur.com", role: "coach" });
   createUserInTenant(sur.tenant.id, { name: "Nico Socio", email: "nico@boxsur.com", role: "member" });
+  applyPasswordToUsers(sur.tenant.id, demoHash);
   seedFeedFor(sur, 2);
 
   set(SEEDED_KEY, true);
+}
+
+/** Rellena passwordHash y status para todos los usuarios de un tenant. */
+function applyPasswordToUsers(tenantId: string, hash: string): void {
+  const repo = usersRepoFor(tenantId);
+  const list = repo.list();
+  repo.replaceAll(
+    list.map((u) => ({
+      ...u,
+      passwordHash: u.passwordHash ?? hash,
+      status: u.status ?? "active",
+    })),
+  );
 }
 
 /** Legado: se mantiene el helper aunque ya no se llame desde UI. */

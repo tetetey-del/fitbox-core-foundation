@@ -45,7 +45,7 @@ export const Route = createFileRoute("/admin")({ component: AdminPanel });
 
 function AdminPanel() {
   const navigate = useNavigate();
-  const { superAdmin, ready, impersonateTenant, logoutSuperAdmin } = useAuth();
+  const { superAdmin, ready, impersonateTenant, logout } = useAuth();
   useDataVersion();
   const [confirmClear, setConfirmClear] = useState(false);
   const [typed, setTyped] = useState("");
@@ -102,7 +102,7 @@ function AdminPanel() {
             variant="ghost"
             size="sm"
             onClick={() => {
-              logoutSuperAdmin();
+              logout();
               navigate({ to: "/" });
             }}
           >

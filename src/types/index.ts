@@ -53,12 +53,52 @@ export interface Tenant extends BaseEntity {
   settings?: TenantSettings;
 }
 
+export type UserStatus = "active" | "invited" | "pending" | "suspended";
+
+export type MemberGoal = "fuerza" | "perder_peso" | "resistencia" | "general";
+
+export const MEMBER_GOAL_LABEL: Record<MemberGoal, string> = {
+  fuerza: "Ganar fuerza",
+  perder_peso: "Perder peso",
+  resistencia: "Mejorar resistencia",
+  general: "Salud general",
+};
+
+export interface UserProfile {
+  goal?: MemberGoal;
+  bio?: string;
+}
+
 export interface User extends BaseEntity {
   tenantId: string;
   name: string;
   email: string;
   role: UserRole;
   avatar?: string;
+  passwordHash?: string;
+  status?: UserStatus;
+  profile?: UserProfile;
+}
+
+export type InvitationStatus = "pending" | "accepted" | "revoked" | "expired";
+
+export interface Invitation extends BaseEntity {
+  tenantId: string;
+  code: string;
+  email?: string;
+  role: "coach" | "member";
+  planId?: string;
+  invitedBy: string;
+  status: InvitationStatus;
+  expiresAt: string;
+  acceptedByUserId?: string;
+}
+
+export interface PasswordResetCode extends BaseEntity {
+  userId: string;
+  code: string;
+  expiresAt: string;
+  used: boolean;
 }
 
 /** Super admin GLOBAL del SaaS. No pertenece a ningún tenant. */
@@ -67,6 +107,7 @@ export interface SuperAdmin {
   name: string;
   email: string;
   createdAt: string;
+  passwordHash?: string;
 }
 
 export interface Member extends BaseEntity {
