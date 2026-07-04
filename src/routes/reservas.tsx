@@ -179,7 +179,8 @@ function ReservasPage() {
           {items.map((s) => {
             const tpl = templateById.get(s.templateId);
             const coach = s.coachId ? userById.get(s.coachId) : undefined;
-            const myBooking = currentUser ? getUserBooking(s.id, currentUser.id) : null;
+            const myBooking = myBookingByS.get(s.id) ?? null;
+            const occ = occByS.get(s.id);
             return (
               <div key={s.id} className="space-y-1.5">
                 <SessionCard
@@ -189,10 +190,17 @@ function ReservasPage() {
                   onClick={() => handleCardClick(s)}
                   active={selectedId === s.id}
                 />
-                {!isStaff && <MemberBadge sessionId={s.id} myBookingId={myBooking?.id} />}
+                {!isStaff && myBooking && occ && (
+                  <MemberBadge
+                    myBookingId={myBooking.id}
+                    waitlist={occ.waitlist}
+                    confirmed={occ.confirmed}
+                  />
+                )}
               </div>
             );
           })}
+
         </div>
       </div>
     );
