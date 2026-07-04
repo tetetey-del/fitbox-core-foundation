@@ -375,17 +375,22 @@ function SocialProof() {
 
 // ================== Features ==================
 const FEATURES = [
-  { icon: CalendarDays, title: "Reservas con waitlist", desc: "Calendario semanal, lista de espera automática, check-ins y ventana de cancelación configurable." },
-  { icon: Users, title: "Socios y créditos", desc: "Planes ilimitados o por créditos, renovaciones, historial de pagos y estado a un vistazo." },
-  { icon: Trophy, title: "PRs y leaderboard", desc: "Registra marcas, revisa la evolución con gráficas y saca ránkings del box por ejercicio." },
-  { icon: Newspaper, title: "Feed del box", desc: "Publica avisos, WODs, consejos y recetas. Notifica a tus socios sin depender de WhatsApp." },
-  { icon: Palette, title: "Temas y branding", desc: "Cinco temas listos, tu color de marca y tu logo. Que la app sea tu box, no un genérico más." },
-  { icon: LayoutGrid, title: "Panel multi-box", desc: "Gestiona varios boxes desde un único panel. Métricas globales, impersonación y control total." },
+  { icon: CalendarDays, title: "Reservas con waitlist", desc: "Calendario semanal, lista de espera automática, check-ins y ventana de cancelación configurable.", color: "#38BDF8", tint: "rgba(56,189,248,0.14)", ring: "rgba(56,189,248,0.35)" },
+  { icon: Users, title: "Socios y créditos", desc: "Planes ilimitados o por créditos, renovaciones, historial de pagos y estado a un vistazo.", color: "#22D3EE", tint: "rgba(34,211,238,0.14)", ring: "rgba(34,211,238,0.35)" },
+  { icon: Trophy, title: "PRs y leaderboard", desc: "Registra marcas, revisa la evolución con gráficas y saca ránkings del box por ejercicio.", color: "#F59E0B", tint: "rgba(245,158,11,0.14)", ring: "rgba(245,158,11,0.35)" },
+  { icon: Newspaper, title: "Feed del box", desc: "Publica avisos, WODs, consejos y recetas. Notifica a tus socios sin depender de WhatsApp.", color: "#EC4899", tint: "rgba(236,72,153,0.14)", ring: "rgba(236,72,153,0.35)" },
+  { icon: Palette, title: "Temas y branding", desc: "Cinco temas listos, tu color de marca y tu logo. Que la app sea tu box, no un genérico más.", color: "#8B5CF6", tint: "rgba(139,92,246,0.14)", ring: "rgba(139,92,246,0.35)" },
+  { icon: LayoutGrid, title: "Panel multi-box", desc: "Gestiona varios boxes desde un único panel. Métricas globales, impersonación y control total.", color: "#10B981", tint: "rgba(16,185,129,0.14)", ring: "rgba(16,185,129,0.35)" },
 ];
 
 function Features() {
   return (
-    <section id="features" className="mx-auto max-w-6xl px-4 sm:px-6 py-20 sm:py-24">
+    <section id="features" className="relative mx-auto max-w-6xl px-4 sm:px-6 py-20 sm:py-24">
+      <div
+        aria-hidden
+        className="absolute inset-x-0 top-1/3 -z-10 h-64 blur-3xl opacity-40"
+        style={{ background: "radial-gradient(50% 100% at 50% 50%, rgba(56,189,248,0.18), transparent 70%)" }}
+      />
       <div className="max-w-2xl">
         <Reveal>
           <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">
@@ -400,16 +405,26 @@ function Features() {
         </Reveal>
       </div>
       <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {FEATURES.map(({ icon: Icon, title, desc }, i) => (
-          <Reveal key={title} delay={i * 60}>
-            <div className="group relative rounded-xl border border-border bg-card p-6 h-full transition-all duration-300 hover:border-[#F97316]/50 hover:-translate-y-0.5">
+        {FEATURES.map(({ icon: Icon, title, desc, color, tint, ring }, i) => (
+          <Reveal key={title} delay={i * 80}>
+            <div
+              className="group relative rounded-xl border border-border bg-card p-6 h-full transition-all duration-300 hover:-translate-y-0.5"
+              style={{ ["--fb-ring" as string]: ring }}
+              onMouseEnter={(e) => (e.currentTarget.style.borderColor = ring)}
+              onMouseLeave={(e) => (e.currentTarget.style.borderColor = "")}
+            >
               <div
                 aria-hidden
                 className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-                style={{ boxShadow: "0 0 0 1px rgba(249,115,22,0.15), 0 20px 40px -20px rgba(249,115,22,0.35)" }}
+                style={{ boxShadow: `0 0 0 1px ${ring}, 0 24px 48px -20px ${ring}` }}
               />
-              <Icon className="h-5 w-5 text-[#F97316]" strokeWidth={1.5} />
-              <h3 className="mt-3 text-base font-semibold tracking-tight">{title}</h3>
+              <div
+                className="inline-flex items-center justify-center h-10 w-10 rounded-lg"
+                style={{ background: tint, color, boxShadow: `inset 0 0 0 1px ${ring}` }}
+              >
+                <Icon className="h-5 w-5" strokeWidth={1.5} />
+              </div>
+              <h3 className="mt-4 text-base font-semibold tracking-tight">{title}</h3>
               <p className="mt-1.5 text-sm text-muted-foreground">{desc}</p>
             </div>
           </Reveal>
@@ -418,6 +433,112 @@ function Features() {
     </section>
   );
 }
+
+// ================== PWA Section ==================
+function PwaSection({ onCreate }: { onCreate: () => void }) {
+  const items = [
+    { icon: Download, title: "Instalable en el móvil", desc: "Sin App Store ni descargas. Añádela a tu pantalla de inicio en un toque." },
+    { icon: Zap, title: "Rápida como una app", desc: "Carga instantánea, transiciones suaves y navegación pensada para el móvil." },
+    { icon: WifiOff, title: "Datos siempre a mano", desc: "Consulta reservas y PRs incluso con conexión débil dentro del box." },
+  ];
+  return (
+    <section className="relative border-y border-border/60 overflow-hidden">
+      <div
+        aria-hidden
+        className="absolute inset-0 -z-10 fb-gradient-anim"
+        style={{
+          background:
+            "radial-gradient(50% 60% at 20% 30%, rgba(56,189,248,0.12) 0%, transparent 70%), radial-gradient(45% 55% at 80% 70%, rgba(139,92,246,0.10) 0%, transparent 70%)",
+        }}
+      />
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-20 sm:py-24 grid gap-12 lg:grid-cols-2 items-center">
+        <div>
+          <Reveal>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#38BDF8]/30 bg-[#38BDF8]/10 px-3 py-1 text-xs text-[#38BDF8] font-medium">
+              <Smartphone className="h-3.5 w-3.5" strokeWidth={1.5} />
+              Funciona como app
+            </span>
+          </Reveal>
+          <Reveal delay={80}>
+            <h2 className="mt-5 text-3xl sm:text-4xl font-semibold tracking-tight">
+              Una <span className="bg-gradient-to-r from-[#38BDF8] to-[#8B5CF6] bg-clip-text text-transparent">Progressive Web App</span> real.
+            </h2>
+          </Reveal>
+          <Reveal delay={140}>
+            <p className="mt-3 text-sm sm:text-base text-muted-foreground max-w-lg">
+              FitBox se instala en el móvil de tus socios como una app nativa: icono en el escritorio,
+              pantalla completa y experiencia fluida. Sin fricciones ni pop-ups.
+            </p>
+          </Reveal>
+          <div className="mt-8 space-y-3">
+            {items.map(({ icon: Icon, title, desc }, i) => (
+              <Reveal key={title} delay={200 + i * 80}>
+                <div className="flex items-start gap-3">
+                  <div className="h-9 w-9 shrink-0 rounded-lg bg-[#38BDF8]/10 text-[#38BDF8] flex items-center justify-center" style={{ boxShadow: "inset 0 0 0 1px rgba(56,189,248,0.3)" }}>
+                    <Icon className="h-4 w-4" strokeWidth={1.5} />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium">{title}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">{desc}</div>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+          <Reveal delay={480}>
+            <Button className="mt-8 h-11 px-6" onClick={onCreate}>
+              Probar FitBox
+              <ArrowRight className="h-4 w-4 ml-1" strokeWidth={1.5} />
+            </Button>
+          </Reveal>
+        </div>
+        <Reveal delay={200}>
+          <div className="relative mx-auto w-64 sm:w-72">
+            <div
+              aria-hidden
+              className="absolute -inset-8 rounded-[3rem] blur-2xl opacity-60"
+              style={{ background: "linear-gradient(135deg, rgba(56,189,248,0.35), rgba(139,92,246,0.25))" }}
+            />
+            <div className="relative rounded-[2.2rem] border border-border/80 bg-card p-3 shadow-2xl">
+              <div className="rounded-[1.6rem] border border-border/70 bg-background overflow-hidden aspect-[9/19] flex flex-col">
+                <div className="h-8 bg-background-subtle border-b border-border/50 flex items-center justify-center">
+                  <div className="h-1 w-16 rounded-full bg-muted-foreground/30" />
+                </div>
+                <div className="flex-1 p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="h-8 w-8 rounded-lg bg-[#F97316] flex items-center justify-center">
+                      <Dumbbell className="h-4 w-4 text-white" strokeWidth={2} />
+                    </div>
+                    <div>
+                      <div className="text-[11px] font-semibold">FitBox</div>
+                      <div className="text-[9px] text-muted-foreground">CrossFit Norte</div>
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-border p-2.5">
+                    <div className="text-[10px] font-medium">Hoy · 19:00 WOD</div>
+                    <div className="mt-1 h-1 rounded bg-muted overflow-hidden">
+                      <div className="h-full bg-[#F97316]" style={{ width: "75%" }} />
+                    </div>
+                    <div className="mt-1 text-[9px] text-muted-foreground">9/12 · reservada</div>
+                  </div>
+                  <div className="rounded-lg border border-[#EC4899]/40 bg-[#EC4899]/5 p-2.5">
+                    <div className="text-[10px] font-medium text-[#EC4899]">WOD · Fran</div>
+                    <div className="text-[9px] text-muted-foreground mt-0.5">21-15-9 Thrusters + Pull-ups</div>
+                  </div>
+                  <div className="rounded-lg border border-[#38BDF8]/40 bg-[#38BDF8]/5 p-2.5">
+                    <div className="text-[10px] font-medium text-[#38BDF8]">PR</div>
+                    <div className="text-[9px] text-muted-foreground mt-0.5">Back Squat · 120kg 🔥</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
 
 // ================== How it works ==================
 const STEPS = [
