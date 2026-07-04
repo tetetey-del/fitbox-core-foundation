@@ -45,10 +45,11 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { clearAll } from "@/lib/storage/db";
-import { loadDemoData } from "@/lib/seed";
 import type { MembershipPlan, PlanType } from "@/types";
 import { notifyDataChanged, useDataVersion } from "@/lib/data-bus";
 import { DataSection } from "@/components/config/DataSection";
+import { AppearanceSection } from "@/components/config/AppearanceSection";
+import { ModulesSection } from "@/components/config/ModulesSection";
 
 
 export const Route = createFileRoute("/configuracion")({ component: ConfigPage });
