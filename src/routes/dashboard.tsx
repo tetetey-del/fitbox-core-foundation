@@ -253,19 +253,17 @@ function CoachOrOwnerToday({ sessions, templateById, userById, onOpenAgenda }: C
           <p className="text-sm text-muted-foreground">Sin clases programadas hoy.</p>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {sessions.map((s) => {
-              const tpl = templateById.get(s.templateId) ?? undefined;
-              return (
-                <SessionCard
-                  key={s.id}
-                  session={s}
-                  template={tpl ?? undefined}
-                  coach={s.coachId ? userById.get(s.coachId) : undefined}
-                  onClick={onOpenAgenda}
-                />
-              );
-            })}
+            {sessions.map((s) => (
+              <SessionCard
+                key={s.id}
+                session={s}
+                template={templateById.get(s.templateId)}
+                coach={s.coachId ? userById.get(s.coachId) : undefined}
+                onClick={onOpenAgenda}
+              />
+            ))}
           </div>
+
         )}
       </section>
     </RoleGate>
