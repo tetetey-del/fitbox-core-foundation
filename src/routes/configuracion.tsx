@@ -33,10 +33,23 @@ import { RoleGate } from "@/components/RoleGate";
 import { useAuth } from "@/contexts/AuthContext";
 import { tenantsRepo } from "@/lib/storage/repositories/tenants.repo";
 import { membershipPlansRepo } from "@/lib/storage/repositories/membershipPlans.repo";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { clearAll } from "@/lib/storage/db";
 import { loadDemoData } from "@/lib/seed";
 import type { MembershipPlan, PlanType } from "@/types";
 import { notifyDataChanged, useDataVersion } from "@/lib/data-bus";
+import { DataSection } from "@/components/config/DataSection";
+
 
 export const Route = createFileRoute("/configuracion")({ component: ConfigPage });
 
