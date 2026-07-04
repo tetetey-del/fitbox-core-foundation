@@ -380,3 +380,48 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     </div>
   );
 }
+
+function PlatformForm({
+  onCancel,
+  onEnter,
+}: {
+  onCancel: () => void;
+  onEnter: (superAdminId: string) => void;
+}) {
+  const admins = useMemo(() => superAdminsStore.list(), []);
+  const [id, setId] = useState<string>(admins[0]?.id ?? "");
+
+  if (admins.length === 0) {
+    return (
+      <div className="text-sm text-muted-foreground space-y-4 text-center">
+        <p>Aún no hay super admins registrados en este navegador.</p>
+        <Button variant="ghost" onClick={onCancel}>Cerrar</Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-start gap-2 rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+        <Shield className="h-4 w-4 mt-0.5 shrink-0" strokeWidth={1.5} />
+        <span>Acceso reservado al equipo de la plataforma. Sin contraseña en modo demo.</span>
+      </div>
+      <Field label="Super admin">
+        <Select value={id} onValueChange={setId}>
+          <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {admins.map((a) => (
+              <SelectItem key={a.id} value={a.id}>{a.name} — {a.email}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </Field>
+      <div className="flex gap-2 pt-1">
+        <Button className="flex-1 h-10" disabled={!id} onClick={() => onEnter(id)}>
+          Entrar al panel
+        </Button>
+        <Button variant="ghost" onClick={onCancel}>Cancelar</Button>
+      </div>
+    </div>
+  );
+}
