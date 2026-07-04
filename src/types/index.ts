@@ -107,6 +107,7 @@ export interface SuperAdmin {
   name: string;
   email: string;
   createdAt: string;
+  passwordHash?: string;
 }
 
 export interface Member extends BaseEntity {
