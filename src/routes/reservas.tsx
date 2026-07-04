@@ -34,6 +34,8 @@ function ReservasPage() {
 
   const [monday, setMonday] = useState<Date>(() => startOfWeek(new Date()));
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedDayKey, setSelectedDayKey] = useState<string>(() => toDateKey(new Date()));
+
 
   const templates = useMemo(() => classTemplatesRepo.list(), [dataVersion]);
   const templateById = useMemo(
