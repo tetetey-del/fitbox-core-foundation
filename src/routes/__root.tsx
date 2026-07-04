@@ -100,6 +100,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "apple-mobile-web-app-title", content: "FitBox" },
       { name: "mobile-web-app-capable", content: "yes" },
+      { name: "twitter:title", content: "FitBox — Gestión para boxes de CrossFit" },
+      { name: "description", content: "FitBox es el software todo-en-uno para boxes de CrossFit y gimnasios boutique: reservas, socios, clases y PRs." },
+      { property: "og:description", content: "FitBox es el software todo-en-uno para boxes de CrossFit y gimnasios boutique: reservas, socios, clases y PRs." },
+      { name: "twitter:description", content: "FitBox es el software todo-en-uno para boxes de CrossFit y gimnasios boutique: reservas, socios, clases y PRs." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/47f3dded-7e62-4194-8c97-12c55a5f2e7b/id-preview-a17b69e1--8a43a2be-09b4-4706-bf2f-6bdd77dd3d83.lovable.app-1783161887024.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/47f3dded-7e62-4194-8c97-12c55a5f2e7b/id-preview-a17b69e1--8a43a2be-09b4-4706-bf2f-6bdd77dd3d83.lovable.app-1783161887024.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
