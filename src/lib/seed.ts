@@ -133,6 +133,10 @@ async function seedAsync(): Promise<void> {
   seedFeedFor(norte);
   seedWodsFor(norte);
   seedNotificationsFor(norte);
+  seedChallengesFor(norte);
+  seedProgramsFor(norte);
+  seedShopFor(norte);
+  seedHealthFor(norte);
   // Invitación demo pendiente
   createInvitation({
     tenantId: norte.tenant.id,
