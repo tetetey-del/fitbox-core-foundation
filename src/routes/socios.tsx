@@ -121,11 +121,15 @@ function SociosPage() {
             </SelectContent>
           </Select>
         </div>
-        <Button onClick={() => setCreating(true)}>
-          <Plus className="h-4 w-4 mr-2" strokeWidth={1.5} />
-          Nuevo socio
-        </Button>
+        <div className="flex items-center gap-2">
+          <InviteButton onClick={() => setInviting(true)} />
+          <Button onClick={() => setCreating(true)}>
+            <Plus className="h-4 w-4 mr-2" strokeWidth={1.5} />
+            Nuevo socio
+          </Button>
+        </div>
       </div>
+      {currentTenant && <PendingInvitations tenantId={currentTenant.id} />}
 
       <div className="rounded-lg border border-border overflow-hidden">
         <Table>
@@ -179,6 +183,7 @@ function SociosPage() {
       />
 
       <NewMemberDialog open={creating} onOpenChange={setCreating} />
+      <InviteMemberDialog open={inviting} onOpenChange={setInviting} />
     </AppLayout>
   );
 }
