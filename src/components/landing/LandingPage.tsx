@@ -63,12 +63,14 @@ export function LandingPage() {
         <SocialProof />
         <Features />
         <HowItWorks />
+        <PwaSection onCreate={openCreate} />
         <Pricing onCreate={openCreate} />
         <Testimonials />
         <FAQ />
         <FinalCta onCreate={openCreate} />
       </main>
       <Footer onPlatform={() => setMode("platform")} />
+
 
       <Dialog open={mode !== null} onOpenChange={(o) => !o && setMode(null)}>
         <DialogContent className="max-w-md">
