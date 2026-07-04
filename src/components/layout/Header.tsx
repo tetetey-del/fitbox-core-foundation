@@ -14,7 +14,7 @@ import { getMembershipStatus } from "@/lib/services/membership.service";
 import { useDataVersion } from "@/lib/data-bus";
 
 const ROLE_LABEL: Record<string, string> = {
-  owner: "Owner",
+  admin: "Admin",
   coach: "Coach",
   member: "Socio",
 };

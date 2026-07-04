@@ -257,7 +257,7 @@ export function importTenantData(payload: BackupPayload): ImportResult {
   write(personalRecordsRepoFor(tid), personalRecords);
 
   // Owner: preferimos alguien con role owner; si no, el primer usuario
-  const owner = users.find((u) => u.role === "owner") ?? users[0] ?? null;
+  const owner = users.find((u) => u.role === "admin") ?? users[0] ?? null;
 
   return {
     newTenantId: tid,

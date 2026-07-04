@@ -61,7 +61,7 @@ export function SessionDetailSheet({
 
   if (!session || !occ || !currentUser) return null;
 
-  const isStaff = currentUser.role === "owner" || currentUser.role === "coach";
+  const isStaff = currentUser.role === "admin" || currentUser.role === "coach";
 
   const alreadyBooked = new Set(
     [...occ.confirmed, ...occ.waitlist].map((b) => b.userId),

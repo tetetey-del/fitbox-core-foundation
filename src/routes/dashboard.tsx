@@ -37,6 +37,8 @@ import {
 } from "@/lib/services/analytics.service";
 import { getLastPRs } from "@/lib/services/prs.service";
 import { formatMoney, formatMonthShort, formatPrValue } from "@/lib/format";
+import { FeedWidget } from "@/components/dashboard/FeedWidget";
+import { useModules } from "@/hooks/useModules";
 
 export const Route = createFileRoute("/dashboard")({ component: DashboardPage });
 
@@ -44,6 +46,7 @@ function DashboardPage() {
   const { currentUser, currentTenant, tenantUsers } = useAuth();
   const navigate = useNavigate();
   useDataVersion();
+  const modules = useModules();
 
   const templates = useMemo(() => classTemplatesRepo.list(), []);
   const templateById = useMemo(() => new Map(templates.map((t) => [t.id, t])), [templates]);
@@ -54,7 +57,7 @@ function DashboardPage() {
     .query({ date: today })
     .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
-  const isOwner = currentUser?.role === "owner";
+  const isAdmin = currentUser?.role === "admin";
   const isMember = currentUser?.role === "member";
   const isCoach = currentUser?.role === "coach";
 
@@ -69,6 +72,12 @@ function DashboardPage() {
         title={`Hola, ${currentUser?.name.split(" ")[0] ?? ""}`}
         description={`Panel de ${currentTenant?.name}`}
       />
+
+      {modules.feed && (
+        <div className="mb-6 max-w-2xl">
+          <FeedWidget />
+        </div>
+      )}
 
       {isMember && membershipStatus === "expiring_soon" && membership && plan && (
         <div className="mb-6 rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 flex items-start gap-3">
@@ -89,7 +98,7 @@ function DashboardPage() {
         </div>
       )}
 
-      {isOwner && <OwnerDashboard />}
+      {isAdmin && <OwnerDashboard />}
       {isCoach && (
         <CoachOrOwnerToday
           sessions={todaySessions}
@@ -240,7 +249,7 @@ interface CoachOrOwnerTodayProps {
 
 function CoachOrOwnerToday({ sessions, templateById, userById, onOpenAgenda }: CoachOrOwnerTodayProps) {
   return (
-    <RoleGate allowed={["owner", "coach"]}>
+    <RoleGate allowed={["admin", "coach"]}>
       <section className="mt-2">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold tracking-tight">Clases de hoy</h2>

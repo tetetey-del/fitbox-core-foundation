@@ -4,17 +4,52 @@ export interface BaseEntity {
   updatedAt: string;
 }
 
-export type UserRole = "owner" | "coach" | "member";
+/** Rol dentro de un tenant. El super_admin es GLOBAL y no vive aquí. */
+export type UserRole = "admin" | "coach" | "member";
+
+export const USER_ROLE_LABEL: Record<UserRole, string> = {
+  admin: "Admin",
+  coach: "Coach",
+  member: "Socio",
+};
+
+export type ThemeId =
+  | "dark-carbon"
+  | "light-clean"
+  | "neon"
+  | "warm-earth"
+  | "corporate-blue";
+
+export interface TenantModules {
+  reservas: boolean;
+  socios: boolean;
+  prs: boolean;
+  feed: boolean;
+  pagos: boolean;
+}
+
+export const DEFAULT_MODULES: TenantModules = {
+  reservas: true,
+  socios: true,
+  prs: true,
+  feed: true,
+  pagos: true,
+};
 
 export interface TenantSettings {
   cancellationWindowHours: number;
+  enabledModules?: TenantModules;
 }
+
+export type TenantStatus = "active" | "suspended";
 
 export interface Tenant extends BaseEntity {
   name: string;
   slug: string;
   logo?: string;
   brandColor: string;
+  themeId?: ThemeId;
+  status?: TenantStatus;
   settings?: TenantSettings;
 }
 
@@ -24,6 +59,14 @@ export interface User extends BaseEntity {
   email: string;
   role: UserRole;
   avatar?: string;
+}
+
+/** Super admin GLOBAL del SaaS. No pertenece a ningún tenant. */
+export interface SuperAdmin {
+  id: string;
+  name: string;
+  email: string;
+  createdAt: string;
 }
 
 export interface Member extends BaseEntity {
@@ -38,6 +81,13 @@ export interface Session {
   tenantId: string;
   userId: string;
   role: UserRole;
+  /** Presente si un super admin está impersonando este tenant. */
+  impersonatedBy?: string; // superAdminId
+}
+
+/** Sesión activa del super admin (guardada global, aparte). */
+export interface SuperSession {
+  superAdminId: string;
 }
 
 // ---- Clases y reservas ----
@@ -65,8 +115,8 @@ export type ClassSessionStatus = "scheduled" | "cancelled";
 export interface ClassSession extends BaseEntity {
   tenantId: string;
   templateId: string;
-  date: string; // YYYY-MM-DD
-  startTime: string; // HH:mm
+  date: string;
+  startTime: string;
   durationMinutes: number;
   capacity: number;
   coachId?: string;
@@ -119,13 +169,12 @@ export interface Membership extends BaseEntity {
   tenantId: string;
   userId: string;
   planId: string;
-  startDate: string; // YYYY-MM-DD
-  endDate: string; // YYYY-MM-DD
+  startDate: string;
+  endDate: string;
   status: MembershipStatus;
   creditsRemaining?: number;
 }
 
-/** Estado derivado que se muestra en la UI. */
 export type MembershipUiStatus =
   | "active"
   | "expiring_soon"
@@ -139,7 +188,7 @@ export interface Payment extends BaseEntity {
   userId: string;
   membershipId?: string;
   amount: number;
-  date: string; // YYYY-MM-DD
+  date: string;
   method: PaymentMethod;
   notes?: string;
 }
@@ -181,10 +230,9 @@ export interface PersonalRecord extends BaseEntity {
   tenantId: string;
   userId: string;
   exerciseId: string;
-  /** kg / reps / metros: valor directo. tiempo: segundos. */
   value: number;
   rx: boolean;
-  date: string; // YYYY-MM-DD
+  date: string;
   notes?: string;
 }
 
@@ -203,4 +251,23 @@ export const EXERCISE_UNIT_LABEL: Record<ExerciseUnit, string> = {
   metros: "m",
 };
 
+// ---- Feed ----
 
+export type PostType = "aviso" | "consejo" | "receta" | "wod";
+
+export interface Post extends BaseEntity {
+  tenantId: string;
+  authorId: string;
+  type: PostType;
+  title: string;
+  content: string;
+  imageUrl?: string;
+  pinned: boolean;
+}
+
+export const POST_TYPE_LABEL: Record<PostType, string> = {
+  aviso: "Aviso",
+  consejo: "Consejo",
+  receta: "Receta",
+  wod: "WOD",
+};

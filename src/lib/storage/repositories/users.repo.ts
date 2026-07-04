@@ -1,23 +1,43 @@
-import type { User } from "@/types";
+import type { User, UserRole } from "@/types";
 import { sessionStore } from "../session";
 import { BaseRepo } from "./base.repo";
 
-// Users are stored per-tenant so the active session determines scope.
-export const usersRepo = new BaseRepo<User>("users", {
+/**
+ * Migración legado: usuarios guardados como role "owner" pasan a "admin"
+ * de forma transparente al leerlos.
+ */
+function migrateOwner<T extends { role?: string }>(u: T): T {
+  if (u && (u as { role?: string }).role === "owner") {
+    return { ...u, role: "admin" as UserRole };
+  }
+  return u;
+}
+
+class UsersRepo extends BaseRepo<User> {
+  list(): User[] {
+    return super.list().map(migrateOwner);
+  }
+}
+
+export const usersRepo = new UsersRepo("users", {
   scoped: true,
   getTenantId: () => sessionStore.read()?.tenantId ?? null,
 });
 
-/** Read users of any tenant (used for the demo tenant picker). */
+export function usersRepoFor(tenantId: string) {
+  return new UsersRepo("users", {
+    scoped: true,
+    getTenantId: () => tenantId,
+  });
+}
+
 export function listUsersOfTenant(tenantId: string): User[] {
-  const repo = new BaseRepo<User>("users", { scoped: true, getTenantId: () => tenantId });
-  return repo.list();
+  return usersRepoFor(tenantId).list();
 }
 
 export function createUserInTenant(
   tenantId: string,
   data: Omit<User, "id" | "createdAt" | "updatedAt" | "tenantId">,
 ): User {
-  const repo = new BaseRepo<User>("users", { scoped: true, getTenantId: () => tenantId });
-  return repo.create({ ...data, tenantId });
+  return usersRepoFor(tenantId).create({ ...data, tenantId });
 }

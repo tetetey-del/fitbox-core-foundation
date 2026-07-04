@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useRequireModule } from "@/hooks/useRequireModule";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { CalendarDays, Clock } from "lucide-react";
@@ -29,6 +30,7 @@ import {
 export const Route = createFileRoute("/reservas")({ component: ReservasPage });
 
 function ReservasPage() {
+  useRequireModule("reservas");
   const { currentUser, tenantUsers } = useAuth();
   const dataVersion = useDataVersion();
 
@@ -69,7 +71,7 @@ function ReservasPage() {
     ? sessionsThisWeek.find((s) => s.id === selectedId) ?? null
     : null;
 
-  const isStaff = currentUser?.role === "owner" || currentUser?.role === "coach";
+  const isStaff = currentUser?.role === "admin" || currentUser?.role === "coach";
 
   const handleCardClick = (s: ClassSession) => {
     if (isStaff) {

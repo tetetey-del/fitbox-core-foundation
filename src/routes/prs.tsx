@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useRequireModule } from "@/hooks/useRequireModule";
 import { useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
@@ -37,6 +38,7 @@ const CATEGORY_ORDER: ExerciseCategory[] = [
 ];
 
 function PRsPage() {
+  useRequireModule("prs");
   const { currentUser, tenantUsers } = useAuth();
   useDataVersion();
 
@@ -46,7 +48,7 @@ function PRsPage() {
     [useDataVersion()],
   );
 
-  const isStaff = currentUser?.role === "owner" || currentUser?.role === "coach";
+  const isStaff = currentUser?.role === "admin" || currentUser?.role === "coach";
   const members = useMemo(
     () => tenantUsers.filter((u) => u.role === "member" || u.id === currentUser?.id),
     [tenantUsers, currentUser],

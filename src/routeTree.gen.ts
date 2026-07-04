@@ -12,9 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SociosRouteImport } from './routes/socios'
 import { Route as ReservasRouteImport } from './routes/reservas'
 import { Route as PrsRouteImport } from './routes/prs'
+import { Route as FeedRouteImport } from './routes/feed'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ConfiguracionRouteImport } from './routes/configuracion'
 import { Route as ClasesRouteImport } from './routes/clases'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 
 const SociosRoute = SociosRouteImport.update({
@@ -32,6 +34,11 @@ const PrsRoute = PrsRouteImport.update({
   path: '/prs',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FeedRoute = FeedRouteImport.update({
+  id: '/feed',
+  path: '/feed',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -47,6 +54,11 @@ const ClasesRoute = ClasesRouteImport.update({
   path: '/clases',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -55,18 +67,22 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/clases': typeof ClasesRoute
   '/configuracion': typeof ConfiguracionRoute
   '/dashboard': typeof DashboardRoute
+  '/feed': typeof FeedRoute
   '/prs': typeof PrsRoute
   '/reservas': typeof ReservasRoute
   '/socios': typeof SociosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/clases': typeof ClasesRoute
   '/configuracion': typeof ConfiguracionRoute
   '/dashboard': typeof DashboardRoute
+  '/feed': typeof FeedRoute
   '/prs': typeof PrsRoute
   '/reservas': typeof ReservasRoute
   '/socios': typeof SociosRoute
@@ -74,9 +90,11 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/clases': typeof ClasesRoute
   '/configuracion': typeof ConfiguracionRoute
   '/dashboard': typeof DashboardRoute
+  '/feed': typeof FeedRoute
   '/prs': typeof PrsRoute
   '/reservas': typeof ReservasRoute
   '/socios': typeof SociosRoute
@@ -85,27 +103,33 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/clases'
     | '/configuracion'
     | '/dashboard'
+    | '/feed'
     | '/prs'
     | '/reservas'
     | '/socios'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/clases'
     | '/configuracion'
     | '/dashboard'
+    | '/feed'
     | '/prs'
     | '/reservas'
     | '/socios'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/clases'
     | '/configuracion'
     | '/dashboard'
+    | '/feed'
     | '/prs'
     | '/reservas'
     | '/socios'
@@ -113,9 +137,11 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
   ClasesRoute: typeof ClasesRoute
   ConfiguracionRoute: typeof ConfiguracionRoute
   DashboardRoute: typeof DashboardRoute
+  FeedRoute: typeof FeedRoute
   PrsRoute: typeof PrsRoute
   ReservasRoute: typeof ReservasRoute
   SociosRoute: typeof SociosRoute
@@ -144,6 +170,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/feed': {
+      id: '/feed'
+      path: '/feed'
+      fullPath: '/feed'
+      preLoaderRoute: typeof FeedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -165,6 +198,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClasesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -177,9 +217,11 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
   ClasesRoute: ClasesRoute,
   ConfiguracionRoute: ConfiguracionRoute,
   DashboardRoute: DashboardRoute,
+  FeedRoute: FeedRoute,
   PrsRoute: PrsRoute,
   ReservasRoute: ReservasRoute,
   SociosRoute: SociosRoute,

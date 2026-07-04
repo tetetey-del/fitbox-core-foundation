@@ -9,6 +9,7 @@ import {
   Zap,
   BarChart3,
   Sparkles,
+  Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,12 +31,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { tenantsRepo } from "@/lib/storage/repositories/tenants.repo";
 import { listUsersOfTenant } from "@/lib/storage/repositories/users.repo";
 import { createTenantWithSeed } from "@/lib/seed";
+import { superAdminsStore } from "@/lib/storage/superadmins";
 
-type Mode = "create" | "enter" | null;
+type Mode = "create" | "enter" | "platform" | null;
 
 export function LandingPage() {
   const [mode, setMode] = useState<Mode>(null);
-  const { login } = useAuth();
+  const { login, loginAsSuperAdmin } = useAuth();
   const navigate = useNavigate();
 
   const goDashboard = () => navigate({ to: "/dashboard" });
@@ -61,14 +63,25 @@ export function LandingPage() {
 
       <footer className="border-t border-border p-6 text-center text-xs text-muted-foreground">
         Demo local · Los datos se guardan en tu navegador ·{" "}
-        <span className="text-foreground">FitBox</span>
+        <span className="text-foreground">FitBox</span> ·{" "}
+        <button
+          type="button"
+          onClick={() => setMode("platform")}
+          className="underline underline-offset-2 hover:text-foreground"
+        >
+          Acceso plataforma
+        </button>
       </footer>
 
       <Dialog open={mode !== null} onOpenChange={(o) => !o && setMode(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {mode === "create" ? "Crear mi box" : "Entrar en un box"}
+              {mode === "create"
+                ? "Crear mi box"
+                : mode === "enter"
+                  ? "Entrar en un box"
+                  : "Acceso plataforma"}
             </DialogTitle>
           </DialogHeader>
           {mode === "create" && (
@@ -88,6 +101,15 @@ export function LandingPage() {
                 goDashboard();
               }}
               onCreate={() => setMode("create")}
+            />
+          )}
+          {mode === "platform" && (
+            <PlatformForm
+              onCancel={() => setMode(null)}
+              onEnter={(id) => {
+                loginAsSuperAdmin(id);
+                navigate({ to: "/admin" });
+              }}
             />
           )}
         </DialogContent>
@@ -153,7 +175,7 @@ const FEATURES = [
   },
   {
     icon: BarChart3,
-    title: "Métricas del owner",
+    title: "Métricas del admin",
     desc: "Ingresos, altas, ocupación por día y membresías que expiran esta semana. Decisiones con datos.",
   },
 ];
@@ -355,6 +377,51 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     <div className="space-y-1.5">
       <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
       {children}
+    </div>
+  );
+}
+
+function PlatformForm({
+  onCancel,
+  onEnter,
+}: {
+  onCancel: () => void;
+  onEnter: (superAdminId: string) => void;
+}) {
+  const admins = useMemo(() => superAdminsStore.list(), []);
+  const [id, setId] = useState<string>(admins[0]?.id ?? "");
+
+  if (admins.length === 0) {
+    return (
+      <div className="text-sm text-muted-foreground space-y-4 text-center">
+        <p>Aún no hay super admins registrados en este navegador.</p>
+        <Button variant="ghost" onClick={onCancel}>Cerrar</Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-start gap-2 rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+        <Shield className="h-4 w-4 mt-0.5 shrink-0" strokeWidth={1.5} />
+        <span>Acceso reservado al equipo de la plataforma. Sin contraseña en modo demo.</span>
+      </div>
+      <Field label="Super admin">
+        <Select value={id} onValueChange={setId}>
+          <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {admins.map((a) => (
+              <SelectItem key={a.id} value={a.id}>{a.name} — {a.email}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </Field>
+      <div className="flex gap-2 pt-1">
+        <Button className="flex-1 h-10" disabled={!id} onClick={() => onEnter(id)}>
+          Entrar al panel
+        </Button>
+        <Button variant="ghost" onClick={onCancel}>Cancelar</Button>
+      </div>
     </div>
   );
 }

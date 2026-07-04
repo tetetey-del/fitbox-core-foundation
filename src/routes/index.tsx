@@ -8,14 +8,16 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const { ready, session } = useAuth();
+  const { ready, session, superAdmin } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (ready && session) navigate({ to: "/dashboard" });
-  }, [ready, session, navigate]);
+    if (!ready) return;
+    if (session) navigate({ to: "/dashboard" });
+    else if (superAdmin) navigate({ to: "/admin" });
+  }, [ready, session, superAdmin, navigate]);
 
   if (!ready) return <div className="min-h-screen bg-background" />;
-  if (session) return null;
+  if (session || superAdmin) return null;
   return <LandingPage />;
 }
