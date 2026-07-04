@@ -3,19 +3,31 @@
  * Responsabilidad: serializar todas las colecciones de un box a JSON con
  * meta versionada, validarlo al importar y crear un tenant NUEVO remapeando
  * IDs para evitar colisiones con datos existentes.
+ *
+ * Schema v2 añade: retos, participantes de retos, programas y sus sesiones,
+ * asignaciones/progresos, productos, pedidos, mediciones corporales.
+ * v1 sigue siendo importable: los campos nuevos se rellenan con arrays vacíos.
  */
 import type {
   BaseEntity,
-
+  BodyMetric,
   Booking,
+  Challenge,
+  ChallengeParticipant,
   CheckIn,
   ClassSession,
   ClassTemplate,
   Exercise,
   Membership,
   MembershipPlan,
+  Order,
   Payment,
   PersonalRecord,
+  Product,
+  Program,
+  ProgramAssignment,
+  ProgramProgress,
+  ProgramSession,
   Tenant,
   User,
 } from "@/types";
@@ -31,11 +43,24 @@ import { membershipsRepoFor } from "@/lib/storage/repositories/memberships.repo"
 import { paymentsRepoFor } from "@/lib/storage/repositories/payments.repo";
 import { exercisesRepoFor } from "@/lib/storage/repositories/exercises.repo";
 import { personalRecordsRepoFor } from "@/lib/storage/repositories/personalRecords.repo";
+import {
+  challengeParticipantsRepoFor,
+  challengesRepoFor,
+} from "@/lib/storage/repositories/challenges.repo";
+import {
+  programAssignmentsRepoFor,
+  programProgressRepoFor,
+  programSessionsRepoFor,
+  programsRepoFor,
+} from "@/lib/storage/repositories/programs.repo";
+import { productsRepoFor } from "@/lib/storage/repositories/products.repo";
+import { ordersRepoFor } from "@/lib/storage/repositories/orders.repo";
+import { bodyMetricsRepoFor } from "@/lib/storage/repositories/bodyMetrics.repo";
 import { newId, nowIso } from "@/lib/storage/db";
 import { slugify } from "@/lib/seed";
 
-export const BACKUP_SCHEMA_VERSION = 1;
-export const APP_VERSION = "0.5.0";
+export const BACKUP_SCHEMA_VERSION = 2;
+export const APP_VERSION = "0.11.0";
 
 export interface BackupPayload {
   meta: {
@@ -55,9 +80,17 @@ export interface BackupPayload {
   payments: Payment[];
   exercises: Exercise[];
   personalRecords: PersonalRecord[];
+  challenges: Challenge[];
+  challengeParticipants: ChallengeParticipant[];
+  programs: Program[];
+  programSessions: ProgramSession[];
+  programAssignments: ProgramAssignment[];
+  programProgress: ProgramProgress[];
+  products: Product[];
+  orders: Order[];
+  bodyMetrics: BodyMetric[];
 }
 
-/** Exporta todos los datos del tenant activo a un payload serializable. */
 export function exportTenantData(tenantId: string): BackupPayload {
   const tenant = tenantsRepo.getById(tenantId);
   if (!tenant) throw new Error("Box no encontrado");
@@ -80,10 +113,18 @@ export function exportTenantData(tenantId: string): BackupPayload {
     payments: paymentsRepoFor(tenantId).list(),
     exercises: exercisesRepoFor(tenantId).list(),
     personalRecords: personalRecordsRepoFor(tenantId).list(),
+    challenges: challengesRepoFor(tenantId).list(),
+    challengeParticipants: challengeParticipantsRepoFor(tenantId).list(),
+    programs: programsRepoFor(tenantId).list(),
+    programSessions: programSessionsRepoFor(tenantId).list(),
+    programAssignments: programAssignmentsRepoFor(tenantId).list(),
+    programProgress: programProgressRepoFor(tenantId).list(),
+    products: productsRepoFor(tenantId).list(),
+    orders: ordersRepoFor(tenantId).list(),
+    bodyMetrics: bodyMetricsRepoFor(tenantId).list(),
   };
 }
 
-/** Descarga en el navegador. */
 export function downloadBackup(payload: BackupPayload): void {
   const iso = payload.meta.exportedAt.slice(0, 10);
   const slug = slugify(payload.tenant.slug || payload.tenant.name);
@@ -101,8 +142,6 @@ export function downloadBackup(payload: BackupPayload): void {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-// ---- Import ----
-
 export class BackupValidationError extends Error {}
 
 function assertArray(v: unknown, name: string): void {
@@ -117,19 +156,28 @@ export function validateBackup(raw: unknown): BackupPayload {
   if (!p.meta || typeof p.meta !== "object") {
     throw new BackupValidationError("Falta la sección de metadatos");
   }
-  if (p.meta.schemaVersion !== BACKUP_SCHEMA_VERSION) {
+  if (p.meta.schemaVersion !== BACKUP_SCHEMA_VERSION && p.meta.schemaVersion !== 1) {
     throw new BackupValidationError(
-      `Versión del backup no soportada (${p.meta.schemaVersion}, esperada ${BACKUP_SCHEMA_VERSION})`,
+      `Versión del backup no soportada (${p.meta.schemaVersion}, esperada 1 o ${BACKUP_SCHEMA_VERSION})`,
     );
   }
   if (!p.tenant || typeof p.tenant !== "object" || !("id" in (p.tenant as object))) {
     throw new BackupValidationError("Falta la información del box");
   }
-  const required: Array<keyof BackupPayload> = [
+  const requiredV1: Array<keyof BackupPayload> = [
     "users", "classTemplates", "classSessions", "bookings", "checkins",
     "membershipPlans", "memberships", "payments", "exercises", "personalRecords",
   ];
-  for (const k of required) assertArray(p[k], k);
+  for (const k of requiredV1) assertArray(p[k], k);
+
+  const optionalV2: Array<keyof BackupPayload> = [
+    "challenges", "challengeParticipants", "programs", "programSessions",
+    "programAssignments", "programProgress", "products", "orders", "bodyMetrics",
+  ];
+  for (const k of optionalV2) {
+    if (p[k] === undefined) (p as Record<string, unknown>)[k] = [];
+    else assertArray(p[k], k);
+  }
   return p as BackupPayload;
 }
 
@@ -139,9 +187,7 @@ export interface ImportResult {
   counts: Record<string, number>;
 }
 
-/** Importa como un tenant NUEVO, regenerando ids con un mapa. */
 export function importTenantData(payload: BackupPayload): ImportResult {
-  // 1. Nuevo tenant
   const importedSlug = `${slugify(payload.tenant.slug || payload.tenant.name)}-import-${Date.now().toString(36)}`;
   const newTenant = tenantsRepo.create({
     name: `${payload.tenant.name} (importado)`,
@@ -152,7 +198,6 @@ export function importTenantData(payload: BackupPayload): ImportResult {
   });
   const tid = newTenant.id;
 
-  // 2. Mapas oldId → newId
   const userMap = new Map<string, string>();
   const templateMap = new Map<string, string>();
   const sessionMap = new Map<string, string>();
@@ -160,6 +205,11 @@ export function importTenantData(payload: BackupPayload): ImportResult {
   const membershipMap = new Map<string, string>();
   const bookingMap = new Map<string, string>();
   const exerciseMap = new Map<string, string>();
+  const challengeMap = new Map<string, string>();
+  const programMap = new Map<string, string>();
+  const programSessionMap = new Map<string, string>();
+  const assignmentMap = new Map<string, string>();
+  const productMap = new Map<string, string>();
 
   const remap = <T extends { id: string }>(list: T[], target: Map<string, string>): T[] =>
     list.map((item) => {
@@ -168,7 +218,6 @@ export function importTenantData(payload: BackupPayload): ImportResult {
       return { ...item, id: newIdVal };
     });
 
-  // 3. Reasignar tenantId y remapear FKs
   const now = nowIso();
   const withStamps = <T extends { createdAt?: string; updatedAt?: string }>(item: T): T => ({
     ...item,
@@ -243,10 +292,81 @@ export function importTenantData(payload: BackupPayload): ImportResult {
     }),
   );
 
-  // 4. Escribir por bloque (replaceAll sobre colección vacía del nuevo tenant)
+  // v2
+  const challenges = remap(payload.challenges, challengeMap).map((c) =>
+    withStamps({
+      ...c,
+      tenantId: tid,
+      goal: c.type === "benchmark" ? exerciseMap.get(String(c.goal)) ?? c.goal : c.goal,
+    }),
+  );
+  const challengeParticipants = payload.challengeParticipants.map((cp) =>
+    withStamps({
+      ...cp,
+      id: newId(),
+      tenantId: tid,
+      challengeId: challengeMap.get(cp.challengeId) ?? cp.challengeId,
+      userId: userMap.get(cp.userId) ?? cp.userId,
+    }),
+  );
+  const programs = remap(payload.programs, programMap).map((p) =>
+    withStamps({
+      ...p,
+      tenantId: tid,
+      createdBy: userMap.get(p.createdBy) ?? p.createdBy,
+    }),
+  );
+  const programSessions = remap(payload.programSessions, programSessionMap).map((ps) =>
+    withStamps({
+      ...ps,
+      tenantId: tid,
+      programId: programMap.get(ps.programId) ?? ps.programId,
+    }),
+  );
+  const programAssignments = remap(payload.programAssignments, assignmentMap).map((a) =>
+    withStamps({
+      ...a,
+      tenantId: tid,
+      programId: programMap.get(a.programId) ?? a.programId,
+      userId: userMap.get(a.userId) ?? a.userId,
+      assignedBy: userMap.get(a.assignedBy) ?? a.assignedBy,
+    }),
+  );
+  const programProgress = payload.programProgress.map((pp) =>
+    withStamps({
+      ...pp,
+      id: newId(),
+      tenantId: tid,
+      assignmentId: assignmentMap.get(pp.assignmentId) ?? pp.assignmentId,
+      programSessionId: programSessionMap.get(pp.programSessionId) ?? pp.programSessionId,
+    }),
+  );
+  const products = remap(payload.products, productMap).map((p) =>
+    withStamps({ ...p, tenantId: tid }),
+  );
+  const orders = payload.orders.map((o) =>
+    withStamps({
+      ...o,
+      id: newId(),
+      tenantId: tid,
+      userId: userMap.get(o.userId) ?? o.userId,
+      items: o.items.map((it) => ({
+        ...it,
+        productId: productMap.get(it.productId) ?? it.productId,
+      })),
+    }),
+  );
+  const bodyMetrics = payload.bodyMetrics.map((m) =>
+    withStamps({
+      ...m,
+      id: newId(),
+      tenantId: tid,
+      userId: userMap.get(m.userId) ?? m.userId,
+    }),
+  );
+
   const write = <T extends BaseEntity>(repo: BaseRepo<T>, list: T[]) => repo.replaceAll(list);
 
-  // users repo scoped por sesión: usamos BaseRepo con getTenantId fijo
   const usersRepoForTenant = new BaseRepo<User>("users", {
     scoped: true,
     getTenantId: () => tid,
@@ -261,8 +381,16 @@ export function importTenantData(payload: BackupPayload): ImportResult {
   write(paymentsRepoFor(tid), payments);
   write(exercisesRepoFor(tid), exercises);
   write(personalRecordsRepoFor(tid), personalRecords);
+  write(challengesRepoFor(tid), challenges);
+  write(challengeParticipantsRepoFor(tid), challengeParticipants);
+  write(programsRepoFor(tid), programs);
+  write(programSessionsRepoFor(tid), programSessions);
+  write(programAssignmentsRepoFor(tid), programAssignments);
+  write(programProgressRepoFor(tid), programProgress);
+  write(productsRepoFor(tid), products);
+  write(ordersRepoFor(tid), orders);
+  write(bodyMetricsRepoFor(tid), bodyMetrics);
 
-  // Owner: preferimos alguien con role owner; si no, el primer usuario
   const owner = users.find((u) => u.role === "admin") ?? users[0] ?? null;
 
   return {
@@ -279,6 +407,15 @@ export function importTenantData(payload: BackupPayload): ImportResult {
       payments: payments.length,
       exercises: exercises.length,
       personalRecords: personalRecords.length,
+      challenges: challenges.length,
+      challengeParticipants: challengeParticipants.length,
+      programs: programs.length,
+      programSessions: programSessions.length,
+      programAssignments: programAssignments.length,
+      programProgress: programProgress.length,
+      products: products.length,
+      orders: orders.length,
+      bodyMetrics: bodyMetrics.length,
     },
   };
 }
