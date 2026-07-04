@@ -48,8 +48,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
           <MobileNav />
         </div>
       </div>
-      {/* silencia warnings de variables no usadas */}
-      <span className="hidden">{isImpersonating ? stopImpersonation : null}</span>
+      {/* stopImpersonation se usa desde ImpersonationBanner */}
+      <span className="hidden" aria-hidden data-impersonating={String(isImpersonating)} onClick={stopImpersonation} />
     </div>
   );
 }
