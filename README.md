@@ -134,10 +134,19 @@ Enforcement: componente `<RoleGate>` + hook `useRole` + servicios que reciben `a
 Cada tenant tiene `settings.enabledModules`:
 
 ```ts
-{ reservas: true, socios: true, prs: true, feed: true, pagos: true }
+{
+  reservas: true, socios: true, prs: true, feed: true, pagos: true,
+  // Fase 11 — pack de fidelización
+  challenges: true, programs: true, shop: true, health: true,
+}
 ```
 
-El hook `useModules()` lee esto y `useRequireModule(name)` redirige o renderiza fallback. La sidebar y el dashboard ocultan widgets automáticamente si el módulo está `false`.
+- **challenges** — Retos de asistencia y benchmarks con ranking e insignias (`/retos`).
+- **programs** — Rutinas semanales asignables a socios (`/rutinas`).
+- **shop** — Tienda con pedido y recogida en el box (`/tienda`).
+- **health** — Registro manual de peso/% graso/FC y gráficas de evolución (pestaña Progreso en `/mi-cuenta`).
+
+El hook `useModules()` lee esto y `useRequireModule(name)` redirige si el módulo está apagado. Sidebar, bottom nav y widgets del dashboard se ocultan automáticamente.
 
 ---
 
