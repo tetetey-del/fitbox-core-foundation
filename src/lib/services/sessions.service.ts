@@ -1,3 +1,9 @@
+/**
+ * @file Servicio de generación de sesiones (horario semanal).
+ * Responsabilidad: crear sesiones recurrentes a partir de plantillas y días
+ * de la semana evitando duplicados exactos (misma fecha + hora) y consultar
+ * por rango o por día.
+ */
 import type { ClassSession, ClassTemplate } from "@/types";
 import { classSessionsRepo } from "@/lib/storage/repositories/classSessions.repo";
 import { addDays, toDateKey } from "@/lib/date";
