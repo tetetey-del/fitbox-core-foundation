@@ -9,7 +9,7 @@ import { ImpersonationBanner } from "./ImpersonationBanner";
 import { Button } from "@/components/ui/button";
 
 export function AppLayout({ children }: { children: ReactNode }) {
-  const { ready, session, currentTenant, isImpersonating, logout, stopImpersonation } = useAuth();
+  const { ready, session, currentTenant, isImpersonating, logout } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
