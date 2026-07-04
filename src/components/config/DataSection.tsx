@@ -24,7 +24,7 @@ import {
 } from "@/lib/services/backup.service";
 
 export function DataSection() {
-  const { currentTenant, login } = useAuth();
+  const { currentTenant, _setSession } = useAuth();
   const navigate = useNavigate();
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [pending, setPending] = useState<ImportResult | null>(null);
@@ -62,8 +62,17 @@ export function DataSection() {
 
   const enterImported = () => {
     if (pending && pending.ownerId) {
-      login(pending.newTenantId, pending.ownerId);
-      navigate({ to: "/dashboard" });
+      const s = {
+        tenantId: pending.newTenantId,
+        userId: pending.ownerId,
+        role: "admin" as const,
+      };
+      // Sesión directa: es el mismo admin, ya autenticado.
+      import("@/lib/storage/session").then(({ sessionStore }) => {
+        sessionStore.write(s);
+        _setSession(s);
+        navigate({ to: "/dashboard" });
+      });
     }
     setPending(null);
   };
