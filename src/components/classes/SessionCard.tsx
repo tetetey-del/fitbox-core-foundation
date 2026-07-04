@@ -1,5 +1,5 @@
 import { Clock, User as UserIcon } from "lucide-react";
-import type { ClassSession, ClassTemplate, User } from "@/types";
+import type { Booking, ClassSession, ClassTemplate, User } from "@/types";
 import { cn } from "@/lib/utils";
 import { OccupancyBar } from "./OccupancyBar";
 import { getSessionOccupancy } from "@/lib/services/booking.service";
@@ -11,15 +11,19 @@ interface Props {
   onClick?: () => void;
   active?: boolean;
   compact?: boolean;
+  /** Ocupación precalculada por el contenedor (evita recalcular en cada card). */
+  occupancy?: { confirmed: Booking[]; waitlist: Booking[]; capacity: number };
 }
 
-export function SessionCard({ session, template, coach, onClick, active, compact }: Props) {
-  const occ = getSessionOccupancy(session.id);
+export function SessionCard({ session, template, coach, onClick, active, compact, occupancy }: Props) {
+  const occ = occupancy ?? getSessionOccupancy(session.id);
   const cancelled = session.status === "cancelled";
 
   return (
     <button
+      type="button"
       onClick={onClick}
+      data-session-id={session.id}
       className={cn(
         "w-full text-left rounded-md border border-border bg-card p-3 transition-colors",
         "hover:border-border/80 hover:bg-muted/40",
@@ -28,6 +32,7 @@ export function SessionCard({ session, template, coach, onClick, active, compact
       )}
     >
       <div className="flex items-center gap-2">
+
         <span
           aria-hidden
           className="h-2 w-2 rounded-full shrink-0"

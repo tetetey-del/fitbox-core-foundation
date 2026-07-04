@@ -105,17 +105,23 @@ function defaultRouteFor(role: string): string {
 }
 
 function DemoAccountsPanel() {
-  const seeded = get<boolean>(SEEDED_KEY, false);
+  // Aplazamos la lectura de localStorage a después del montaje para evitar
+  // mismatch de hidratación SSR (el servidor no tiene localStorage).
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const demoUsers = useMemo(() => {
+    if (!mounted) return [];
+    const seeded = get<boolean>(SEEDED_KEY, false);
     if (!seeded) return [];
     return tenantsRepo
       .list()
       .flatMap((t) => listUsersOfTenant(t.id).map((u) => ({ ...u, tenantName: t.name })))
       .filter((u) => u.passwordHash) // solo los que tienen password
       .slice(0, 8);
-  }, [seeded]);
+  }, [mounted]);
 
-  if (!seeded || demoUsers.length === 0) return null;
+  if (!mounted || demoUsers.length === 0) return null;
+
 
   return (
     <div className="mt-6 rounded-md border border-dashed border-border p-3 text-xs">
