@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/select";
 import { CreditsBadge } from "@/components/members/CreditsBadge";
 import { MembershipBadge } from "@/components/members/MembershipBadge";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { getMembershipStatus } from "@/lib/services/membership.service";
 import { useDataVersion } from "@/lib/data-bus";
 
