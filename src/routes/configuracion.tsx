@@ -141,6 +141,8 @@ function ConfigPage() {
 
           <PlansSection />
 
+          <DataSection />
+
           <section className="space-y-4 rounded-lg border border-border bg-card p-6">
             <div>
               <h2 className="text-base font-semibold">Datos de demostración</h2>
@@ -150,11 +152,31 @@ function ConfigPage() {
             </div>
             <div className="flex flex-wrap gap-2">
               <Button variant="outline" onClick={handleDemo}>Cargar datos demo</Button>
-              <Button variant="ghost" onClick={handleReset} className="text-destructive hover:text-destructive">
-                Borrar todos los datos locales
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="ghost" className="text-destructive hover:text-destructive">
+                    Borrar todos los datos locales
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>¿Borrar todos los datos?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Se eliminarán todos los boxes, socios, reservas y PRs guardados en este navegador.
+                      Esta acción no se puede deshacer.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleReset} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      Borrar todo
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </section>
+
         </div>
       </RoleGate>
     </AppLayout>
