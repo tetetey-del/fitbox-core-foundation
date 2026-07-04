@@ -30,12 +30,12 @@ export const Route = createFileRoute("/reservas")({ component: ReservasPage });
 
 function ReservasPage() {
   const { currentUser, tenantUsers } = useAuth();
-  useDataVersion();
+  const dataVersion = useDataVersion();
 
   const [monday, setMonday] = useState<Date>(() => startOfWeek(new Date()));
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const templates = useMemo(() => classTemplatesRepo.list(), []);
+  const templates = useMemo(() => classTemplatesRepo.list(), [dataVersion]);
   const templateById = useMemo(
     () => new Map(templates.map((t) => [t.id, t])),
     [templates],
@@ -54,8 +54,7 @@ function ReservasPage() {
       .list()
       .filter((s) => s.date >= fromKey && s.date <= toKey)
       .sort((a, b) => a.startTime.localeCompare(b.startTime));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fromKey, toKey, useDataVersion()]);
+  }, [fromKey, toKey, dataVersion]);
 
   const byDay = useMemo(() => {
     const m = new Map<string, ClassSession[]>();
