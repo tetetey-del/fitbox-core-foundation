@@ -1,13 +1,15 @@
-import { LogOut } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import { LogOut, User as UserIcon, ChevronDown } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { CreditsBadge } from "@/components/members/CreditsBadge";
 import { MembershipBadge } from "@/components/members/MembershipBadge";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
@@ -21,13 +23,19 @@ const ROLE_LABEL: Record<string, string> = {
 };
 
 export function Header() {
-  const { currentTenant, currentUser, tenantUsers, switchUser, logout } = useAuth();
+  const { currentTenant, currentUser, logout } = useAuth();
+  const navigate = useNavigate();
   useDataVersion();
   if (!currentTenant || !currentUser) return null;
 
   const accent = currentTenant.brandColor;
   const isMember = currentUser.role === "member";
   const status = isMember ? getMembershipStatus(currentUser.id) : null;
+
+  const handleLogout = () => {
+    logout();
+    navigate({ to: "/login" });
+  };
 
   return (
     <header className="h-14 flex items-center justify-between gap-3 border-b border-border px-3 sm:px-4 md:px-6 bg-background">
@@ -55,23 +63,33 @@ export function Header() {
           </>
         )}
         <NotificationBell />
-        <Select value={currentUser.id} onValueChange={switchUser}>
-          <SelectTrigger className="h-9 w-[140px] sm:w-[220px]" aria-label="Cambiar usuario">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {tenantUsers.map((u) => (
-              <SelectItem key={u.id} value={u.id}>
-                {u.name} — {ROLE_LABEL[u.role]}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button variant="ghost" size="icon" onClick={logout} aria-label="Cerrar sesión" title="Salir">
-          <LogOut className="h-4 w-4" strokeWidth={1.5} />
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="gap-1.5" aria-label="Menú de cuenta">
+              <UserIcon className="h-4 w-4" strokeWidth={1.5} />
+              <span className="hidden sm:inline text-sm">{currentUser.name.split(" ")[0]}</span>
+              <ChevronDown className="h-3 w-3 opacity-60" strokeWidth={1.5} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel className="font-normal">
+              <div className="text-sm font-medium">{currentUser.name}</div>
+              <div className="text-xs text-muted-foreground">{currentUser.email}</div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {isMember && (
+              <DropdownMenuItem onClick={() => navigate({ to: "/mi-cuenta" })}>
+                <UserIcon className="h-4 w-4 mr-2" strokeWidth={1.5} />
+                Mi cuenta
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem onClick={handleLogout}>
+              <LogOut className="h-4 w-4 mr-2" strokeWidth={1.5} />
+              Cerrar sesión
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );
 }
-
