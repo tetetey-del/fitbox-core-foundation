@@ -158,3 +158,49 @@ export const MEMBERSHIP_UI_LABEL: Record<MembershipUiStatus, string> = {
   none: "Sin plan",
 };
 
+// ---- PRs / Benchmarks ----
+
+export type ExerciseCategory =
+  | "fuerza"
+  | "olimpico"
+  | "benchmark_wod"
+  | "gimnastico"
+  | "cardio";
+
+export type ExerciseUnit = "kg" | "tiempo" | "reps" | "metros";
+
+export interface Exercise extends BaseEntity {
+  tenantId: string;
+  name: string;
+  category: ExerciseCategory;
+  unit: ExerciseUnit;
+  isCustom: boolean;
+}
+
+export interface PersonalRecord extends BaseEntity {
+  tenantId: string;
+  userId: string;
+  exerciseId: string;
+  /** kg / reps / metros: valor directo. tiempo: segundos. */
+  value: number;
+  rx: boolean;
+  date: string; // YYYY-MM-DD
+  notes?: string;
+}
+
+export const EXERCISE_CATEGORY_LABEL: Record<ExerciseCategory, string> = {
+  fuerza: "Fuerza",
+  olimpico: "Olímpicos",
+  benchmark_wod: "Benchmark WODs",
+  gimnastico: "Gimnásticos",
+  cardio: "Cardio",
+};
+
+export const EXERCISE_UNIT_LABEL: Record<ExerciseUnit, string> = {
+  kg: "kg",
+  tiempo: "tiempo",
+  reps: "reps",
+  metros: "m",
+};
+
+
