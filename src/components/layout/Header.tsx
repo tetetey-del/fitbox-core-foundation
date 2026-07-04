@@ -54,6 +54,7 @@ export function Header() {
             <CreditsBadge userId={currentUser.id} className="hidden sm:inline-flex" />
           </>
         )}
+        <NotificationBell />
         <Select value={currentUser.id} onValueChange={switchUser}>
           <SelectTrigger className="h-9 w-[140px] sm:w-[220px]" aria-label="Cambiar usuario">
             <SelectValue />
