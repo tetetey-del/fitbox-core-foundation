@@ -39,6 +39,8 @@ import { getLastPRs } from "@/lib/services/prs.service";
 import { formatMoney, formatMonthShort, formatPrValue } from "@/lib/format";
 import { FeedWidget } from "@/components/dashboard/FeedWidget";
 import { useModules } from "@/hooks/useModules";
+import { getPublishedWodByDate } from "@/lib/services/wods.service";
+import { WodViewer } from "@/components/wods/WodViewer";
 
 export const Route = createFileRoute("/dashboard")({ component: DashboardPage });
 
