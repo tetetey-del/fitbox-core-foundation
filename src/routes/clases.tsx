@@ -39,6 +39,7 @@ import { CLASS_TYPE_LABEL } from "@/types";
 import { generateRecurringSessions } from "@/lib/services/sessions.service";
 import { cancelSession, getSessionOccupancy } from "@/lib/services/booking.service";
 import { addDays, DAY_LABELS, toDateKey } from "@/lib/date";
+import { WodEditor } from "@/components/wods/WodEditor";
 
 export const Route = createFileRoute("/clases")({ component: ClasesPage });
 
