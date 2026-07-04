@@ -271,3 +271,48 @@ export const POST_TYPE_LABEL: Record<PostType, string> = {
   receta: "Receta",
   wod: "WOD",
 };
+
+// ---- WODs ----
+
+export type WodBlockType = "calentamiento" | "fuerza" | "metcon" | "accesorio";
+
+export interface WodBlock {
+  type: WodBlockType;
+  content: string;
+}
+
+export interface Wod extends BaseEntity {
+  tenantId: string;
+  date: string; // YYYY-MM-DD
+  title: string;
+  blocks: WodBlock[];
+  publishedBy?: string;
+  published: boolean;
+}
+
+export const WOD_BLOCK_LABEL: Record<WodBlockType, string> = {
+  calentamiento: "Calentamiento",
+  fuerza: "Fuerza",
+  metcon: "MetCon",
+  accesorio: "Accesorio",
+};
+
+// ---- Notificaciones ----
+
+export type NotificationType =
+  | "waitlist_promoted"
+  | "membership_expiring"
+  | "session_cancelled"
+  | "new_post";
+
+export interface Notification extends BaseEntity {
+  tenantId: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  body: string;
+  read: boolean;
+  linkTo?: string;
+  /** Clave estable para evitar duplicados (ej: `expiring:<membershipId>`). */
+  dedupeKey?: string;
+}
