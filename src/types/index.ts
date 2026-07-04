@@ -75,6 +75,8 @@ export const MEMBER_GOAL_LABEL: Record<MemberGoal, string> = {
 export interface UserProfile {
   goal?: MemberGoal;
   bio?: string;
+  /** Si el socio permite al staff ver sus métricas de salud. Default false. */
+  showHealthToCoach?: boolean;
 }
 
 export interface User extends BaseEntity {
