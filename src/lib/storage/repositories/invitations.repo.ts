@@ -1,3 +1,8 @@
+/**
+ * @file Invitaciones para dar de alta socios/coaches mediante código.
+ *
+ * Scoped por tenant. El código se guarda en `code`, el estado en `status` (pending/accepted/expired). La lógica de aceptación vive en invitations.service.
+ */
 import type { Invitation } from "@/types";
 import { BaseRepo } from "./base.repo";
 import { sessionStore } from "../session";

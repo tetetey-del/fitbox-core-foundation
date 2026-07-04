@@ -1,3 +1,8 @@
+/**
+ * @file Catálogo de ejercicios usados en PRs y WODs.
+ *
+ * Scoped por tenant. El seed carga un set inicial de ejercicios comunes.
+ */
 import type { Exercise } from "@/types";
 import { sessionStore } from "../session";
 import { BaseRepo } from "./base.repo";

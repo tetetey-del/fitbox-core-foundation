@@ -1,3 +1,8 @@
+/**
+ * @file Marcas personales (peso, tiempo, reps) de un socio en un ejercicio.
+ *
+ * Scoped por tenant.
+ */
 import type { PersonalRecord } from "@/types";
 import { sessionStore } from "../session";
 import { BaseRepo } from "./base.repo";

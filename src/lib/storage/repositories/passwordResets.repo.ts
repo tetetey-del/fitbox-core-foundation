@@ -1,3 +1,8 @@
+/**
+ * @file Códigos OTP de 6 dígitos para recuperación de contraseña.
+ *
+ * Global (no scoped). Cada código lleva `email`, `expiresAt` y `used`; auth.service lo consume y lo marca.
+ */
 import type { PasswordResetCode } from "@/types";
 import { BaseRepo } from "./base.repo";
 

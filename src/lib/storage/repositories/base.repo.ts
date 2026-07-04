@@ -1,3 +1,23 @@
+/**
+ * @file Repositorio base sobre localStorage con scoping opcional por tenant.
+ *
+ * Todos los repos concretos (`bookings`, `payments`, …) heredan de aquí.
+ * La capa UI **nunca** debe leer/escribir localStorage directamente; siempre
+ * pasa por un repo o un servicio.
+ *
+ * Modelo:
+ * - `scoped: true` → clave `fitbox:<tenantId>:<collection>`. El tenantId lo
+ *   resuelve dinámicamente `getTenantId()` (típicamente `sessionStore.read()`).
+ *   Si no hay tenant activo, se usa la clave inerte `fitbox:_none:<collection>`
+ *   para que los reads devuelvan `[]` y los writes nunca contaminen datos de
+ *   otro tenant.
+ * - `scoped: false` → clave `fitbox:_global:<collection>`. Usado por tenants
+ *   y superadmins.
+ *
+ * `create()` genera `id`, `createdAt` y `updatedAt`; `update()` refresca
+ * `updatedAt`. `list()` devuelve los elementos en el orden en el que fueron
+ * insertados (los repos que necesiten un orden distinto lo aplican encima).
+ */
 import type { BaseEntity } from "@/types";
 import { buildKey, get, newId, nowIso, set } from "../db";
 
@@ -17,6 +37,7 @@ export class BaseRepo<T extends BaseEntity> {
     protected collection: string,
     protected options: RepoOptions,
   ) {}
+
 
   protected key(): string {
     const tenantId = this.options.scoped ? (this.options.getTenantId?.() ?? null) : null;
