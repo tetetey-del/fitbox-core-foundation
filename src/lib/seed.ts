@@ -9,10 +9,16 @@ import { membershipsRepoFor } from "./storage/repositories/memberships.repo";
 import { paymentsRepoFor } from "./storage/repositories/payments.repo";
 import { exercisesRepoFor } from "./storage/repositories/exercises.repo";
 import { personalRecordsRepoFor } from "./storage/repositories/personalRecords.repo";
+import { postsRepoFor } from "./storage/repositories/posts.repo";
+import { superAdminsStore } from "./storage/superadmins";
 import { DEFAULT_EXERCISES } from "./services/prs.service";
 import { addDays, addMonths, startOfWeek, toDateKey } from "./date";
-import type { ClassTemplate, ClassType, Exercise, MembershipPlan, Tenant, User } from "@/types";
+import { buildKey, get, set } from "./storage/db";
+import type { Exercise, MembershipPlan, PostType, Tenant, ThemeId, User } from "@/types";
+import { DEFAULT_MODULES } from "@/types";
 
+const SEEDED_KEY = buildKey(null, "seeded");
+const DEMO_CLEARED_KEY = buildKey(null, "demo_cleared");
 
 export interface SeedResult {
   tenant: Tenant;
@@ -34,13 +40,16 @@ export function createTenantWithSeed(input: {
   ownerName: string;
   ownerEmail: string;
   brandColor: string;
+  themeId?: ThemeId;
   extras?: boolean;
 }): SeedResult {
   const tenant = tenantsRepo.create({
     name: input.name,
     slug: slugify(input.name),
     brandColor: input.brandColor,
-    settings: { cancellationWindowHours: 2 },
+    themeId: input.themeId ?? "dark-carbon",
+    status: "active",
+    settings: { cancellationWindowHours: 2, enabledModules: DEFAULT_MODULES },
   });
 
   const owner = createUserInTenant(tenant.id, {
@@ -75,15 +84,57 @@ export function createTenantWithSeed(input: {
     );
   }
 
-  // Catálogo de ejercicios por defecto
   const exercisesRepo = exercisesRepoFor(tenant.id);
-  DEFAULT_EXERCISES.forEach((d) => exercisesRepo.create({ tenantId: tenant.id, isCustom: false, ...d }));
+  DEFAULT_EXERCISES.forEach((d) =>
+    exercisesRepo.create({ tenantId: tenant.id, isCustom: false, ...d }),
+  );
 
   return { tenant, owner, users: [owner, ...extras] };
 }
 
+/** Auto-seed inicial: super admin + CrossFit Norte + Box Sur. Idempotente. */
+export function bootstrapDemoIfNeeded(): void {
+  if (get<boolean>(SEEDED_KEY, false)) return;
+  if (get<boolean>(DEMO_CLEARED_KEY, false)) return;
 
-/** Seed completo: box, usuarios, plantillas, sesiones y algunas reservas. */
+  // Super admin demo
+  if (superAdminsStore.list().length === 0) {
+    superAdminsStore.create({
+      name: "Isaac Plataforma",
+      email: "isaac@fitbox.io",
+    });
+  }
+
+  // Box principal
+  const norte = createTenantWithSeed({
+    name: "CrossFit Norte",
+    ownerName: "Sergio Torres",
+    ownerEmail: "sergio@crossfitnorte.com",
+    brandColor: "#F97316",
+    themeId: "dark-carbon",
+  });
+  seedClassesFor(norte);
+  seedPRsFor(norte);
+  seedFeedFor(norte);
+
+  // Box secundario, más pequeño y con otro tema
+  const sur = createTenantWithSeed({
+    name: "Box Sur",
+    ownerName: "Marta Ríos",
+    ownerEmail: "marta@boxsur.com",
+    brandColor: "#0EA5E9",
+    themeId: "light-clean",
+    extras: false,
+  });
+  // Un coach y un socio
+  createUserInTenant(sur.tenant.id, { name: "Carla Coach", email: "carla@boxsur.com", role: "coach" });
+  createUserInTenant(sur.tenant.id, { name: "Nico Socio", email: "nico@boxsur.com", role: "member" });
+  seedFeedFor(sur, 2);
+
+  set(SEEDED_KEY, true);
+}
+
+/** Legado: se mantiene el helper aunque ya no se llame desde UI. */
 export function loadDemoData(): SeedResult {
   const base = createTenantWithSeed({
     name: "CrossFit Norte",
@@ -91,9 +142,9 @@ export function loadDemoData(): SeedResult {
     ownerEmail: "sergio@crossfitnorte.com",
     brandColor: "#F97316",
   });
-
   seedClassesFor(base);
   seedPRsFor(base);
+  seedFeedFor(base);
   return base;
 }
 
@@ -111,7 +162,6 @@ function seedPRsFor({ tenant, users }: SeedResult) {
   const ana = users.find((u) => u.name === "Ana Socia");
   const diego = users.find((u) => u.name === "Diego Socio");
   const laura = users.find((u) => u.name === "Laura Coach");
-
   const today = new Date();
 
   const anaSets: PRSeed[] = [
@@ -124,20 +174,13 @@ function seedPRsFor({ tenant, users }: SeedResult) {
   ];
   const diegoSets: PRSeed[] = [
     { name: "Back Squat", values: [{ daysAgo: 240, value: 100 }, { daysAgo: 150, value: 120 }, { daysAgo: 60, value: 135 }, { daysAgo: 5, value: 140 }] },
-    { name: "Front Squat", values: [{ daysAgo: 180, value: 90 }, { daysAgo: 60, value: 105 }, { daysAgo: 10, value: 110 }] },
     { name: "Clean & Jerk", values: [{ daysAgo: 200, value: 80 }, { daysAgo: 90, value: 92 }, { daysAgo: 20, value: 100 }] },
-    { name: "Snatch", values: [{ daysAgo: 180, value: 60 }, { daysAgo: 60, value: 72 }, { daysAgo: 15, value: 78 }] },
     { name: "Fran", values: [{ daysAgo: 150, value: 5 * 60 + 20 }, { daysAgo: 60, value: 4 * 60 + 40 }, { daysAgo: 20, value: 4 * 60 + 12 }] },
-    { name: "Grace", values: [{ daysAgo: 90, value: 3 * 60 + 30 }, { daysAgo: 20, value: 3 * 60 + 5 }] },
     { name: "Murph", values: [{ daysAgo: 200, value: 55 * 60 }, { daysAgo: 30, value: 48 * 60 + 30 }] },
-    { name: "Cindy", values: [{ daysAgo: 120, value: 16 }, { daysAgo: 30, value: 21 }] },
-    { name: "HSPU max", values: [{ daysAgo: 120, value: 6 }, { daysAgo: 20, value: 12 }] },
   ];
   const lauraSets: PRSeed[] = [
     { name: "Back Squat", values: [{ daysAgo: 120, value: 95 }, { daysAgo: 20, value: 105 }] },
     { name: "Snatch", values: [{ daysAgo: 100, value: 55 }, { daysAgo: 30, value: 60 }] },
-    { name: "Fran", values: [{ daysAgo: 90, value: 4 * 60 + 55 }, { daysAgo: 15, value: 4 * 60 + 20 }] },
-    { name: "Pull-ups max", values: [{ daysAgo: 60, value: 15 }, { daysAgo: 10, value: 18 }] },
   ];
 
   const insertFor = (userId: string, sets: PRSeed[]) => {
@@ -161,7 +204,45 @@ function seedPRsFor({ tenant, users }: SeedResult) {
   if (laura) insertFor(laura.id, lauraSets);
 }
 
+function seedFeedFor({ tenant, users }: SeedResult, count = 6) {
+  const postsRepo = postsRepoFor(tenant.id);
+  const author = users[0]?.id ?? "";
+  const today = new Date();
 
+  const items: Array<{ type: PostType; title: string; content: string; pinned?: boolean; daysAgo: number }> = [
+    { type: "wod", title: "WOD del día — Fran", content: "21-15-9 de Thrusters (43/30 kg) y Pull-ups. RX si vas al peso. Escalado sale con anillas o goma.", pinned: true, daysAgo: 0 },
+    { type: "aviso", title: "Clase de las 19:00 cancelada mañana", content: "Mañana la sesión de las 19:00 no se impartirá por formación. Podéis reubicaros en la de las 17:30.", daysAgo: 1 },
+    { type: "consejo", title: "Cómo mejorar tu Snatch en 4 semanas", content: "1) Movilidad de tobillo y hombro diaria. 2) Overhead squat con PVC 3x/semana. 3) Snatch pull técnico ligero. 4) Foto en vídeo lateral cada semana.", daysAgo: 3 },
+    { type: "receta", title: "Batido post-entreno alto en proteína", content: "300 ml de leche, 1 plátano, 30 g de proteína de suero, 1 cucharada de mantequilla de cacahuete, canela. Triturar y beber en los 30 min post-WOD.", daysAgo: 5 },
+    { type: "wod", title: "Benchmark del mes — Cindy", content: "AMRAP 20 min: 5 pull-ups, 10 push-ups, 15 air squats. Apunta tu marca para el ranking del mes.", daysAgo: 8 },
+    { type: "aviso", title: "Cerrado el 15 por festivo local", content: "El box permanecerá cerrado el 15. Ese día no habrá clases; el 16 volvemos con horario normal.", daysAgo: 12 },
+  ];
+
+  items.slice(0, count).forEach((it) => {
+    postsRepo.create({
+      tenantId: tenant.id,
+      authorId: author,
+      type: it.type,
+      title: it.title,
+      content: it.content,
+      pinned: it.pinned ?? false,
+      // Fake createdAt override para orden: usamos update tras crear.
+    });
+    // Ajustar createdAt manualmente
+    const list = postsRepo.list();
+    const last = list[list.length - 1];
+    if (last) {
+      postsRepo.update(last.id, {});
+      const target = new Date(today);
+      target.setDate(target.getDate() - it.daysAgo);
+      // Sobreescribir createdAt directamente vía replaceAll
+      const updated = postsRepo.list().map((p) =>
+        p.id === last.id ? { ...p, createdAt: target.toISOString() } : p,
+      );
+      postsRepo.replaceAll(updated);
+    }
+  });
+}
 
 function seedClassesFor({ tenant, users }: SeedResult) {
   const templatesRepo = classTemplatesRepoFor(tenant.id);
@@ -177,18 +258,16 @@ function seedClassesFor({ tenant, users }: SeedResult) {
   const ana = users.find((u) => u.name === "Ana Socia");
   const diego = users.find((u) => u.name === "Diego Socio");
 
-  // Planes de membresía
   const planDefs: Array<Omit<MembershipPlan, keyof import("@/types").BaseEntity>> = [
     { tenantId: tenant.id, name: "Ilimitado", priceMonthly: 89, type: "unlimited", active: true },
     { tenantId: tenant.id, name: "12 clases", priceMonthly: 69, type: "credits", creditsPerMonth: 12, active: true },
     { tenantId: tenant.id, name: "8 clases", priceMonthly: 55, type: "credits", creditsPerMonth: 8, active: true },
   ];
-  const [planUnlimited, plan12, plan8] = planDefs.map((p) => plansRepo.create(p));
+  const [planUnlimited, plan12] = planDefs.map((p) => plansRepo.create(p));
 
-  // Membresías: Ana con 12 clases (expira pronto en 4 días), Diego con Ilimitado
   const today = new Date();
   if (ana) {
-    const startAna = addDays(today, -26); // así queda a 4 días de expirar
+    const startAna = addDays(today, -26);
     const endAna = addMonths(startAna, 1);
     const membershipAna = membershipsRepo.create({
       tenantId: tenant.id,
@@ -199,7 +278,6 @@ function seedClassesFor({ tenant, users }: SeedResult) {
       status: "active",
       creditsRemaining: 5,
     });
-    // Pagos: alta hace ~2 meses, renovación este mes
     paymentsRepo.create({
       tenantId: tenant.id, userId: ana.id, membershipId: membershipAna.id,
       amount: plan12.priceMonthly, method: "tarjeta",
@@ -222,157 +300,80 @@ function seedClassesFor({ tenant, users }: SeedResult) {
       endDate: toDateKey(endDiego),
       status: "active",
     });
-    paymentsRepo.create({
-      tenantId: tenant.id, userId: diego.id, membershipId: membershipDiego.id,
-      amount: planUnlimited.priceMonthly, method: "tarjeta",
-      date: toDateKey(addDays(today, -70)), notes: "Alta Ilimitado",
-    });
-    paymentsRepo.create({
-      tenantId: tenant.id, userId: diego.id, membershipId: membershipDiego.id,
-      amount: planUnlimited.priceMonthly, method: "tarjeta",
-      date: toDateKey(addDays(today, -40)), notes: "Renovación mensual",
-    });
-    paymentsRepo.create({
-      tenantId: tenant.id, userId: diego.id, membershipId: membershipDiego.id,
-      amount: planUnlimited.priceMonthly, method: "tarjeta",
-      date: toDateKey(startDiego), notes: "Renovación mensual",
-    });
+    for (let i = 0; i < 3; i++) {
+      paymentsRepo.create({
+        tenantId: tenant.id, userId: diego.id, membershipId: membershipDiego.id,
+        amount: planUnlimited.priceMonthly, method: "tarjeta",
+        date: toDateKey(addDays(today, -70 + i * 30)), notes: "Renovación mensual",
+      });
+    }
   }
 
-  // Pagos históricos adicionales (últimos 5 meses) para alimentar la gráfica
-  // de ingresos: simulamos cuotas mensuales del box.
-  for (let m = 5; m >= 2; m--) {
-    const d = addMonths(today, -m);
-    if (ana) paymentsRepo.create({
-      tenantId: tenant.id, userId: ana.id,
-      amount: plan12.priceMonthly, method: "domiciliacion",
-      date: toDateKey(d), notes: "Cuota mensual",
-    });
-    if (diego) paymentsRepo.create({
-      tenantId: tenant.id, userId: diego.id,
-      amount: planUnlimited.priceMonthly, method: "tarjeta",
-      date: toDateKey(d), notes: "Cuota mensual",
-    });
-  }
-
-  // El plan de 8 clases queda disponible para futuros socios
-  void plan8;
-
-
-
-
-  const defs: Array<Omit<ClassTemplate, keyof import("@/types").BaseEntity | "tenantId">> = [
-    { name: "WOD", type: "wod" as ClassType, durationMinutes: 60, defaultCapacity: 14, defaultCoachId: laura?.id, color: "#F97316" },
-    { name: "Halterofilia", type: "halterofilia", durationMinutes: 75, defaultCapacity: 10, defaultCoachId: marcos?.id, color: "#3B82F6" },
-    { name: "Gimnásticos", type: "gimnasticos", durationMinutes: 60, defaultCapacity: 10, defaultCoachId: laura?.id, color: "#10B981" },
-    { name: "Movilidad", type: "movilidad", durationMinutes: 45, defaultCapacity: 12, defaultCoachId: marcos?.id, color: "#A855F7" },
-    { name: "Open Box", type: "open_box", durationMinutes: 60, defaultCapacity: 16, color: "#64748B" },
+  // Plantillas
+  const templateDefs: Array<Parameters<typeof templatesRepo.create>[0]> = [
+    { tenantId: tenant.id, name: "WOD Mañana", type: "wod", durationMinutes: 60, defaultCapacity: 12, defaultCoachId: laura?.id, color: "#F97316" },
+    { tenantId: tenant.id, name: "WOD Tarde", type: "wod", durationMinutes: 60, defaultCapacity: 14, defaultCoachId: marcos?.id, color: "#EAB308" },
+    { tenantId: tenant.id, name: "Halterofilia", type: "halterofilia", durationMinutes: 75, defaultCapacity: 8, defaultCoachId: laura?.id, color: "#22C55E" },
+    { tenantId: tenant.id, name: "Open Box", type: "open_box", durationMinutes: 60, defaultCapacity: 10, color: "#0EA5E9" },
   ];
+  const templates = templateDefs.map((t) => templatesRepo.create(t));
+  const [tplWodM, tplWodT, tplHalter, tplOpen] = templates;
 
-  const templates = defs.map((d) => templatesRepo.create({ ...d, tenantId: tenant.id }));
-  const wod = templates[0];
-  const halt = templates[1];
-  const gim = templates[2];
-  const mov = templates[3];
-  const open = templates[4];
-
-  const monday = startOfWeek(new Date());
-  // Semanas -3..+1 (5 semanas): pasadas para gráficas + próximas 2 para reservar
-  const days = Array.from({ length: 5 * 7 }, (_, i) => addDays(monday, i - 21));
-
-
-  // Horario realista L-V: 7:00, 9:30, 13:30, 17:30, 19:00. Sábado: 10:00.
-  const weekdaySlots = [
-    { time: "07:00", tpl: wod, coach: laura?.id },
-    { time: "09:30", tpl: mov, coach: marcos?.id },
-    { time: "13:30", tpl: wod, coach: marcos?.id },
-    { time: "17:30", tpl: gim, coach: laura?.id },
-    { time: "19:00", tpl: halt, coach: marcos?.id },
-  ];
-  const saturdaySlots = [{ time: "10:00", tpl: open, coach: laura?.id }];
-
-  const created: { id: string; date: string; time: string; capacity: number }[] = [];
-
-  for (const day of days) {
-    const isoWd = (day.getDay() + 6) % 7; // 0 lun..6 dom
-    if (isoWd >= 5) {
-      // fin de semana
-      if (isoWd === 5) {
-        for (const slot of saturdaySlots) {
-          const s = sessionsRepo.create({
-            tenantId: tenant.id,
-            templateId: slot.tpl.id,
-            date: toDateKey(day),
-            startTime: slot.time,
-            durationMinutes: slot.tpl.durationMinutes,
-            capacity: slot.tpl.defaultCapacity,
-            coachId: slot.coach,
-            status: "scheduled",
+  // Sesiones ±3 semanas, L-V 7:00/9:30/13:30/17:30/19:00 + sábado 10:00
+  const times = ["07:00", "09:30", "13:30", "17:30", "19:00"];
+  const weekStart = startOfWeek(today);
+  const range: number[] = [];
+  for (let w = -3; w <= 2; w++) range.push(w);
+  const pickTpl = (h: string) => {
+    if (h === "07:00" || h === "09:30") return tplWodM;
+    if (h === "13:30") return tplOpen;
+    if (h === "17:30") return tplHalter;
+    return tplWodT;
+  };
+  for (const w of range) {
+    for (let d = 0; d < 6; d++) {
+      const day = addDays(weekStart, w * 7 + d);
+      if (d === 5) {
+        // sábado
+        const tpl = tplWodM;
+        sessionsRepo.create({
+          tenantId: tenant.id, templateId: tpl.id, date: toDateKey(day),
+          startTime: "10:00", durationMinutes: tpl.durationMinutes, capacity: tpl.defaultCapacity,
+          coachId: tpl.defaultCoachId, status: "scheduled",
+        });
+      } else {
+        for (const h of times) {
+          const tpl = pickTpl(h);
+          sessionsRepo.create({
+            tenantId: tenant.id, templateId: tpl.id, date: toDateKey(day),
+            startTime: h, durationMinutes: tpl.durationMinutes, capacity: tpl.defaultCapacity,
+            coachId: tpl.defaultCoachId, status: "scheduled",
           });
-          created.push({ id: s.id, date: s.date, time: s.startTime, capacity: s.capacity });
         }
       }
-      continue;
-    }
-    for (const slot of weekdaySlots) {
-      const s = sessionsRepo.create({
-        tenantId: tenant.id,
-        templateId: slot.tpl.id,
-        date: toDateKey(day),
-        startTime: slot.time,
-        durationMinutes: slot.tpl.durationMinutes,
-        capacity: slot.tpl.defaultCapacity,
-        coachId: slot.coach,
-        status: "scheduled",
-      });
-      created.push({ id: s.id, date: s.date, time: s.startTime, capacity: s.capacity });
     }
   }
 
-  // Reservas y check-ins de ejemplo, coherentes con los créditos de Ana.
-  const todayKey = toDateKey(new Date());
-
-  let anaConfirmed = 0;
-  const anaCreditCap = 7; // así deja 5/12 en el badge
-  created.forEach((s, i) => {
-    // Diego (Ilimitado) reserva en pasado y en las próximas sesiones
-    if (diego && i % 2 === 0) {
-      const b = bookingsRepo.create({
-        tenantId: tenant.id,
-        sessionId: s.id,
-        userId: diego.id,
-        status: "confirmed",
+  // Reservas y check-ins de muestra
+  const allSessions = sessionsRepo.list();
+  const bookFor = (userId: string, count: number) => {
+    let done = 0;
+    for (const s of allSessions) {
+      if (done >= count) break;
+      const sessionDate = new Date(s.date + "T" + s.startTime + ":00");
+      if (sessionDate < addDays(today, -21)) continue;
+      const bk = bookingsRepo.create({
+        tenantId: tenant.id, sessionId: s.id, userId, status: "confirmed",
       });
-      if (s.date < todayKey || (s.date === todayKey && s.time < "12:00")) {
+      if (sessionDate < today) {
         checkinsRepo.create({
-          tenantId: tenant.id,
-          bookingId: b.id,
-          sessionId: s.id,
-          userId: diego.id,
-          checkedInAt: new Date(s.date + "T" + s.time + ":00").toISOString(),
+          tenantId: tenant.id, bookingId: bk.id, sessionId: s.id, userId,
+          checkedInAt: sessionDate.toISOString(),
         });
       }
+      done++;
     }
-    // Ana (12 clases) — solo hasta llenar la cuota simulada
-    if (ana && i % 3 === 1 && anaConfirmed < anaCreditCap) {
-      anaConfirmed++;
-      const b = bookingsRepo.create({
-        tenantId: tenant.id,
-        sessionId: s.id,
-        userId: ana.id,
-        status: "confirmed",
-      });
-      if (s.date < todayKey || (s.date === todayKey && s.time < "12:00")) {
-        checkinsRepo.create({
-          tenantId: tenant.id,
-          bookingId: b.id,
-          sessionId: s.id,
-          userId: ana.id,
-          checkedInAt: new Date(s.date + "T" + s.time + ":00").toISOString(),
-        });
-
-      }
-    }
-  });
+  };
+  if (ana) bookFor(ana.id, 6);
+  if (diego) bookFor(diego.id, 10);
 }
-
