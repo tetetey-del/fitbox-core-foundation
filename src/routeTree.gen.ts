@@ -11,7 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SociosRouteImport } from './routes/socios'
 import { Route as ReservasRouteImport } from './routes/reservas'
+import { Route as RegistroRouteImport } from './routes/registro'
+import { Route as RecuperarRouteImport } from './routes/recuperar'
 import { Route as PrsRouteImport } from './routes/prs'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as FeedRouteImport } from './routes/feed'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ConfiguracionRouteImport } from './routes/configuracion'
@@ -29,9 +32,24 @@ const ReservasRoute = ReservasRouteImport.update({
   path: '/reservas',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RegistroRoute = RegistroRouteImport.update({
+  id: '/registro',
+  path: '/registro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecuperarRoute = RecuperarRouteImport.update({
+  id: '/recuperar',
+  path: '/recuperar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrsRoute = PrsRouteImport.update({
   id: '/prs',
   path: '/prs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeedRoute = FeedRouteImport.update({
@@ -72,7 +90,10 @@ export interface FileRoutesByFullPath {
   '/configuracion': typeof ConfiguracionRoute
   '/dashboard': typeof DashboardRoute
   '/feed': typeof FeedRoute
+  '/login': typeof LoginRoute
   '/prs': typeof PrsRoute
+  '/recuperar': typeof RecuperarRoute
+  '/registro': typeof RegistroRoute
   '/reservas': typeof ReservasRoute
   '/socios': typeof SociosRoute
 }
@@ -83,7 +104,10 @@ export interface FileRoutesByTo {
   '/configuracion': typeof ConfiguracionRoute
   '/dashboard': typeof DashboardRoute
   '/feed': typeof FeedRoute
+  '/login': typeof LoginRoute
   '/prs': typeof PrsRoute
+  '/recuperar': typeof RecuperarRoute
+  '/registro': typeof RegistroRoute
   '/reservas': typeof ReservasRoute
   '/socios': typeof SociosRoute
 }
@@ -95,7 +119,10 @@ export interface FileRoutesById {
   '/configuracion': typeof ConfiguracionRoute
   '/dashboard': typeof DashboardRoute
   '/feed': typeof FeedRoute
+  '/login': typeof LoginRoute
   '/prs': typeof PrsRoute
+  '/recuperar': typeof RecuperarRoute
+  '/registro': typeof RegistroRoute
   '/reservas': typeof ReservasRoute
   '/socios': typeof SociosRoute
 }
@@ -108,7 +135,10 @@ export interface FileRouteTypes {
     | '/configuracion'
     | '/dashboard'
     | '/feed'
+    | '/login'
     | '/prs'
+    | '/recuperar'
+    | '/registro'
     | '/reservas'
     | '/socios'
   fileRoutesByTo: FileRoutesByTo
@@ -119,7 +149,10 @@ export interface FileRouteTypes {
     | '/configuracion'
     | '/dashboard'
     | '/feed'
+    | '/login'
     | '/prs'
+    | '/recuperar'
+    | '/registro'
     | '/reservas'
     | '/socios'
   id:
@@ -130,7 +163,10 @@ export interface FileRouteTypes {
     | '/configuracion'
     | '/dashboard'
     | '/feed'
+    | '/login'
     | '/prs'
+    | '/recuperar'
+    | '/registro'
     | '/reservas'
     | '/socios'
   fileRoutesById: FileRoutesById
@@ -142,7 +178,10 @@ export interface RootRouteChildren {
   ConfiguracionRoute: typeof ConfiguracionRoute
   DashboardRoute: typeof DashboardRoute
   FeedRoute: typeof FeedRoute
+  LoginRoute: typeof LoginRoute
   PrsRoute: typeof PrsRoute
+  RecuperarRoute: typeof RecuperarRoute
+  RegistroRoute: typeof RegistroRoute
   ReservasRoute: typeof ReservasRoute
   SociosRoute: typeof SociosRoute
 }
@@ -163,11 +202,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReservasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/registro': {
+      id: '/registro'
+      path: '/registro'
+      fullPath: '/registro'
+      preLoaderRoute: typeof RegistroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recuperar': {
+      id: '/recuperar'
+      path: '/recuperar'
+      fullPath: '/recuperar'
+      preLoaderRoute: typeof RecuperarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/prs': {
       id: '/prs'
       path: '/prs'
       fullPath: '/prs'
       preLoaderRoute: typeof PrsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/feed': {
@@ -222,7 +282,10 @@ const rootRouteChildren: RootRouteChildren = {
   ConfiguracionRoute: ConfiguracionRoute,
   DashboardRoute: DashboardRoute,
   FeedRoute: FeedRoute,
+  LoginRoute: LoginRoute,
   PrsRoute: PrsRoute,
+  RecuperarRoute: RecuperarRoute,
+  RegistroRoute: RegistroRoute,
   ReservasRoute: ReservasRoute,
   SociosRoute: SociosRoute,
 }
