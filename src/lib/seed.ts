@@ -92,11 +92,80 @@ function seedClassesFor({ tenant, users }: SeedResult) {
   const sessionsRepo = classSessionsRepoFor(tenant.id);
   const bookingsRepo = bookingsRepoFor(tenant.id);
   const checkinsRepo = checkinsRepoFor(tenant.id);
+  const plansRepo = membershipPlansRepoFor(tenant.id);
+  const membershipsRepo = membershipsRepoFor(tenant.id);
+  const paymentsRepo = paymentsRepoFor(tenant.id);
 
   const laura = users.find((u) => u.name === "Laura Coach");
   const marcos = users.find((u) => u.name === "Marcos Coach");
   const ana = users.find((u) => u.name === "Ana Socia");
   const diego = users.find((u) => u.name === "Diego Socio");
+
+  // Planes de membresía
+  const planDefs: Array<Omit<MembershipPlan, keyof import("@/types").BaseEntity>> = [
+    { tenantId: tenant.id, name: "Ilimitado", priceMonthly: 89, type: "unlimited", active: true },
+    { tenantId: tenant.id, name: "12 clases", priceMonthly: 69, type: "credits", creditsPerMonth: 12, active: true },
+    { tenantId: tenant.id, name: "8 clases", priceMonthly: 55, type: "credits", creditsPerMonth: 8, active: true },
+  ];
+  const [planUnlimited, plan12, plan8] = planDefs.map((p) => plansRepo.create(p));
+
+  // Membresías: Ana con 12 clases (expira pronto en 4 días), Diego con Ilimitado
+  const today = new Date();
+  if (ana) {
+    const startAna = addDays(today, -26); // así queda a 4 días de expirar
+    const endAna = addMonths(startAna, 1);
+    const membershipAna = membershipsRepo.create({
+      tenantId: tenant.id,
+      userId: ana.id,
+      planId: plan12.id,
+      startDate: toDateKey(startAna),
+      endDate: toDateKey(endAna),
+      status: "active",
+      creditsRemaining: 5,
+    });
+    // Pagos: alta hace ~2 meses, renovación este mes
+    paymentsRepo.create({
+      tenantId: tenant.id, userId: ana.id, membershipId: membershipAna.id,
+      amount: plan12.priceMonthly, method: "tarjeta",
+      date: toDateKey(addDays(today, -56)), notes: "Alta 12 clases",
+    });
+    paymentsRepo.create({
+      tenantId: tenant.id, userId: ana.id, membershipId: membershipAna.id,
+      amount: plan12.priceMonthly, method: "domiciliacion",
+      date: toDateKey(startAna), notes: "Renovación mensual",
+    });
+  }
+  if (diego) {
+    const startDiego = addDays(today, -10);
+    const endDiego = addMonths(startDiego, 1);
+    const membershipDiego = membershipsRepo.create({
+      tenantId: tenant.id,
+      userId: diego.id,
+      planId: planUnlimited.id,
+      startDate: toDateKey(startDiego),
+      endDate: toDateKey(endDiego),
+      status: "active",
+    });
+    paymentsRepo.create({
+      tenantId: tenant.id, userId: diego.id, membershipId: membershipDiego.id,
+      amount: planUnlimited.priceMonthly, method: "tarjeta",
+      date: toDateKey(addDays(today, -70)), notes: "Alta Ilimitado",
+    });
+    paymentsRepo.create({
+      tenantId: tenant.id, userId: diego.id, membershipId: membershipDiego.id,
+      amount: planUnlimited.priceMonthly, method: "tarjeta",
+      date: toDateKey(addDays(today, -40)), notes: "Renovación mensual",
+    });
+    paymentsRepo.create({
+      tenantId: tenant.id, userId: diego.id, membershipId: membershipDiego.id,
+      amount: planUnlimited.priceMonthly, method: "tarjeta",
+      date: toDateKey(startDiego), notes: "Renovación mensual",
+    });
+  }
+
+  // El plan de 8 clases queda disponible para futuros socios
+  void plan8;
+
 
   const defs: Array<Omit<ClassTemplate, keyof import("@/types").BaseEntity | "tenantId">> = [
     { name: "WOD", type: "wod" as ClassType, durationMinutes: 60, defaultCapacity: 14, defaultCoachId: laura?.id, color: "#F97316" },
