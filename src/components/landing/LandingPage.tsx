@@ -77,7 +77,11 @@ export function LandingPage() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {mode === "create" ? "Crear mi box" : "Entrar en un box"}
+              {mode === "create"
+                ? "Crear mi box"
+                : mode === "enter"
+                  ? "Entrar en un box"
+                  : "Acceso plataforma"}
             </DialogTitle>
           </DialogHeader>
           {mode === "create" && (
@@ -97,6 +101,15 @@ export function LandingPage() {
                 goDashboard();
               }}
               onCreate={() => setMode("create")}
+            />
+          )}
+          {mode === "platform" && (
+            <PlatformForm
+              onCancel={() => setMode(null)}
+              onEnter={(id) => {
+                loginAsSuperAdmin(id);
+                navigate({ to: "/admin" });
+              }}
             />
           )}
         </DialogContent>
