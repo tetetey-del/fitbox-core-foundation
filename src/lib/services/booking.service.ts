@@ -67,12 +67,18 @@ export function bookSession(
   userId: string,
   opts: BookOptions = {},
 ): BookResult {
-  const session = classSessionsRepo.getById(sessionId);
-  if (!session) return { ok: false, reason: "La sesión no existe" };
-  if (session.status === "cancelled") return { ok: false, reason: "La sesión está cancelada" };
+  const key = bookingKey(sessionId, userId);
+  if (inFlightBookings.has(key)) {
+    return { ok: false, reason: "Reserva en curso, espera un momento" };
+  }
+  inFlightBookings.add(key);
+  try {
+    const session = classSessionsRepo.getById(sessionId);
+    if (!session) return { ok: false, reason: "La sesión no existe" };
+    if (session.status === "cancelled") return { ok: false, reason: "La sesión está cancelada" };
 
-  const existing = getUserBooking(sessionId, userId);
-  if (existing) return { ok: false, reason: "Ya tienes una reserva en esta sesión" };
+    const existing = getUserBooking(sessionId, userId);
+    if (existing) return { ok: false, reason: "Ya tienes una reserva en esta sesión" };
 
   // Validación de créditos/plan (solo cuando el propio socio se apunta)
   if (!opts.bypassCredits) {
