@@ -4,8 +4,11 @@ import { classTemplatesRepoFor } from "./storage/repositories/classTemplates.rep
 import { classSessionsRepoFor } from "./storage/repositories/classSessions.repo";
 import { bookingsRepoFor } from "./storage/repositories/bookings.repo";
 import { checkinsRepoFor } from "./storage/repositories/checkins.repo";
-import { addDays, startOfWeek, toDateKey } from "./date";
-import type { ClassTemplate, ClassType, Tenant, User } from "@/types";
+import { membershipPlansRepoFor } from "./storage/repositories/membershipPlans.repo";
+import { membershipsRepoFor } from "./storage/repositories/memberships.repo";
+import { paymentsRepoFor } from "./storage/repositories/payments.repo";
+import { addDays, addMonths, startOfWeek, toDateKey } from "./date";
+import type { ClassTemplate, ClassType, MembershipPlan, Tenant, User } from "@/types";
 
 export interface SeedResult {
   tenant: Tenant;
@@ -89,11 +92,80 @@ function seedClassesFor({ tenant, users }: SeedResult) {
   const sessionsRepo = classSessionsRepoFor(tenant.id);
   const bookingsRepo = bookingsRepoFor(tenant.id);
   const checkinsRepo = checkinsRepoFor(tenant.id);
+  const plansRepo = membershipPlansRepoFor(tenant.id);
+  const membershipsRepo = membershipsRepoFor(tenant.id);
+  const paymentsRepo = paymentsRepoFor(tenant.id);
 
   const laura = users.find((u) => u.name === "Laura Coach");
   const marcos = users.find((u) => u.name === "Marcos Coach");
   const ana = users.find((u) => u.name === "Ana Socia");
   const diego = users.find((u) => u.name === "Diego Socio");
+
+  // Planes de membresía
+  const planDefs: Array<Omit<MembershipPlan, keyof import("@/types").BaseEntity>> = [
+    { tenantId: tenant.id, name: "Ilimitado", priceMonthly: 89, type: "unlimited", active: true },
+    { tenantId: tenant.id, name: "12 clases", priceMonthly: 69, type: "credits", creditsPerMonth: 12, active: true },
+    { tenantId: tenant.id, name: "8 clases", priceMonthly: 55, type: "credits", creditsPerMonth: 8, active: true },
+  ];
+  const [planUnlimited, plan12, plan8] = planDefs.map((p) => plansRepo.create(p));
+
+  // Membresías: Ana con 12 clases (expira pronto en 4 días), Diego con Ilimitado
+  const today = new Date();
+  if (ana) {
+    const startAna = addDays(today, -26); // así queda a 4 días de expirar
+    const endAna = addMonths(startAna, 1);
+    const membershipAna = membershipsRepo.create({
+      tenantId: tenant.id,
+      userId: ana.id,
+      planId: plan12.id,
+      startDate: toDateKey(startAna),
+      endDate: toDateKey(endAna),
+      status: "active",
+      creditsRemaining: 5,
+    });
+    // Pagos: alta hace ~2 meses, renovación este mes
+    paymentsRepo.create({
+      tenantId: tenant.id, userId: ana.id, membershipId: membershipAna.id,
+      amount: plan12.priceMonthly, method: "tarjeta",
+      date: toDateKey(addDays(today, -56)), notes: "Alta 12 clases",
+    });
+    paymentsRepo.create({
+      tenantId: tenant.id, userId: ana.id, membershipId: membershipAna.id,
+      amount: plan12.priceMonthly, method: "domiciliacion",
+      date: toDateKey(startAna), notes: "Renovación mensual",
+    });
+  }
+  if (diego) {
+    const startDiego = addDays(today, -10);
+    const endDiego = addMonths(startDiego, 1);
+    const membershipDiego = membershipsRepo.create({
+      tenantId: tenant.id,
+      userId: diego.id,
+      planId: planUnlimited.id,
+      startDate: toDateKey(startDiego),
+      endDate: toDateKey(endDiego),
+      status: "active",
+    });
+    paymentsRepo.create({
+      tenantId: tenant.id, userId: diego.id, membershipId: membershipDiego.id,
+      amount: planUnlimited.priceMonthly, method: "tarjeta",
+      date: toDateKey(addDays(today, -70)), notes: "Alta Ilimitado",
+    });
+    paymentsRepo.create({
+      tenantId: tenant.id, userId: diego.id, membershipId: membershipDiego.id,
+      amount: planUnlimited.priceMonthly, method: "tarjeta",
+      date: toDateKey(addDays(today, -40)), notes: "Renovación mensual",
+    });
+    paymentsRepo.create({
+      tenantId: tenant.id, userId: diego.id, membershipId: membershipDiego.id,
+      amount: planUnlimited.priceMonthly, method: "tarjeta",
+      date: toDateKey(startDiego), notes: "Renovación mensual",
+    });
+  }
+
+  // El plan de 8 clases queda disponible para futuros socios
+  void plan8;
+
 
   const defs: Array<Omit<ClassTemplate, keyof import("@/types").BaseEntity | "tenantId">> = [
     { name: "WOD", type: "wod" as ClassType, durationMinutes: 60, defaultCapacity: 14, defaultCoachId: laura?.id, color: "#F97316" },
@@ -161,38 +233,49 @@ function seedClassesFor({ tenant, users }: SeedResult) {
     }
   }
 
-  // Reservas y check-ins de ejemplo repartidos entre los socios
-  const socios = [ana, diego].filter(Boolean) as User[];
+  // Reservas y check-ins de ejemplo, coherentes con los créditos de Ana.
   const todayKey = toDateKey(new Date());
 
+  let anaConfirmed = 0;
+  const anaCreditCap = 7; // así deja 5/12 en el badge
   created.forEach((s, i) => {
-    // Reserva alterna
-    const user = socios[i % socios.length];
-    if (!user) return;
-    const b = bookingsRepo.create({
-      tenantId: tenant.id,
-      sessionId: s.id,
-      userId: user.id,
-      status: "confirmed",
-    });
-    // Alguna reserva del otro socio también
-    if (i % 3 === 0 && socios[1]) {
-      bookingsRepo.create({
+    // Diego (Ilimitado) reserva en pasado y en las próximas sesiones
+    if (diego && i % 2 === 0) {
+      const b = bookingsRepo.create({
         tenantId: tenant.id,
         sessionId: s.id,
-        userId: socios[(i + 1) % socios.length].id,
+        userId: diego.id,
         status: "confirmed",
       });
+      if (s.date < todayKey || (s.date === todayKey && s.time < "12:00")) {
+        checkinsRepo.create({
+          tenantId: tenant.id,
+          bookingId: b.id,
+          sessionId: s.id,
+          userId: diego.id,
+          checkedInAt: new Date().toISOString(),
+        });
+      }
     }
-    // Check-in en sesiones pasadas de hoy
-    if (s.date < todayKey || (s.date === todayKey && s.time < "12:00")) {
-      checkinsRepo.create({
+    // Ana (12 clases) — solo hasta llenar la cuota simulada
+    if (ana && i % 3 === 1 && anaConfirmed < anaCreditCap) {
+      anaConfirmed++;
+      const b = bookingsRepo.create({
         tenantId: tenant.id,
-        bookingId: b.id,
         sessionId: s.id,
-        userId: user.id,
-        checkedInAt: new Date().toISOString(),
+        userId: ana.id,
+        status: "confirmed",
       });
+      if (s.date < todayKey || (s.date === todayKey && s.time < "12:00")) {
+        checkinsRepo.create({
+          tenantId: tenant.id,
+          bookingId: b.id,
+          sessionId: s.id,
+          userId: ana.id,
+          checkedInAt: new Date().toISOString(),
+        });
+      }
     }
   });
 }
+

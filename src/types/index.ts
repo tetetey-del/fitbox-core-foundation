@@ -99,3 +99,62 @@ export const CLASS_TYPE_LABEL: Record<ClassType, string> = {
   open_box: "Open Box",
   otro: "Otro",
 };
+
+// ---- Membresías y pagos ----
+
+export type PlanType = "unlimited" | "credits";
+
+export interface MembershipPlan extends BaseEntity {
+  tenantId: string;
+  name: string;
+  priceMonthly: number;
+  type: PlanType;
+  creditsPerMonth?: number;
+  active: boolean;
+}
+
+export type MembershipStatus = "active" | "expired" | "cancelled";
+
+export interface Membership extends BaseEntity {
+  tenantId: string;
+  userId: string;
+  planId: string;
+  startDate: string; // YYYY-MM-DD
+  endDate: string; // YYYY-MM-DD
+  status: MembershipStatus;
+  creditsRemaining?: number;
+}
+
+/** Estado derivado que se muestra en la UI. */
+export type MembershipUiStatus =
+  | "active"
+  | "expiring_soon"
+  | "expired"
+  | "none";
+
+export type PaymentMethod = "efectivo" | "tarjeta" | "domiciliacion" | "otro";
+
+export interface Payment extends BaseEntity {
+  tenantId: string;
+  userId: string;
+  membershipId?: string;
+  amount: number;
+  date: string; // YYYY-MM-DD
+  method: PaymentMethod;
+  notes?: string;
+}
+
+export const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
+  efectivo: "Efectivo",
+  tarjeta: "Tarjeta",
+  domiciliacion: "Domiciliación",
+  otro: "Otro",
+};
+
+export const MEMBERSHIP_UI_LABEL: Record<MembershipUiStatus, string> = {
+  active: "Activo",
+  expiring_soon: "Expira pronto",
+  expired: "Expirado",
+  none: "Sin plan",
+};
+

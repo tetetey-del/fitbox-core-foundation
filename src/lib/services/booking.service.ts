@@ -4,6 +4,7 @@ import { checkinsRepo } from "@/lib/storage/repositories/checkins.repo";
 import { classSessionsRepo } from "@/lib/storage/repositories/classSessions.repo";
 import { tenantsRepo } from "@/lib/storage/repositories/tenants.repo";
 import { hoursBetween, sessionStart } from "@/lib/date";
+import { consumeCredit, inspectCredits, refundCredit } from "./membership.service";
 
 const DEFAULT_CANCELLATION_HOURS = 2;
 
@@ -46,7 +47,16 @@ export interface BookResult {
   reason?: string;
 }
 
-export function bookSession(sessionId: string, userId: string): BookResult {
+export interface BookOptions {
+  /** Cuando el staff apunta manualmente a alguien, se saltan las validaciones de créditos. */
+  bypassCredits?: boolean;
+}
+
+export function bookSession(
+  sessionId: string,
+  userId: string,
+  opts: BookOptions = {},
+): BookResult {
   const session = classSessionsRepo.getById(sessionId);
   if (!session) return { ok: false, reason: "La sesión no existe" };
   if (session.status === "cancelled") return { ok: false, reason: "La sesión está cancelada" };
@@ -54,8 +64,24 @@ export function bookSession(sessionId: string, userId: string): BookResult {
   const existing = getUserBooking(sessionId, userId);
   if (existing) return { ok: false, reason: "Ya tienes una reserva en esta sesión" };
 
+  // Validación de créditos/plan (solo cuando el propio socio se apunta)
+  if (!opts.bypassCredits) {
+    const check = inspectCredits(userId);
+    if (!check.hasMembership) {
+      return { ok: false, reason: "Sin membresía activa" };
+    }
+    if (check.needsCredit && !check.hasCredits) {
+      return { ok: false, reason: "Sin créditos disponibles este ciclo" };
+    }
+  }
+
   const occ = getSessionOccupancy(sessionId);
   if (occ.free > 0) {
+    // Confirmada: consumir crédito ahora (si aplica y no hay bypass)
+    if (!opts.bypassCredits) {
+      const consumed = consumeCredit(userId);
+      if (!consumed) return { ok: false, reason: "Sin créditos disponibles este ciclo" };
+    }
     const booking = bookingsRepo.create({
       tenantId: session.tenantId,
       sessionId,
@@ -65,6 +91,7 @@ export function bookSession(sessionId: string, userId: string): BookResult {
     return { ok: true, booking };
   }
 
+  // Lista de espera: no se consume crédito hasta la promoción
   const position = occ.waitlist.length + 1;
   const booking = bookingsRepo.create({
     tenantId: session.tenantId,
@@ -103,7 +130,14 @@ export function cancelBooking(bookingId: string, actorRole: UserRole): CancelRes
     }
   }
 
+  const wasConfirmed = booking.status === "confirmed";
+
   bookingsRepo.update(bookingId, { status: "cancelled", position: undefined });
+
+  // Devolver crédito si la reserva era confirmada
+  if (wasConfirmed) {
+    refundCredit(booking.userId);
+  }
 
   // Elimina el check-in si existía
   const ci = checkinsRepo.query({ bookingId })[0];
@@ -111,25 +145,39 @@ export function cancelBooking(bookingId: string, actorRole: UserRole): CancelRes
 
   let promoted: Booking | undefined;
 
-  if (booking.status === "confirmed") {
-    const occ = getSessionOccupancy(booking.sessionId);
-    const next = occ.waitlist[0];
-    if (next) {
-      const updated = bookingsRepo.update(next.id, {
-        status: "confirmed",
-        position: undefined,
-      });
-      if (updated) promoted = updated;
-      // Reordenar posiciones del resto de la waitlist
-      const rest = occ.waitlist.slice(1);
-      rest.forEach((b, i) => bookingsRepo.update(b.id, { position: i + 1 }));
-    }
+  if (wasConfirmed) {
+    promoted = promoteNextFromWaitlist(booking.sessionId);
   } else if (booking.status === "waitlist") {
     const occ = getSessionOccupancy(booking.sessionId);
     occ.waitlist.forEach((b, i) => bookingsRepo.update(b.id, { position: i + 1 }));
   }
 
   return { ok: true, promoted };
+}
+
+/**
+ * Promociona al primero de la lista de espera que tenga créditos disponibles.
+ * Si el primero no puede (sin créditos), se prueba con el siguiente. Los que
+ * no pueden se mantienen en la lista de espera para más adelante.
+ */
+function promoteNextFromWaitlist(sessionId: string): Booking | undefined {
+  const occ = getSessionOccupancy(sessionId);
+  for (const candidate of occ.waitlist) {
+    const check = inspectCredits(candidate.userId);
+    if (!check.hasMembership) continue;
+    if (check.needsCredit && !check.hasCredits) continue;
+    // Puede pasar: consumir crédito (si aplica) y promocionar
+    if (check.needsCredit) consumeCredit(candidate.userId);
+    const updated = bookingsRepo.update(candidate.id, {
+      status: "confirmed",
+      position: undefined,
+    });
+    // Reindexar la waitlist restante
+    const rest = getSessionOccupancy(sessionId).waitlist;
+    rest.forEach((b, i) => bookingsRepo.update(b.id, { position: i + 1 }));
+    return updated ?? undefined;
+  }
+  return undefined;
 }
 
 // ---- Check-ins (solo staff) ----
@@ -184,16 +232,18 @@ export function cancelSession(sessionId: string): void {
   const bookings = bookingsRepo
     .query({ sessionId })
     .filter((b) => b.status !== "cancelled");
-  bookings.forEach((b) =>
-    bookingsRepo.update(b.id, { status: "cancelled", position: undefined }),
-  );
+  bookings.forEach((b) => {
+    const wasConfirmed = b.status === "confirmed";
+    bookingsRepo.update(b.id, { status: "cancelled", position: undefined });
+    if (wasConfirmed) refundCredit(b.userId);
+  });
 }
 
 // ---- Alta manual de asistente (staff) ----
 
 export function addAttendee(sessionId: string, userId: string): BookResult {
-  // Reutiliza bookSession pero ignora la duplicidad si ya existe cancelada
-  return bookSession(sessionId, userId);
+  // El staff apunta manualmente: se saltan las restricciones de créditos.
+  return bookSession(sessionId, userId, { bypassCredits: true });
 }
 
 export interface SessionForUser extends ClassSession {
