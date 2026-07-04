@@ -279,12 +279,18 @@ function ReservasPage() {
   );
 }
 
-function MemberBadge({ sessionId, myBookingId }: { sessionId: string; myBookingId?: string }) {
-  if (!myBookingId) return null;
-  const occ = getSessionOccupancy(sessionId);
-  const inWait = occ.waitlist.find((b) => b.id === myBookingId);
-  const confirmed = occ.confirmed.find((b) => b.id === myBookingId);
-  if (confirmed) {
+function MemberBadge({
+  myBookingId,
+  waitlist,
+  confirmed,
+}: {
+  myBookingId: string;
+  waitlist: Booking[];
+  confirmed: Booking[];
+}) {
+  const inWait = waitlist.find((b) => b.id === myBookingId);
+  const isConfirmed = confirmed.some((b) => b.id === myBookingId);
+  if (isConfirmed) {
     return (
       <div className="text-[11px] font-medium text-emerald-400 flex items-center gap-1 pl-1">
         <Clock className="h-3 w-3" strokeWidth={1.5} /> Reservado
