@@ -1,4 +1,6 @@
 import type {
+  BaseEntity,
+
   Booking,
   CheckIn,
   ClassSession,
