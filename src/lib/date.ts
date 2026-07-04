@@ -57,6 +57,8 @@ export function daysBetween(a: Date, b: Date): number {
 export function formatDate(iso: string): string {
   const d = parseDateKey(iso);
   return d.toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" });
+}
+
 
 export const DAY_LABELS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 export const DAY_LABELS_LONG = [
