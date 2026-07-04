@@ -233,16 +233,40 @@ function Hero({ onCreate, onEnter }: { onCreate: () => void; onEnter: () => void
 }
 
 function MockupPreview() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [offset, setOffset] = useState(0);
+  useEffect(() => {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) return;
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        const el = ref.current;
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        const center = rect.top + rect.height / 2;
+        const from = window.innerHeight / 2;
+        const delta = (center - from) / window.innerHeight;
+        setOffset(Math.max(-14, Math.min(14, -delta * 24)));
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
   return (
-    <div className="relative">
+    <div ref={ref} className="relative" style={{ transform: `translateY(${offset}px)`, transition: "transform 120ms linear" }}>
       <div
         aria-hidden
-        className="absolute -inset-6 rounded-3xl blur-2xl opacity-40"
+        className="absolute -inset-6 rounded-3xl blur-2xl opacity-50"
         style={{
           background:
-            "linear-gradient(135deg, rgba(249,115,22,0.35), rgba(249,115,22,0.05))",
+            "linear-gradient(135deg, rgba(249,115,22,0.4), rgba(236,72,153,0.28) 60%, rgba(139,92,246,0.15))",
         }}
       />
+
       <div className="relative rounded-xl border border-border bg-card/80 backdrop-blur p-4 shadow-2xl">
         <div className="flex items-center gap-1.5 pb-3 border-b border-border">
           <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/30" />
