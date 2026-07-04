@@ -118,6 +118,8 @@ export function bootstrapDemoIfNeeded(): void {
   seedClassesFor(norte);
   seedPRsFor(norte);
   seedFeedFor(norte);
+  seedWodsFor(norte);
+  seedNotificationsFor(norte);
 
   // Box secundario, más pequeño y con otro tema
   const sur = createTenantWithSeed({
