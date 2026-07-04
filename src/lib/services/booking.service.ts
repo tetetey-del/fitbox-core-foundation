@@ -244,10 +244,20 @@ export function cancelSession(sessionId: string): void {
   const bookings = bookingsRepo
     .query({ sessionId })
     .filter((b) => b.status !== "cancelled");
+  const tpl = classTemplatesRepo.getById(session.templateId);
   bookings.forEach((b) => {
     const wasConfirmed = b.status === "confirmed";
     bookingsRepo.update(b.id, { status: "cancelled", position: undefined });
     if (wasConfirmed) refundCredit(b.userId);
+    notify({
+      tenantId: session.tenantId,
+      userId: b.userId,
+      type: "session_cancelled",
+      title: "Sesión cancelada",
+      body: `${tpl?.name ?? "Clase"} · ${formatDate(session.date)} a las ${session.startTime} ha sido cancelada.`,
+      linkTo: "/reservas",
+      dedupeKey: `cancelled:${sessionId}:${b.userId}`,
+    });
   });
 }
 
