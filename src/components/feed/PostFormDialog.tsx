@@ -63,7 +63,7 @@ export function PostFormDialog({
 
   const onFile = async (file?: File | null) => {
     if (!file) return;
-    if (file.size > MAX_IMAGE_BYTES) {
+    if (file.size > MAX_POST_IMAGE_BYTES) {
       toast.error("La imagen debe pesar menos de 800 KB");
       return;
     }
