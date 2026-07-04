@@ -349,7 +349,7 @@ function seedClassesFor({ tenant, users }: SeedResult) {
           bookingId: b.id,
           sessionId: s.id,
           userId: diego.id,
-          checkedInAt: new Date().toISOString(),
+          checkedInAt: new Date(s.date + "T" + s.time + ":00").toISOString(),
         });
       }
     }
@@ -368,8 +368,9 @@ function seedClassesFor({ tenant, users }: SeedResult) {
           bookingId: b.id,
           sessionId: s.id,
           userId: ana.id,
-          checkedInAt: new Date().toISOString(),
+          checkedInAt: new Date(s.date + "T" + s.time + ":00").toISOString(),
         });
+
       }
     }
   });
