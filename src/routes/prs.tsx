@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useRequireModule } from "@/hooks/useRequireModule";
 import { useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
@@ -37,6 +38,7 @@ const CATEGORY_ORDER: ExerciseCategory[] = [
 ];
 
 function PRsPage() {
+  useRequireModule("prs");
   const { currentUser, tenantUsers } = useAuth();
   useDataVersion();
 

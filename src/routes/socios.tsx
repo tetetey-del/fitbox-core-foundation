@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useRequireModule } from "@/hooks/useRequireModule";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Plus, Search } from "lucide-react";
@@ -57,6 +58,7 @@ const FILTER_LABEL: Record<(typeof FILTERS)[number], string> = {
 };
 
 function SociosPage() {
+  useRequireModule("socios");
   const { currentUser, currentTenant } = useAuth();
   const navigate = useNavigate();
   useDataVersion();

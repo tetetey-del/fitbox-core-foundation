@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useRequireModule } from "@/hooks/useRequireModule";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Pencil, Plus, Repeat, Trash2, Ban } from "lucide-react";
@@ -42,6 +43,7 @@ import { addDays, DAY_LABELS, toDateKey } from "@/lib/date";
 export const Route = createFileRoute("/clases")({ component: ClasesPage });
 
 function ClasesPage() {
+  useRequireModule("reservas");
   const { currentUser, tenantUsers } = useAuth();
   const navigate = useNavigate();
   useDataVersion();

@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useRequireModule } from "@/hooks/useRequireModule";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { CalendarDays, Clock } from "lucide-react";
@@ -29,6 +30,7 @@ import {
 export const Route = createFileRoute("/reservas")({ component: ReservasPage });
 
 function ReservasPage() {
+  useRequireModule("reservas");
   const { currentUser, tenantUsers } = useAuth();
   const dataVersion = useDataVersion();
 
