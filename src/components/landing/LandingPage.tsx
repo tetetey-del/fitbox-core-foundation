@@ -176,13 +176,14 @@ function Hero({ onCreate, onEnter }: { onCreate: () => void; onEnter: () => void
     <section className="relative overflow-hidden border-b border-border/60">
       <div
         aria-hidden
-        className="absolute inset-0 -z-10"
+        className="absolute inset-0 -z-10 fb-gradient-anim"
         style={{
           background:
-            "radial-gradient(60% 55% at 50% 0%, rgba(249,115,22,0.22) 0%, transparent 65%), radial-gradient(40% 40% at 85% 30%, rgba(249,115,22,0.10) 0%, transparent 70%)",
+            "radial-gradient(60% 55% at 20% 0%, rgba(249,115,22,0.28) 0%, transparent 60%), radial-gradient(45% 45% at 85% 20%, rgba(236,72,153,0.22) 0%, transparent 65%), radial-gradient(50% 50% at 60% 90%, rgba(56,189,248,0.15) 0%, transparent 70%)",
         }}
       />
       <div className="mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-24 grid gap-12 lg:grid-cols-2 items-center">
+
         <div>
           <Reveal>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-[#F97316]/30 bg-[#F97316]/10 px-3 py-1 text-xs text-[#F97316] font-medium">
