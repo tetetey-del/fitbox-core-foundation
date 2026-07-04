@@ -9,6 +9,7 @@ import {
   Zap,
   BarChart3,
   Sparkles,
+  Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,8 +31,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { tenantsRepo } from "@/lib/storage/repositories/tenants.repo";
 import { listUsersOfTenant } from "@/lib/storage/repositories/users.repo";
 import { createTenantWithSeed } from "@/lib/seed";
+import { superAdminsStore } from "@/lib/storage/superadmins";
 
-type Mode = "create" | "enter" | null;
+type Mode = "create" | "enter" | "platform" | null;
 
 export function LandingPage() {
   const [mode, setMode] = useState<Mode>(null);
