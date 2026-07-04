@@ -26,6 +26,8 @@ import {
   getSessionOccupancy,
   getUserBooking,
 } from "@/lib/services/booking.service";
+import { getPublishedWodByDate } from "@/lib/services/wods.service";
+import { WodViewer } from "@/components/wods/WodViewer";
 
 export const Route = createFileRoute("/reservas")({ component: ReservasPage });
 
@@ -109,6 +111,7 @@ function ReservasPage() {
     const items = byDay.get(key) ?? [];
     const isToday = key === toDateKey(new Date());
     const showHeader = opts.showHeader !== false;
+    const wod = getPublishedWodByDate(key);
     return (
       <div key={key} className="min-w-0">
         {showHeader && (
@@ -120,6 +123,11 @@ function ReservasPage() {
           >
             <CalendarDays className="h-3.5 w-3.5" strokeWidth={1.5} />
             {formatDayHeader(d)}
+          </div>
+        )}
+        {wod && (
+          <div className="mb-2">
+            <WodViewer wod={wod} defaultOpen={isToday} />
           </div>
         )}
         <div className="space-y-2">

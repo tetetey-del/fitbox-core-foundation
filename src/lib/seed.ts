@@ -10,11 +10,13 @@ import { paymentsRepoFor } from "./storage/repositories/payments.repo";
 import { exercisesRepoFor } from "./storage/repositories/exercises.repo";
 import { personalRecordsRepoFor } from "./storage/repositories/personalRecords.repo";
 import { postsRepoFor } from "./storage/repositories/posts.repo";
+import { notificationsRepoFor } from "./storage/repositories/notifications.repo";
+import { seedWod } from "./services/wods.service";
 import { superAdminsStore } from "./storage/superadmins";
 import { DEFAULT_EXERCISES } from "./services/prs.service";
 import { addDays, addMonths, startOfWeek, toDateKey } from "./date";
 import { buildKey, get, set } from "./storage/db";
-import type { Exercise, MembershipPlan, PostType, Tenant, ThemeId, User } from "@/types";
+import type { Exercise, MembershipPlan, PostType, Tenant, ThemeId, User, WodBlock } from "@/types";
 import { DEFAULT_MODULES } from "@/types";
 
 const SEEDED_KEY = buildKey(null, "seeded");
@@ -116,6 +118,8 @@ export function bootstrapDemoIfNeeded(): void {
   seedClassesFor(norte);
   seedPRsFor(norte);
   seedFeedFor(norte);
+  seedWodsFor(norte);
+  seedNotificationsFor(norte);
 
   // Box secundario, más pequeño y con otro tema
   const sur = createTenantWithSeed({
@@ -376,4 +380,168 @@ function seedClassesFor({ tenant, users }: SeedResult) {
   };
   if (ana) bookFor(ana.id, 6);
   if (diego) bookFor(diego.id, 10);
+}
+
+// ---- WODs ----
+
+interface WodSeedDef {
+  title: string;
+  blocks: WodBlock[];
+}
+
+const WOD_LIBRARY: WodSeedDef[] = [
+  {
+    title: "Fran",
+    blocks: [
+      { type: "calentamiento", content: "3 rondas: 200m row + 10 air squats + 10 pass-throughs con PVC + 10 scap pull-ups" },
+      { type: "fuerza", content: "Thruster técnico 5x3 subiendo hasta encontrar peso cómodo" },
+      { type: "metcon", content: "For time: 21-15-9 de Thrusters (43/30 kg) y Pull-ups. Cap: 10 min." },
+    ],
+  },
+  {
+    title: "5x5 Back Squat + AMRAP",
+    blocks: [
+      { type: "calentamiento", content: "500m bike easy + 2 rondas de: 10 goblet squats + 10 band pull-aparts" },
+      { type: "fuerza", content: "5x5 Back Squat @ 75-80% 1RM. Descanso 2-3 min." },
+      { type: "metcon", content: "AMRAP 12': 10 wall-balls + 10 KBS 24/16 + 200m run" },
+    ],
+  },
+  {
+    title: "Cindy",
+    blocks: [
+      { type: "calentamiento", content: "400m run + 3 rondas de 5 pull-ups + 10 push-ups + 15 air squats a ritmo suave" },
+      { type: "metcon", content: "AMRAP 20': 5 pull-ups + 10 push-ups + 15 air squats. Anota rondas completas." },
+      { type: "accesorio", content: "Opcional: 3x8 hollow rocks + 3x30s plancha lateral por lado" },
+    ],
+  },
+  {
+    title: "DT",
+    blocks: [
+      { type: "calentamiento", content: "3 rondas: 250m row + 10 barbell RDL + 5 clean high pull técnicos" },
+      { type: "fuerza", content: "Complex técnico: 3 deadlift + 2 hang power clean + 1 push jerk. 4 sets sin fallo." },
+      { type: "metcon", content: "5 rondas for time: 12 deadlift + 9 hang power clean + 6 push jerk (60/42 kg)" },
+    ],
+  },
+  {
+    title: "Snatch + Row",
+    blocks: [
+      { type: "calentamiento", content: "3 rondas: 200m row + 10 OHS con PVC + 5 snatch pulls" },
+      { type: "fuerza", content: "EMOM 10': 2 power snatch subiendo peso cada 2 min" },
+      { type: "metcon", content: "3 rondas for time: 500m row + 15 OHS 40/30 kg + 10 T2B" },
+    ],
+  },
+  {
+    title: "Helen",
+    blocks: [
+      { type: "calentamiento", content: "400m jog + 2 rondas de 10 KBS ligeros + 5 pull-ups estrictos" },
+      { type: "metcon", content: "3 rondas for time: 400m run + 21 KBS 24/16 + 12 pull-ups" },
+      { type: "accesorio", content: "3x10 GHD sit-ups o V-ups si no hay GHD" },
+    ],
+  },
+  {
+    title: "Deadlift heavy",
+    blocks: [
+      { type: "calentamiento", content: "3 rondas: 10 glute bridges + 10 good mornings + 5 deadlift ligeros" },
+      { type: "fuerza", content: "Deadlift: 5-5-3-3-1-1-1 subiendo hasta 90% 1RM" },
+      { type: "metcon", content: "3 rondas: 10 deadlift 100/70 + 15 box jumps 60/50 + 200m run" },
+    ],
+  },
+  {
+    title: "Grace",
+    blocks: [
+      { type: "calentamiento", content: "500m row + 2 rondas: 10 push press vacío + 10 front squats vacío" },
+      { type: "metcon", content: "For time: 30 clean & jerk 60/42 kg. Cap: 8 min." },
+    ],
+  },
+  {
+    title: "Push day",
+    blocks: [
+      { type: "calentamiento", content: "3 rondas: 10 band pull-aparts + 10 push-ups + 10 dislocaciones" },
+      { type: "fuerza", content: "Strict press: 5x5 progresivos + 3x8 push-ups strict" },
+      { type: "metcon", content: "AMRAP 10': 10 dumbbell push press 22.5/15 + 10 burpees over dumbbell" },
+    ],
+  },
+  {
+    title: "Filthy Fifty (scaled)",
+    blocks: [
+      { type: "calentamiento", content: "5 min movilidad libre + 400m jog" },
+      { type: "metcon", content: "For time: 50 box jumps 24/20 + 50 jumping pull-ups + 50 KB swings 16/12 + 50 walking lunges + 50 K2E + 50 push press 20/15 + 50 back extensions + 50 wall balls + 50 burpees + 50 double unders" },
+    ],
+  },
+  {
+    title: "Nancy",
+    blocks: [
+      { type: "calentamiento", content: "400m jog + 2 rondas: 10 OHS con PVC + 5 snatch balance ligero" },
+      { type: "metcon", content: "5 rondas for time: 400m run + 15 OHS 43/30" },
+    ],
+  },
+  {
+    title: "Hero WOD — Murph (partido)",
+    blocks: [
+      { type: "calentamiento", content: "5 min bike + movilidad de hombro y cadera" },
+      { type: "metcon", content: "For time: 1600m run + 100 pull-ups + 200 push-ups + 300 air squats + 1600m run. Partido en rondas de 5-10-15." },
+      { type: "accesorio", content: "10 min de foam roller y estiramiento" },
+    ],
+  },
+  {
+    title: "Karen",
+    blocks: [
+      { type: "calentamiento", content: "3 rondas: 10 air squats + 10 wall-balls ligeros + 10 glute bridges" },
+      { type: "metcon", content: "For time: 150 wall-balls 9/6 kg. Cap: 15 min." },
+    ],
+  },
+  {
+    title: "EMOM técnico",
+    blocks: [
+      { type: "calentamiento", content: "400m row + 3 rondas de 10 kip swings + 5 muscle-ups progresivos" },
+      { type: "fuerza", content: "EMOM 12': min1 5 pull-ups estrictos, min2 8 HSPU, min3 10 pistols" },
+      { type: "metcon", content: "AMRAP 8': 5 HSPU + 10 T2B + 15 air squats" },
+    ],
+  },
+];
+
+function seedWodsFor({ tenant, users }: SeedResult) {
+  const admin = users.find((u) => u.role === "admin") ?? users[0];
+  if (!admin) return;
+  const today = new Date();
+  // 14 días: ayer y 13 días hacia adelante (para que "hoy" tenga WOD)
+  for (let i = -1; i < 13; i++) {
+    const d = addDays(today, i);
+    const def = WOD_LIBRARY[(i + 1) % WOD_LIBRARY.length];
+    seedWod(tenant.id, admin.id, {
+      date: toDateKey(d),
+      title: def.title,
+      blocks: def.blocks,
+      publish: true,
+    });
+  }
+}
+
+function seedNotificationsFor({ tenant, users }: SeedResult) {
+  const repo = notificationsRepoFor(tenant.id);
+  const ana = users.find((u) => u.name === "Ana Socia");
+  const diego = users.find((u) => u.name === "Diego Socio");
+  const now = Date.now();
+  const mk = (
+    userId: string,
+    type: import("@/types").NotificationType,
+    title: string,
+    body: string,
+    linkTo: string,
+    minutesAgo: number,
+    read = false,
+  ) => {
+    const n = repo.create({ tenantId: tenant.id, userId, type, title, body, linkTo, read });
+    const iso = new Date(now - minutesAgo * 60_000).toISOString();
+    repo.replaceAll(repo.list().map((x) => (x.id === n.id ? { ...x, createdAt: iso } : x)));
+  };
+  if (ana) {
+    mk(ana.id, "new_post", "Nuevo WOD publicado", "Fran · WOD del día", "/feed", 45);
+    mk(ana.id, "membership_expiring", "Tu plan expira pronto", "Tu bono de 12 clases caduca en 5 días.", "/dashboard", 60 * 6);
+    mk(ana.id, "waitlist_promoted", "¡Has pasado de lista de espera!", "WOD Tarde · mañana a las 19:00", "/reservas", 60 * 26, true);
+  }
+  if (diego) {
+    mk(diego.id, "new_post", "Nuevo WOD publicado", "Fran · WOD del día", "/feed", 30);
+    mk(diego.id, "session_cancelled", "Sesión cancelada", "WOD Tarde del jueves a las 19:00 ha sido cancelada.", "/reservas", 60 * 12);
+  }
 }

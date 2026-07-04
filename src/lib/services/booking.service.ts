@@ -2,9 +2,11 @@ import type { Booking, ClassSession, UserRole } from "@/types";
 import { bookingsRepo } from "@/lib/storage/repositories/bookings.repo";
 import { checkinsRepo } from "@/lib/storage/repositories/checkins.repo";
 import { classSessionsRepo } from "@/lib/storage/repositories/classSessions.repo";
+import { classTemplatesRepo } from "@/lib/storage/repositories/classTemplates.repo";
 import { tenantsRepo } from "@/lib/storage/repositories/tenants.repo";
-import { hoursBetween, sessionStart } from "@/lib/date";
+import { hoursBetween, sessionStart, formatDate } from "@/lib/date";
 import { consumeCredit, inspectCredits, refundCredit } from "./membership.service";
+import { notify } from "./notifications.service";
 
 const DEFAULT_CANCELLATION_HOURS = 2;
 
@@ -162,19 +164,29 @@ export function cancelBooking(bookingId: string, actorRole: UserRole): CancelRes
  */
 function promoteNextFromWaitlist(sessionId: string): Booking | undefined {
   const occ = getSessionOccupancy(sessionId);
+  const session = classSessionsRepo.getById(sessionId);
   for (const candidate of occ.waitlist) {
     const check = inspectCredits(candidate.userId);
     if (!check.hasMembership) continue;
     if (check.needsCredit && !check.hasCredits) continue;
-    // Puede pasar: consumir crédito (si aplica) y promocionar
     if (check.needsCredit) consumeCredit(candidate.userId);
     const updated = bookingsRepo.update(candidate.id, {
       status: "confirmed",
       position: undefined,
     });
-    // Reindexar la waitlist restante
     const rest = getSessionOccupancy(sessionId).waitlist;
     rest.forEach((b, i) => bookingsRepo.update(b.id, { position: i + 1 }));
+    if (session) {
+      const tpl = classTemplatesRepo.getById(session.templateId);
+      notify({
+        tenantId: session.tenantId,
+        userId: candidate.userId,
+        type: "waitlist_promoted",
+        title: "¡Has pasado de lista de espera!",
+        body: `${tpl?.name ?? "Clase"} · ${formatDate(session.date)} a las ${session.startTime}`,
+        linkTo: "/reservas",
+      });
+    }
     return updated ?? undefined;
   }
   return undefined;
@@ -232,10 +244,20 @@ export function cancelSession(sessionId: string): void {
   const bookings = bookingsRepo
     .query({ sessionId })
     .filter((b) => b.status !== "cancelled");
+  const tpl = classTemplatesRepo.getById(session.templateId);
   bookings.forEach((b) => {
     const wasConfirmed = b.status === "confirmed";
     bookingsRepo.update(b.id, { status: "cancelled", position: undefined });
     if (wasConfirmed) refundCredit(b.userId);
+    notify({
+      tenantId: session.tenantId,
+      userId: b.userId,
+      type: "session_cancelled",
+      title: "Sesión cancelada",
+      body: `${tpl?.name ?? "Clase"} · ${formatDate(session.date)} a las ${session.startTime} ha sido cancelada.`,
+      linkTo: "/reservas",
+      dedupeKey: `cancelled:${sessionId}:${b.userId}`,
+    });
   });
 }
 

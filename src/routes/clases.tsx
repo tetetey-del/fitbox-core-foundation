@@ -39,6 +39,7 @@ import { CLASS_TYPE_LABEL } from "@/types";
 import { generateRecurringSessions } from "@/lib/services/sessions.service";
 import { cancelSession, getSessionOccupancy } from "@/lib/services/booking.service";
 import { addDays, DAY_LABELS, toDateKey } from "@/lib/date";
+import { WodEditor } from "@/components/wods/WodEditor";
 
 export const Route = createFileRoute("/clases")({ component: ClasesPage });
 
@@ -73,6 +74,7 @@ function ClasesPage() {
         <TabsList>
           <TabsTrigger value="plantillas">Plantillas</TabsTrigger>
           <TabsTrigger value="sesiones">Sesiones próximas</TabsTrigger>
+          <TabsTrigger value="wod">WOD del día</TabsTrigger>
         </TabsList>
 
         <TabsContent value="plantillas" className="space-y-4">
@@ -158,6 +160,12 @@ function ClasesPage() {
 
         <TabsContent value="sesiones">
           <UpcomingSessions templates={templates} coaches={coaches} />
+        </TabsContent>
+
+        <TabsContent value="wod">
+          <div className="rounded-lg border border-border bg-card p-5 max-w-3xl">
+            <WodEditor />
+          </div>
         </TabsContent>
       </Tabs>
 
