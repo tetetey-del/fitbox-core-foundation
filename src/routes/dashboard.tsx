@@ -292,6 +292,7 @@ interface MemberDashboardProps {
 
 function MemberDashboard({ userId, membership, membershipStatus, plan }: MemberDashboardProps) {
   useDataVersion();
+  const modules = useModules();
   const now = new Date();
   const upcoming = useMemo(() => {
     const nowKey = toDateKey(now);
@@ -307,8 +308,8 @@ function MemberDashboard({ userId, membership, membershipStatus, plan }: MemberD
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
-  const lastPRs = useMemo(() => getLastPRs(userId, 3), [userId]);
-  const todayWod = useMemo(() => getPublishedWodByDate(toDateKey(new Date())), []);
+  const lastPRs = useMemo(() => (modules.prs ? getLastPRs(userId, 3) : []), [userId, modules.prs]);
+  const todayWod = useMemo(() => (modules.reservas ? getPublishedWodByDate(toDateKey(new Date())) : null), [modules.reservas]);
 
   return (
     <div className="grid gap-6 lg:grid-cols-3">
@@ -332,58 +333,63 @@ function MemberDashboard({ userId, membership, membershipStatus, plan }: MemberD
           )}
         </div>
 
-        <div className="rounded-lg border border-border bg-card p-5">
-          <div className="flex items-center justify-between mb-3">
-            <div className="text-xs uppercase tracking-wide text-muted-foreground">Últimos PRs</div>
+        {modules.prs && (
+          <div className="rounded-lg border border-border bg-card p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-xs uppercase tracking-wide text-muted-foreground">Últimos PRs</div>
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/prs">Ver todos <ArrowRight className="h-4 w-4 ml-1" strokeWidth={1.5} /></Link>
+              </Button>
+            </div>
+            {lastPRs.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Aún no has registrado PRs.</p>
+            ) : (
+              <div className="space-y-2">
+                {lastPRs.map(({ pr, exercise }) => (
+                  <div key={pr.id} className="flex items-center justify-between text-sm">
+                    <div>
+                      <div className="font-medium">{exercise.name}</div>
+                      <div className="text-xs text-muted-foreground">{formatDate(pr.date)}</div>
+                    </div>
+                    <div className="font-mono">{formatPrValue(pr.value, exercise.unit)}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {modules.reservas && (
+        <div className="lg:col-span-2 rounded-lg border border-border bg-card p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-medium">Mis próximas reservas</h3>
             <Button asChild variant="ghost" size="sm">
-              <Link to="/prs">Ver todos <ArrowRight className="h-4 w-4 ml-1" strokeWidth={1.5} /></Link>
+              <Link to="/reservas">Reservar <ArrowRight className="h-4 w-4 ml-1" strokeWidth={1.5} /></Link>
             </Button>
           </div>
-          {lastPRs.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Aún no has registrado PRs.</p>
+          {upcoming.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No tienes reservas próximas.</p>
           ) : (
-            <div className="space-y-2">
-              {lastPRs.map(({ pr, exercise }) => (
-                <div key={pr.id} className="flex items-center justify-between text-sm">
+            <div className="divide-y divide-border">
+              {upcoming.map(({ b, s }) => (
+                <div key={b.id} className="flex items-center justify-between py-3 text-sm">
                   <div>
-                    <div className="font-medium">{exercise.name}</div>
-                    <div className="text-xs text-muted-foreground">{formatDate(pr.date)}</div>
+                    <div className="font-medium">{formatDate(s.date)} · {s.startTime}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {b.status === "waitlist" ? `Lista de espera · #${b.position ?? "?"}` : "Confirmada"}
+                    </div>
                   </div>
-                  <div className="font-mono">{formatPrValue(pr.value, exercise.unit)}</div>
+                  <Badge variant={b.status === "waitlist" ? "outline" : "default"} className="text-[10px]">
+                    {b.status === "waitlist" ? "Espera" : "OK"}
+                  </Badge>
                 </div>
               ))}
             </div>
           )}
         </div>
-      </div>
-
-      <div className="lg:col-span-2 rounded-lg border border-border bg-card p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-medium">Mis próximas reservas</h3>
-          <Button asChild variant="ghost" size="sm">
-            <Link to="/reservas">Reservar <ArrowRight className="h-4 w-4 ml-1" strokeWidth={1.5} /></Link>
-          </Button>
-        </div>
-        {upcoming.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No tienes reservas próximas.</p>
-        ) : (
-          <div className="divide-y divide-border">
-            {upcoming.map(({ b, s }) => (
-              <div key={b.id} className="flex items-center justify-between py-3 text-sm">
-                <div>
-                  <div className="font-medium">{formatDate(s.date)} · {s.startTime}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {b.status === "waitlist" ? `Lista de espera · #${b.position ?? "?"}` : "Confirmada"}
-                  </div>
-                </div>
-                <Badge variant={b.status === "waitlist" ? "outline" : "default"} className="text-[10px]">
-                  {b.status === "waitlist" ? "Espera" : "OK"}
-                </Badge>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 }
+
