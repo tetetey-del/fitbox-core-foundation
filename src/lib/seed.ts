@@ -259,7 +259,9 @@ function seedClassesFor({ tenant, users }: SeedResult) {
   const open = templates[4];
 
   const monday = startOfWeek(new Date());
-  const days = Array.from({ length: 14 }, (_, i) => addDays(monday, i));
+  // Semanas -3..+1 (5 semanas): pasadas para gráficas + próximas 2 para reservar
+  const days = Array.from({ length: 5 * 7 }, (_, i) => addDays(monday, i - 21));
+
 
   // Horario realista L-V: 7:00, 9:30, 13:30, 17:30, 19:00. Sábado: 10:00.
   const weekdaySlots = [
