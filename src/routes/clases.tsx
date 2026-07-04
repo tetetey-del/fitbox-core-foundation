@@ -73,6 +73,7 @@ function ClasesPage() {
         <TabsList>
           <TabsTrigger value="plantillas">Plantillas</TabsTrigger>
           <TabsTrigger value="sesiones">Sesiones próximas</TabsTrigger>
+          <TabsTrigger value="wod">WOD del día</TabsTrigger>
         </TabsList>
 
         <TabsContent value="plantillas" className="space-y-4">
