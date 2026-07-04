@@ -6,13 +6,16 @@ import {
   Users,
   Trophy,
   ArrowRight,
-  BarChart3,
   Shield,
   Newspaper,
   Palette,
   LayoutGrid,
   Check,
   ChevronRight,
+  Smartphone,
+  Zap,
+  WifiOff,
+  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
