@@ -19,9 +19,14 @@ import {
   toDateKey,
   weekDays,
 } from "@/lib/date";
-import type { ClassSession } from "@/types";
+import type { Booking, ClassSession } from "@/types";
 import {
   bookSession,
+  cancelBooking,
+  getSessionOccupancy,
+  getUserBooking,
+} from "@/lib/services/booking.service";
+
   cancelBooking,
   getSessionOccupancy,
   getUserBooking,
