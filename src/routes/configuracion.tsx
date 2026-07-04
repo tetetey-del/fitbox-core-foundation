@@ -54,10 +54,9 @@ import { DataSection } from "@/components/config/DataSection";
 export const Route = createFileRoute("/configuracion")({ component: ConfigPage });
 
 function ConfigPage() {
-  const { currentTenant, refresh, logout, login } = useAuth();
+  const { currentTenant, refresh, logout } = useAuth();
   useDataVersion();
   const [name, setName] = useState(currentTenant?.name ?? "");
-  const [brandColor, setBrandColor] = useState(currentTenant?.brandColor ?? "#F97316");
   const [cancellationWindow, setCancellationWindow] = useState(
     currentTenant?.settings?.cancellationWindowHours ?? 2,
   );
@@ -66,7 +65,6 @@ function ConfigPage() {
     if (!currentTenant) return;
     tenantsRepo.update(currentTenant.id, {
       name,
-      brandColor,
       settings: {
         ...currentTenant.settings,
         cancellationWindowHours: cancellationWindow,
@@ -76,20 +74,14 @@ function ConfigPage() {
     refresh();
   };
 
-  const handleDemo = () => {
-    const { tenant, owner } = loadDemoData();
-    login(tenant.id, owner.id);
-  };
-
   const handleReset = () => {
     clearAll();
     logout();
   };
 
-
   return (
     <AppLayout>
-      <PageHeader title="Configuración" description="Ajustes del box, planes y datos locales." />
+      <PageHeader title="Configuración" description="Ajustes del box, apariencia, módulos y datos." />
 
       <RoleGate
         allowed={["admin"]}
@@ -103,78 +95,62 @@ function ConfigPage() {
           <section className="space-y-4 rounded-lg border border-border bg-card p-6">
             <div>
               <h2 className="text-base font-semibold">Datos del box</h2>
-              <p className="text-sm text-muted-foreground">Nombre, identidad visual y reglas.</p>
+              <p className="text-sm text-muted-foreground">Nombre y reglas básicas.</p>
             </div>
             <div className="space-y-3">
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">Nombre</Label>
                 <Input value={name} onChange={(e) => setName(e.target.value)} />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Color de marca</Label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={brandColor}
-                      onChange={(e) => setBrandColor(e.target.value)}
-                      className="h-10 w-14 rounded-md border border-border bg-background cursor-pointer"
-                    />
-                    <Input value={brandColor} onChange={(e) => setBrandColor(e.target.value)} />
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">
-                    Cancelación mínima (horas)
-                  </Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    value={cancellationWindow}
-                    onChange={(e) => setCancellationWindow(Number(e.target.value))}
-                  />
-                </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">
+                  Cancelación mínima (horas)
+                </Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={cancellationWindow}
+                  onChange={(e) => setCancellationWindow(Number(e.target.value))}
+                />
               </div>
             </div>
             <Button onClick={save}>Guardar cambios</Button>
           </section>
 
+          <AppearanceSection />
+          <ModulesSection />
           <PlansSection />
-
           <DataSection />
 
           <section className="space-y-4 rounded-lg border border-border bg-card p-6">
             <div>
-              <h2 className="text-base font-semibold">Datos de demostración</h2>
+              <h2 className="text-base font-semibold">Zona de peligro</h2>
               <p className="text-sm text-muted-foreground">
-                Crea un box de ejemplo "CrossFit Norte" con usuarios, planes y reservas.
+                Borrar los datos locales de este navegador.
               </p>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <Button variant="outline" onClick={handleDemo}>Cargar datos demo</Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="ghost" className="text-destructive hover:text-destructive">
-                    Borrar todos los datos locales
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>¿Borrar todos los datos?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Se eliminarán todos los boxes, socios, reservas y PRs guardados en este navegador.
-                      Esta acción no se puede deshacer.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleReset} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                      Borrar todo
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" className="text-destructive hover:text-destructive">
+                  Borrar todos los datos locales
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>¿Borrar todos los datos?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Se eliminarán todos los boxes, socios, reservas y PRs guardados en este navegador.
+                    Esta acción no se puede deshacer.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleReset} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                    Borrar todo
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </section>
 
         </div>
