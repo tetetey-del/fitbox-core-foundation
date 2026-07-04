@@ -189,7 +189,9 @@ function ReservasPage() {
                   coach={coach}
                   onClick={() => handleCardClick(s)}
                   active={selectedId === s.id}
+                  occupancy={occ}
                 />
+
                 {!isStaff && myBooking && occ && (
                   <MemberBadge
                     myBookingId={myBooking.id}
