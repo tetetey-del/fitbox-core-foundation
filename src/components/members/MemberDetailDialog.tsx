@@ -320,5 +320,3 @@ export function lastAttendanceOf(userId: string): string | null {
   return `${formatDate(first.date)} · ${first.time}`;
 }
 
-// Re-export para evitar el warning de import no usado
-void parseDateKey;
