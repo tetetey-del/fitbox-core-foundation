@@ -109,12 +109,13 @@ export function bookSession(
 
   // Lista de espera: no se consume crédito hasta la promoción
   const position = occ.waitlist.length + 1;
-  const booking = bookingsRepo.create({
-    tenantId: session.tenantId,
-    sessionId,
-    userId,
-    status: "waitlist",
-    position,
+    const booking = bookingsRepo.create({
+      tenantId: session.tenantId,
+      sessionId,
+      userId,
+      status: "waitlist",
+      position,
+    });
     return { ok: true, booking };
   } finally {
     inFlightBookings.delete(key);
