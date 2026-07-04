@@ -194,10 +194,11 @@ function Hero({ onCreate, onEnter }: { onCreate: () => void; onEnter: () => void
             <h1 className="mt-6 text-4xl sm:text-6xl font-semibold tracking-tighter leading-[1.05]">
               Gestiona tu box
               <br />
-              <span className="bg-gradient-to-r from-[#F97316] to-[#FBA94A] bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-[#F97316] via-[#EC4899] to-[#8B5CF6] bg-clip-text text-transparent">
                 como un atleta entrena.
               </span>
             </h1>
+
           </Reveal>
           <Reveal delay={160}>
             <p className="mt-5 max-w-xl text-sm sm:text-base text-muted-foreground">
