@@ -1,3 +1,9 @@
+/**
+ * @file Servicio de membresías y pagos.
+ * Responsabilidad: asignar/renovar/cancelar planes, gestionar créditos por
+ * ciclo y registrar pagos asociados. Todas las fechas se serializan como
+ * date-keys YYYY-MM-DD en zona local (ver lib/date).
+ */
 import type { Membership, MembershipPlan, MembershipUiStatus, Payment, PaymentMethod } from "@/types";
 import { membershipsRepo } from "@/lib/storage/repositories/memberships.repo";
 import { membershipPlansRepo } from "@/lib/storage/repositories/membershipPlans.repo";
