@@ -26,6 +26,8 @@ import {
   getSessionOccupancy,
   getUserBooking,
 } from "@/lib/services/booking.service";
+import { getPublishedWodByDate } from "@/lib/services/wods.service";
+import { WodViewer } from "@/components/wods/WodViewer";
 
 export const Route = createFileRoute("/reservas")({ component: ReservasPage });
 
