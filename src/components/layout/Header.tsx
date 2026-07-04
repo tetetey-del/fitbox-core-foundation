@@ -29,8 +29,8 @@ export function Header() {
   const status = isMember ? getMembershipStatus(currentUser.id) : null;
 
   return (
-    <header className="h-14 flex items-center justify-between border-b border-border px-4 md:px-6 bg-background">
-      <div className="flex items-center gap-3 min-w-0">
+    <header className="h-14 flex items-center justify-between gap-3 border-b border-border px-3 sm:px-4 md:px-6 bg-background">
+      <div className="flex items-center gap-3 min-w-0 flex-1">
         <span
           aria-hidden
           className="h-6 w-1 rounded-full shrink-0"
@@ -46,7 +46,7 @@ export function Header() {
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 shrink-0">
         {isMember && status && (
           <>
             <MembershipBadge status={status} className="hidden sm:inline-flex" />
@@ -54,7 +54,7 @@ export function Header() {
           </>
         )}
         <Select value={currentUser.id} onValueChange={switchUser}>
-          <SelectTrigger className="h-9 w-[220px]">
+          <SelectTrigger className="h-9 w-[140px] sm:w-[220px]" aria-label="Cambiar usuario">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -65,10 +65,11 @@ export function Header() {
             ))}
           </SelectContent>
         </Select>
-        <Button variant="ghost" size="icon" onClick={logout} title="Salir">
+        <Button variant="ghost" size="icon" onClick={logout} aria-label="Cerrar sesión" title="Salir">
           <LogOut className="h-4 w-4" strokeWidth={1.5} />
         </Button>
       </div>
     </header>
   );
 }
+
