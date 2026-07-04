@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { Session, SuperAdmin, Tenant, User, UserRole } from "@/types";
+import type { Session, SuperAdmin, Tenant, User } from "@/types";
 import { sessionStore } from "@/lib/storage/session";
 import { tenantsRepo } from "@/lib/storage/repositories/tenants.repo";
 import { listUsersOfTenant } from "@/lib/storage/repositories/users.repo";
@@ -15,6 +15,16 @@ import {
   superAdminsStore,
   superSessionStore,
 } from "@/lib/storage/superadmins";
+import {
+  loginWithPassword as svcLogin,
+  logout as svcLogout,
+  registerOwner as svcRegisterOwner,
+  requestPasswordReset as svcRequestReset,
+  resetPassword as svcResetPassword,
+  changePassword as svcChangePassword,
+  type LoginResult,
+  type RegisterOwnerInput,
+} from "@/lib/services/auth.service";
 
 interface AuthContextValue {
   ready: boolean;
@@ -22,19 +32,22 @@ interface AuthContextValue {
   currentUser: User | null;
   currentTenant: Tenant | null;
   tenantUsers: User[];
-  /** Super admin activo (con o sin impersonación). */
   superAdmin: SuperAdmin | null;
-  /** Sesión actual es una impersonación del super admin. */
   isImpersonating: boolean;
-  login: (tenantId: string, userId: string) => void;
+  /** Login por email + contraseña (usuario de tenant o super admin). */
+  loginWithPassword: (email: string, password: string) => Promise<LoginResult>;
+  registerOwner: (input: RegisterOwnerInput) => Promise<void>;
+  requestPasswordReset: (email: string) => Promise<{ code: string; expiresAt: string }>;
+  resetPassword: (email: string, code: string, newPassword: string) => Promise<void>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
   logout: () => void;
-  switchTenant: (tenantId: string, userId: string) => void;
-  switchUser: (userId: string) => void;
   refresh: () => void;
-  loginAsSuperAdmin: (superAdminId: string) => void;
-  logoutSuperAdmin: () => void;
+  /** Impersonación de tenants por super admin. */
   impersonateTenant: (tenantId: string) => void;
   stopImpersonation: () => void;
+  /** Setter directo tras login/registro para hidratar la UI inmediatamente. */
+  _setSession: (s: Session | null) => void;
+  _setSuperAdminId: (id: string | null) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -76,45 +89,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return tenantUsers.find((u) => u.id === session.userId) ?? null;
   }, [session, tenantUsers]);
 
-  const login = useCallback((tenantId: string, userId: string) => {
-    const users = listUsersOfTenant(tenantId);
-    const u = users.find((x) => x.id === userId);
-    if (!u) return;
-    const s: Session = { tenantId, userId, role: u.role as UserRole };
-    sessionStore.write(s);
+  const loginWithPassword = useCallback(
+    async (email: string, password: string) => {
+      const res = await svcLogin(email, password);
+      if (res.kind === "super_admin") {
+        setSuperAdminId(res.superAdminId ?? null);
+        setSession(null);
+      } else if (res.session) {
+        setSession(res.session);
+        setSuperAdminId(null);
+      }
+      return res;
+    },
+    [],
+  );
+
+  const registerOwner = useCallback(async (input: RegisterOwnerInput) => {
+    const s = await svcRegisterOwner(input);
     setSession(s);
+    setSuperAdminId(null);
   }, []);
 
   const logout = useCallback(() => {
-    sessionStore.clear();
+    svcLogout();
     setSession(null);
-  }, []);
-
-  const switchTenant = useCallback(
-    (tenantId: string, userId: string) => login(tenantId, userId),
-    [login],
-  );
-
-  const switchUser = useCallback(
-    (userId: string) => {
-      if (!session) return;
-      login(session.tenantId, userId);
-    },
-    [session, login],
-  );
-
-  const loginAsSuperAdmin = useCallback((id: string) => {
-    superSessionStore.write({ superAdminId: id });
-    setSuperAdminId(id);
-    sessionStore.clear();
-    setSession(null);
-  }, []);
-
-  const logoutSuperAdmin = useCallback(() => {
-    superSessionStore.clear();
     setSuperAdminId(null);
-    sessionStore.clear();
-    setSession(null);
   }, []);
 
   const impersonateTenant = useCallback(
@@ -148,15 +147,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     tenantUsers,
     superAdmin,
     isImpersonating: !!session?.impersonatedBy,
-    login,
+    loginWithPassword,
+    registerOwner,
+    requestPasswordReset: svcRequestReset,
+    resetPassword: svcResetPassword,
+    changePassword: (curr, next) => {
+      if (!session) throw new Error("Sin sesión");
+      return svcChangePassword(session.tenantId, session.userId, curr, next);
+    },
     logout,
-    switchTenant,
-    switchUser,
     refresh,
-    loginAsSuperAdmin,
-    logoutSuperAdmin,
     impersonateTenant,
     stopImpersonation,
+    _setSession: setSession,
+    _setSuperAdminId: setSuperAdminId,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
