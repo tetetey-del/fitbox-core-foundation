@@ -19,6 +19,9 @@ import { formatPrValue } from "@/lib/format";
 import { useModules } from "@/hooks/useModules";
 import { getPublishedWodByDate } from "@/lib/services/wods.service";
 import { WodViewer } from "@/components/wods/WodViewer";
+import { getMyActiveChallenge, refreshChallenges } from "@/lib/services/challenges.service";
+import { listMyAssignments, nextPendingSession } from "@/lib/services/programs.service";
+import { useEffect } from "react";
 
 interface Props {
   userId: string;
