@@ -7,6 +7,7 @@ import { Header } from "./Header";
 import { MobileNav } from "./MobileNav";
 import { ImpersonationBanner } from "./ImpersonationBanner";
 import { Button } from "@/components/ui/button";
+import { scanExpiringMembershipsForTenant } from "@/lib/services/notifications.service";
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const { ready, session, currentTenant, isImpersonating, logout } = useAuth();
@@ -15,6 +16,10 @@ export function AppLayout({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (ready && !session) navigate({ to: "/" });
   }, [ready, session, navigate]);
+
+  useEffect(() => {
+    if (currentTenant?.id) scanExpiringMembershipsForTenant(currentTenant.id);
+  }, [currentTenant?.id]);
 
   if (!ready) return <div className="min-h-dvh bg-background" />;
   if (!session || !currentTenant) return null;
