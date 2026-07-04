@@ -233,38 +233,49 @@ function seedClassesFor({ tenant, users }: SeedResult) {
     }
   }
 
-  // Reservas y check-ins de ejemplo repartidos entre los socios
-  const socios = [ana, diego].filter(Boolean) as User[];
+  // Reservas y check-ins de ejemplo, coherentes con los créditos de Ana.
   const todayKey = toDateKey(new Date());
 
+  let anaConfirmed = 0;
+  const anaCreditCap = 7; // así deja 5/12 en el badge
   created.forEach((s, i) => {
-    // Reserva alterna
-    const user = socios[i % socios.length];
-    if (!user) return;
-    const b = bookingsRepo.create({
-      tenantId: tenant.id,
-      sessionId: s.id,
-      userId: user.id,
-      status: "confirmed",
-    });
-    // Alguna reserva del otro socio también
-    if (i % 3 === 0 && socios[1]) {
-      bookingsRepo.create({
+    // Diego (Ilimitado) reserva en pasado y en las próximas sesiones
+    if (diego && i % 2 === 0) {
+      const b = bookingsRepo.create({
         tenantId: tenant.id,
         sessionId: s.id,
-        userId: socios[(i + 1) % socios.length].id,
+        userId: diego.id,
         status: "confirmed",
       });
+      if (s.date < todayKey || (s.date === todayKey && s.time < "12:00")) {
+        checkinsRepo.create({
+          tenantId: tenant.id,
+          bookingId: b.id,
+          sessionId: s.id,
+          userId: diego.id,
+          checkedInAt: new Date().toISOString(),
+        });
+      }
     }
-    // Check-in en sesiones pasadas de hoy
-    if (s.date < todayKey || (s.date === todayKey && s.time < "12:00")) {
-      checkinsRepo.create({
+    // Ana (12 clases) — solo hasta llenar la cuota simulada
+    if (ana && i % 3 === 1 && anaConfirmed < anaCreditCap) {
+      anaConfirmed++;
+      const b = bookingsRepo.create({
         tenantId: tenant.id,
-        bookingId: b.id,
         sessionId: s.id,
-        userId: user.id,
-        checkedInAt: new Date().toISOString(),
+        userId: ana.id,
+        status: "confirmed",
       });
+      if (s.date < todayKey || (s.date === todayKey && s.time < "12:00")) {
+        checkinsRepo.create({
+          tenantId: tenant.id,
+          bookingId: b.id,
+          sessionId: s.id,
+          userId: ana.id,
+          checkedInAt: new Date().toISOString(),
+        });
+      }
     }
   });
 }
+
