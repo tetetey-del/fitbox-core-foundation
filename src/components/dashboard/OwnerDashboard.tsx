@@ -38,6 +38,9 @@ export function OwnerDashboard() {
   const occupancy = useMemo(() => getOccupancyByWeekday(4), []);
   const expiring = useMemo(() => getExpiringMemberships(7), []);
 
+  const modules = useModules();
+  const pendingOrders = useMemo(() => (modules.shop ? pendingOrdersCount() : 0), [modules.shop]);
+
   const revenueData = revenue.map((r) => ({ ...r, label: formatMonthShort(r.month) }));
 
   return (
