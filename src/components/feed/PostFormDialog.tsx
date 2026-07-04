@@ -25,15 +25,15 @@ import { notifyDataChanged } from "@/lib/data-bus";
 import type { Post, PostType } from "@/types";
 import { POST_TYPE_LABEL } from "@/types";
 
-const MAX_IMAGE_BYTES = 800 * 1024; // 800 KB
+import { compressImage, dataUrlBytes } from "@/lib/image";
+import { MAX_POST_IMAGE_BYTES } from "@/lib/constants";
 
 async function readAsDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(r.result as string);
-    r.onerror = reject;
-    r.readAsDataURL(file);
-  });
+  const compressed = await compressImage(file);
+  if (dataUrlBytes(compressed) > MAX_POST_IMAGE_BYTES) {
+    throw new Error("La imagen sigue siendo demasiado grande tras comprimir");
+  }
+  return compressed;
 }
 
 export function PostFormDialog({
