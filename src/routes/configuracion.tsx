@@ -82,10 +82,10 @@ function ConfigPage() {
   };
 
   const handleReset = () => {
-    if (!confirm("¿Borrar TODOS los datos locales de FitBox? Esta acción no se puede deshacer.")) return;
     clearAll();
     logout();
   };
+
 
   return (
     <AppLayout>
