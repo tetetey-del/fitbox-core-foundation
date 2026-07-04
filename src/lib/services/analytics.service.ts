@@ -1,3 +1,9 @@
+/**
+ * @file Servicio de analítica de gestión.
+ * Responsabilidad: KPIs mensuales, series de ingresos, ocupación media por
+ * día de la semana, próximas expiraciones de plan y estadísticas por socio.
+ * Solo lecturas agregadas: nunca escribe en repos.
+ */
 import { paymentsRepo } from "@/lib/storage/repositories/payments.repo";
 import { membershipsRepo } from "@/lib/storage/repositories/memberships.repo";
 import { checkinsRepo } from "@/lib/storage/repositories/checkins.repo";
