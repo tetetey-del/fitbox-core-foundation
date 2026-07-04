@@ -231,11 +231,12 @@ function OwnerDashboard() {
 // ---- Coach ----
 
 interface CoachOrOwnerTodayProps {
-  sessions: ReturnType<typeof classSessionsRepo.query>;
-  templateById: Map<string, ReturnType<typeof classTemplatesRepo.getById>>;
-  userById: Map<string, ReturnType<typeof classTemplatesRepo.getById> extends unknown ? import("@/types").User : never>;
+  sessions: import("@/types").ClassSession[];
+  templateById: Map<string, import("@/types").ClassTemplate>;
+  userById: Map<string, import("@/types").User>;
   onOpenAgenda: () => void;
 }
+
 
 function CoachOrOwnerToday({ sessions, templateById, userById, onOpenAgenda }: CoachOrOwnerTodayProps) {
   return (
