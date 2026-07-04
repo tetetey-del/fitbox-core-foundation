@@ -8,9 +8,11 @@ import {
   Users,
   Dumbbell,
   Settings,
+  Newspaper,
 } from "lucide-react";
 import type { UserRole } from "@/types";
 import { useRole } from "@/hooks/useRole";
+import { useModules } from "@/hooks/useModules";
 import { cn } from "@/lib/utils";
 import {
   Sheet,
@@ -25,33 +27,36 @@ interface NavItem {
   to: string;
   icon: typeof LayoutDashboard;
   roles: UserRole[];
+  module?: keyof ReturnType<typeof useModules>;
 }
 
 const PRIMARY: NavItem[] = [
   { label: "Inicio", to: "/dashboard", icon: LayoutDashboard, roles: ["admin", "coach", "member"] },
-  { label: "Reservas", to: "/reservas", icon: CalendarDays, roles: ["admin", "coach", "member"] },
-  { label: "PRs", to: "/prs", icon: Trophy, roles: ["admin", "coach", "member"] },
+  { label: "Reservas", to: "/reservas", icon: CalendarDays, roles: ["admin", "coach", "member"], module: "reservas" },
+  { label: "PRs", to: "/prs", icon: Trophy, roles: ["admin", "coach", "member"], module: "prs" },
 ];
 
 const SECONDARY: NavItem[] = [
-  { label: "Socios", to: "/socios", icon: Users, roles: ["admin", "coach"] },
-  { label: "Clases", to: "/clases", icon: Dumbbell, roles: ["admin", "coach"] },
+  { label: "Feed", to: "/feed", icon: Newspaper, roles: ["admin", "coach", "member"], module: "feed" },
+  { label: "Socios", to: "/socios", icon: Users, roles: ["admin", "coach"], module: "socios" },
+  { label: "Clases", to: "/clases", icon: Dumbbell, roles: ["admin", "coach"], module: "reservas" },
   { label: "Configuración", to: "/configuracion", icon: Settings, roles: ["admin"] },
 ];
 
 export function MobileNav() {
   const { isAny } = useRole();
+  const modules = useModules();
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const [open, setOpen] = useState(false);
 
-  const primary = PRIMARY.filter((i) => isAny(i.roles));
-  const secondary = SECONDARY.filter((i) => isAny(i.roles));
+  const filt = (list: NavItem[]) =>
+    list.filter((n) => isAny(n.roles)).filter((n) => !n.module || modules[n.module]);
+  const primary = filt(PRIMARY);
+  const secondary = filt(SECONDARY);
 
   return (
     <>
-      {/* padding-bottom para que el contenido no quede tapado por la barra */}
       <div className="md:hidden h-16" aria-hidden />
-
       <nav
         aria-label="Navegación principal"
         className="md:hidden fixed bottom-0 inset-x-0 z-40 h-16 border-t border-border bg-background/95 backdrop-blur"
