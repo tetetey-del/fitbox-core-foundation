@@ -34,6 +34,8 @@ function ReservasPage() {
 
   const [monday, setMonday] = useState<Date>(() => startOfWeek(new Date()));
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedDayKey, setSelectedDayKey] = useState<string>(() => toDateKey(new Date()));
+
 
   const templates = useMemo(() => classTemplatesRepo.list(), [dataVersion]);
   const templateById = useMemo(
@@ -100,71 +102,112 @@ function ReservasPage() {
     }
     notifyDataChanged();
   };
+  const renderDayColumn = (d: Date, opts: { showHeader?: boolean } = { showHeader: true }) => {
+    const key = toDateKey(d);
+    const items = byDay.get(key) ?? [];
+    const isToday = key === toDateKey(new Date());
+    const showHeader = opts.showHeader !== false;
+    return (
+      <div key={key} className="min-w-0">
+        {showHeader && (
+          <div
+            className={`mb-2 flex items-center gap-2 text-xs font-medium ${
+              isToday ? "text-brand" : "text-muted-foreground"
+            }`}
+            style={isToday ? { color: "var(--brand)" } : undefined}
+          >
+            <CalendarDays className="h-3.5 w-3.5" strokeWidth={1.5} />
+            {formatDayHeader(d)}
+          </div>
+        )}
+        <div className="space-y-2">
+          {items.length === 0 && (
+            <div className="rounded-md border border-dashed border-border/60 p-6 text-center text-xs text-muted-foreground">
+              Sin clases programadas
+            </div>
+          )}
+          {items.map((s) => {
+            const tpl = templateById.get(s.templateId);
+            const coach = s.coachId ? userById.get(s.coachId) : undefined;
+            const myBooking = currentUser ? getUserBooking(s.id, currentUser.id) : null;
+            return (
+              <div key={s.id} className="space-y-1.5">
+                <SessionCard
+                  session={s}
+                  template={tpl}
+                  coach={coach}
+                  onClick={() => handleCardClick(s)}
+                  active={selectedId === s.id}
+                />
+                {!isStaff && <MemberBadge sessionId={s.id} myBookingId={myBooking?.id} />}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <AppLayout>
+
       <PageHeader
         title="Reservas"
         description="Calendario semanal de clases. Reserva, cancela o gestiona asistentes."
       />
 
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <WeekNavigator
           monday={monday}
           onPrev={() => setMonday(addDays(monday, -7))}
           onNext={() => setMonday(addDays(monday, 7))}
-          onToday={() => setMonday(startOfWeek(new Date()))}
+          onToday={() => {
+            setMonday(startOfWeek(new Date()));
+            setSelectedDayKey(toDateKey(new Date()));
+          }}
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
-        {days.map((d) => {
-          const key = toDateKey(d);
-          const items = byDay.get(key) ?? [];
-          const isToday = key === toDateKey(new Date());
-          return (
-            <div key={key} className="min-w-0">
-              <div
-                className={`mb-2 flex items-center gap-2 text-xs font-medium ${
-                  isToday ? "text-brand" : "text-muted-foreground"
+      {/* Selector de día (solo móvil) */}
+      <div className="md:hidden mb-4 -mx-4 px-4 overflow-x-auto">
+        <div className="flex gap-2 min-w-max">
+          {days.map((d) => {
+            const key = toDateKey(d);
+            const isSel = key === selectedDayKey;
+            const isToday = key === toDateKey(new Date());
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setSelectedDayKey(key)}
+                aria-pressed={isSel}
+                className={`shrink-0 flex flex-col items-center justify-center w-12 h-14 rounded-md border text-xs font-medium transition-colors ${
+                  isSel
+                    ? "border-foreground bg-foreground text-background"
+                    : isToday
+                      ? "border-border bg-muted text-foreground"
+                      : "border-border text-muted-foreground"
                 }`}
-                style={isToday ? { color: "var(--brand)" } : undefined}
               >
-                <CalendarDays className="h-3.5 w-3.5" strokeWidth={1.5} />
-                {formatDayHeader(d)}
-              </div>
-              <div className="space-y-2">
-                {items.length === 0 && (
-                  <div className="rounded-md border border-dashed border-border/60 p-4 text-center text-xs text-muted-foreground">
-                    Sin clases
-                  </div>
-                )}
-                {items.map((s) => {
-                  const tpl = templateById.get(s.templateId);
-                  const coach = s.coachId ? userById.get(s.coachId) : undefined;
-                  const myBooking = currentUser
-                    ? getUserBooking(s.id, currentUser.id)
-                    : null;
-                  return (
-                    <div key={s.id} className="space-y-1.5">
-                      <SessionCard
-                        session={s}
-                        template={tpl}
-                        coach={coach}
-                        onClick={() => handleCardClick(s)}
-                        active={selectedId === s.id}
-                      />
-                      {!isStaff && (
-                        <MemberBadge sessionId={s.id} myBookingId={myBooking?.id} />
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
+                <span className="uppercase">{formatDayHeader(d).split(" ")[0]}</span>
+                <span className="text-base font-semibold">{d.getDate()}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
+
+      {/* Desktop: 7 columnas · Móvil: día seleccionado */}
+      <div className="hidden md:grid md:grid-cols-7 gap-3">
+        {days.map((d) => renderDayColumn(d))}
+      </div>
+      <div className="md:hidden">
+        {(() => {
+          const d = days.find((x) => toDateKey(x) === selectedDayKey) ?? days[0];
+          return renderDayColumn(d, { showHeader: false });
+        })()}
+      </div>
+
 
       <SessionDetailSheet
         open={!!selected}
