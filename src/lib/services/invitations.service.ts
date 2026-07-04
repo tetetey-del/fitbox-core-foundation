@@ -1,3 +1,9 @@
+/**
+ * @file Servicio de invitaciones a un box.
+ * Responsabilidad: generar códigos legibles con TTL, resolver un código para
+ * la landing pública de aceptación, y crear el usuario + membresía en la
+ * aceptación. Marca invitaciones caducadas como tal.
+ */
 import type { Invitation, InvitationStatus } from "@/types";
 import {
   invitationsRepoFor,

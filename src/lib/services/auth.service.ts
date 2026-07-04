@@ -1,3 +1,9 @@
+/**
+ * @file Servicio de autenticación local (demo, sin backend).
+ * Responsabilidad: login/registro con contraseña hasheada, sesiones en
+ * localStorage, recuperación con OTP y cambio de contraseña autenticado.
+ * Lanza AuthError con códigos tipados para que la UI muestre mensajes claros.
+ */
 import type { Session, User } from "@/types";
 import {
   findUserByEmailGlobal,

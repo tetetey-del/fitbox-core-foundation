@@ -1,3 +1,9 @@
+/**
+ * @file Servicio de PRs (personal records) y catálogo de ejercicios.
+ * Responsabilidad: registrar marcas, calcular mejores por usuario y construir
+ * el leaderboard aplicando la comparación específica por unidad (kg, reps,
+ * tiempo — donde menos es mejor).
+ */
 import type { Exercise, ExerciseCategory, ExerciseUnit, PersonalRecord } from "@/types";
 import { exercisesRepo, exercisesRepoFor } from "@/lib/storage/repositories/exercises.repo";
 import { personalRecordsRepo } from "@/lib/storage/repositories/personalRecords.repo";

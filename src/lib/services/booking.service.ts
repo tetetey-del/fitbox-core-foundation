@@ -1,3 +1,9 @@
+/**
+ * @file Servicio de reservas de clases.
+ * Responsabilidad: ciclo de vida de bookings (reservar, cancelar, waitlist,
+ * check-ins) y coordinación con créditos de membresía y notificaciones.
+ * No accede a localStorage directamente: usa repositorios.
+ */
 import type { Booking, ClassSession, UserRole } from "@/types";
 import { bookingsRepo } from "@/lib/storage/repositories/bookings.repo";
 import { checkinsRepo } from "@/lib/storage/repositories/checkins.repo";

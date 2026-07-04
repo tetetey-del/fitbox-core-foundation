@@ -1,3 +1,8 @@
+/**
+ * @file Servicio de WODs (workout of the day).
+ * Responsabilidad: publicar/editar el WOD de una fecha y, al publicar,
+ * crear un post en el feed y notificar a los socios (efectos idempotentes).
+ */
 import type { Wod, WodBlock } from "@/types";
 import { WOD_BLOCK_LABEL } from "@/types";
 import { wodsRepo, wodsRepoFor } from "@/lib/storage/repositories/wods.repo";

@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { CalendarDays, Clock } from "lucide-react";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
-import { Button } from "@/components/ui/button";
 import { WeekNavigator } from "@/components/classes/WeekNavigator";
 import { SessionCard } from "@/components/classes/SessionCard";
 import { SessionDetailSheet } from "@/components/classes/SessionDetailSheet";
@@ -12,6 +11,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useDataVersion, notifyDataChanged } from "@/lib/data-bus";
 import { classTemplatesRepo } from "@/lib/storage/repositories/classTemplates.repo";
 import { classSessionsRepo } from "@/lib/storage/repositories/classSessions.repo";
+import { bookingsRepo } from "@/lib/storage/repositories/bookings.repo";
+
 import {
   addDays,
   formatDayHeader,
@@ -19,13 +20,15 @@ import {
   toDateKey,
   weekDays,
 } from "@/lib/date";
-import type { ClassSession } from "@/types";
+import type { Booking, ClassSession } from "@/types";
 import {
   bookSession,
   cancelBooking,
-  getSessionOccupancy,
   getUserBooking,
 } from "@/lib/services/booking.service";
+
+
+
 import { getPublishedWodByDate } from "@/lib/services/wods.service";
 import { WodViewer } from "@/components/wods/WodViewer";
 
@@ -68,6 +71,43 @@ function ReservasPage() {
     sessionsThisWeek.forEach((s) => m.get(s.date)?.push(s));
     return m;
   }, [days, sessionsThisWeek]);
+
+  // Precalcula ocupaciones y reservas propias UNA vez por render (evita
+  // O(N sesiones) llamadas a getSessionOccupancy / getUserBooking).
+  const { occByS, myBookingByS } = useMemo(() => {
+    const allBookings = bookingsRepo
+      .list()
+      .filter((b) => b.status !== "cancelled");
+    const bySession = new Map<string, Booking[]>();
+    for (const b of allBookings) {
+      const arr = bySession.get(b.sessionId) ?? [];
+      arr.push(b);
+      bySession.set(b.sessionId, arr);
+    }
+    const occ = new Map<string, { confirmed: Booking[]; waitlist: Booking[]; capacity: number; free: number }>();
+    const mine = new Map<string, Booking>();
+    for (const s of sessionsThisWeek) {
+      const list = bySession.get(s.id) ?? [];
+      const confirmed = list
+        .filter((b) => b.status === "confirmed")
+        .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+      const waitlist = list
+        .filter((b) => b.status === "waitlist")
+        .sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+      occ.set(s.id, {
+        confirmed,
+        waitlist,
+        capacity: s.capacity,
+        free: Math.max(0, s.capacity - confirmed.length),
+      });
+      if (currentUser) {
+        const own = list.find((b) => b.userId === currentUser.id);
+        if (own) mine.set(s.id, own);
+      }
+    }
+    return { occByS: occ, myBookingByS: mine };
+  }, [sessionsThisWeek, currentUser]);
+
 
   const selected = selectedId
     ? sessionsThisWeek.find((s) => s.id === selectedId) ?? null
@@ -139,7 +179,8 @@ function ReservasPage() {
           {items.map((s) => {
             const tpl = templateById.get(s.templateId);
             const coach = s.coachId ? userById.get(s.coachId) : undefined;
-            const myBooking = currentUser ? getUserBooking(s.id, currentUser.id) : null;
+            const myBooking = myBookingByS.get(s.id) ?? null;
+            const occ = occByS.get(s.id);
             return (
               <div key={s.id} className="space-y-1.5">
                 <SessionCard
@@ -149,10 +190,17 @@ function ReservasPage() {
                   onClick={() => handleCardClick(s)}
                   active={selectedId === s.id}
                 />
-                {!isStaff && <MemberBadge sessionId={s.id} myBookingId={myBooking?.id} />}
+                {!isStaff && myBooking && occ && (
+                  <MemberBadge
+                    myBookingId={myBooking.id}
+                    waitlist={occ.waitlist}
+                    confirmed={occ.confirmed}
+                  />
+                )}
               </div>
             );
           })}
+
         </div>
       </div>
     );
@@ -231,12 +279,18 @@ function ReservasPage() {
   );
 }
 
-function MemberBadge({ sessionId, myBookingId }: { sessionId: string; myBookingId?: string }) {
-  if (!myBookingId) return null;
-  const occ = getSessionOccupancy(sessionId);
-  const inWait = occ.waitlist.find((b) => b.id === myBookingId);
-  const confirmed = occ.confirmed.find((b) => b.id === myBookingId);
-  if (confirmed) {
+function MemberBadge({
+  myBookingId,
+  waitlist,
+  confirmed,
+}: {
+  myBookingId: string;
+  waitlist: Booking[];
+  confirmed: Booking[];
+}) {
+  const inWait = waitlist.find((b) => b.id === myBookingId);
+  const isConfirmed = confirmed.some((b) => b.id === myBookingId);
+  if (isConfirmed) {
     return (
       <div className="text-[11px] font-medium text-emerald-400 flex items-center gap-1 pl-1">
         <Clock className="h-3 w-3" strokeWidth={1.5} /> Reservado

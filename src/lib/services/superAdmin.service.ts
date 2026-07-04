@@ -1,3 +1,8 @@
+/**
+ * @file Servicio del panel de super admin.
+ * Responsabilidad: métricas globales de todos los boxes, resúmenes por
+ * tenant y purga completa de un tenant (borra todas sus colecciones).
+ */
 import { tenantsRepo } from "@/lib/storage/repositories/tenants.repo";
 import { listUsersOfTenant } from "@/lib/storage/repositories/users.repo";
 import { membershipsRepoFor } from "@/lib/storage/repositories/memberships.repo";

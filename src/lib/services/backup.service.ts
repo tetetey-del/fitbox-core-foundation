@@ -1,3 +1,9 @@
+/**
+ * @file Servicio de export/import de datos de un tenant.
+ * Responsabilidad: serializar todas las colecciones de un box a JSON con
+ * meta versionada, validarlo al importar y crear un tenant NUEVO remapeando
+ * IDs para evitar colisiones con datos existentes.
+ */
 import type {
   BaseEntity,
 
