@@ -10,11 +10,13 @@ import { paymentsRepoFor } from "./storage/repositories/payments.repo";
 import { exercisesRepoFor } from "./storage/repositories/exercises.repo";
 import { personalRecordsRepoFor } from "./storage/repositories/personalRecords.repo";
 import { postsRepoFor } from "./storage/repositories/posts.repo";
+import { notificationsRepoFor } from "./storage/repositories/notifications.repo";
+import { seedWod } from "./services/wods.service";
 import { superAdminsStore } from "./storage/superadmins";
 import { DEFAULT_EXERCISES } from "./services/prs.service";
 import { addDays, addMonths, startOfWeek, toDateKey } from "./date";
 import { buildKey, get, set } from "./storage/db";
-import type { Exercise, MembershipPlan, PostType, Tenant, ThemeId, User } from "@/types";
+import type { Exercise, MembershipPlan, PostType, Tenant, ThemeId, User, WodBlock } from "@/types";
 import { DEFAULT_MODULES } from "@/types";
 
 const SEEDED_KEY = buildKey(null, "seeded");
