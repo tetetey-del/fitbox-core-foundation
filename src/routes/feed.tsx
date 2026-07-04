@@ -126,7 +126,7 @@ function FeedPage() {
         }}
       />
 
-      <AlertDialog open={!!toDelete} onOpenChange={(o) => !o && setToDelete(null)}>
+      <AlertDialog open={!!toDelete} onOpenChange={(o: boolean) => !o && setToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>¿Eliminar post?</AlertDialogTitle>
