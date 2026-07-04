@@ -20,7 +20,9 @@ import {
   getMonthlyRevenue,
   getOccupancyByWeekday,
 } from "@/lib/services/analytics.service";
-import { formatDate, formatMoney, formatMonthShort } from "@/lib/format";
+import { formatMoney, formatMonthShort } from "@/lib/format";
+import { formatDate } from "@/lib/date";
+
 
 /**
  * Panel principal del rol admin: KPIs mensuales, gráficos de ingresos y
