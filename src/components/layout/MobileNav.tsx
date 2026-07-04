@@ -9,6 +9,7 @@ import {
   Dumbbell,
   Settings,
   Newspaper,
+  User as UserIcon,
 } from "lucide-react";
 import type { UserRole } from "@/types";
 import { useRole } from "@/hooks/useRole";
@@ -30,29 +31,41 @@ interface NavItem {
   module?: keyof ReturnType<typeof useModules>;
 }
 
-const PRIMARY: NavItem[] = [
-  { label: "Inicio", to: "/dashboard", icon: LayoutDashboard, roles: ["admin", "coach", "member"] },
-  { label: "Reservas", to: "/reservas", icon: CalendarDays, roles: ["admin", "coach", "member"], module: "reservas" },
-  { label: "PRs", to: "/prs", icon: Trophy, roles: ["admin", "coach", "member"], module: "prs" },
-];
-
-const SECONDARY: NavItem[] = [
-  { label: "Feed", to: "/feed", icon: Newspaper, roles: ["admin", "coach", "member"], module: "feed" },
+const STAFF_PRIMARY: NavItem[] = [
+  { label: "Inicio", to: "/dashboard", icon: LayoutDashboard, roles: ["admin", "coach"] },
+  { label: "Reservas", to: "/reservas", icon: CalendarDays, roles: ["admin", "coach"], module: "reservas" },
   { label: "Socios", to: "/socios", icon: Users, roles: ["admin", "coach"], module: "socios" },
+];
+const STAFF_SECONDARY: NavItem[] = [
+  { label: "Feed", to: "/feed", icon: Newspaper, roles: ["admin", "coach"], module: "feed" },
   { label: "Clases", to: "/clases", icon: Dumbbell, roles: ["admin", "coach"], module: "reservas" },
+  { label: "PRs", to: "/prs", icon: Trophy, roles: ["admin", "coach"], module: "prs" },
   { label: "Configuración", to: "/configuracion", icon: Settings, roles: ["admin"] },
 ];
 
+const MEMBER_PRIMARY: NavItem[] = [
+  { label: "Feed", to: "/feed", icon: Newspaper, roles: ["member"], module: "feed" },
+  { label: "Reservas", to: "/reservas", icon: CalendarDays, roles: ["member"], module: "reservas" },
+  { label: "PRs", to: "/prs", icon: Trophy, roles: ["member"], module: "prs" },
+];
+const MEMBER_SECONDARY: NavItem[] = [
+  { label: "Mi cuenta", to: "/mi-cuenta", icon: UserIcon, roles: ["member"] },
+];
+
 export function MobileNav() {
-  const { isAny } = useRole();
+  const { role, isAny } = useRole();
   const modules = useModules();
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const [open, setOpen] = useState(false);
 
+  const isMember = role === "member";
+  const primaryRaw = isMember ? MEMBER_PRIMARY : STAFF_PRIMARY;
+  const secondaryRaw = isMember ? MEMBER_SECONDARY : STAFF_SECONDARY;
+
   const filt = (list: NavItem[]) =>
     list.filter((n) => isAny(n.roles)).filter((n) => !n.module || modules[n.module]);
-  const primary = filt(PRIMARY);
-  const secondary = filt(SECONDARY);
+  const primary = filt(primaryRaw);
+  const secondary = filt(secondaryRaw);
 
   return (
     <>
