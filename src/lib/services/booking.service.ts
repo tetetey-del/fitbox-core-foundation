@@ -164,19 +164,29 @@ export function cancelBooking(bookingId: string, actorRole: UserRole): CancelRes
  */
 function promoteNextFromWaitlist(sessionId: string): Booking | undefined {
   const occ = getSessionOccupancy(sessionId);
+  const session = classSessionsRepo.getById(sessionId);
   for (const candidate of occ.waitlist) {
     const check = inspectCredits(candidate.userId);
     if (!check.hasMembership) continue;
     if (check.needsCredit && !check.hasCredits) continue;
-    // Puede pasar: consumir crédito (si aplica) y promocionar
     if (check.needsCredit) consumeCredit(candidate.userId);
     const updated = bookingsRepo.update(candidate.id, {
       status: "confirmed",
       position: undefined,
     });
-    // Reindexar la waitlist restante
     const rest = getSessionOccupancy(sessionId).waitlist;
     rest.forEach((b, i) => bookingsRepo.update(b.id, { position: i + 1 }));
+    if (session) {
+      const tpl = classTemplatesRepo.getById(session.templateId);
+      notify({
+        tenantId: session.tenantId,
+        userId: candidate.userId,
+        type: "waitlist_promoted",
+        title: "¡Has pasado de lista de espera!",
+        body: `${tpl?.name ?? "Clase"} · ${formatDate(session.date)} a las ${session.startTime}`,
+        linkTo: "/reservas",
+      });
+    }
     return updated ?? undefined;
   }
   return undefined;
