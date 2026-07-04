@@ -582,3 +582,177 @@ function seedNotificationsFor({ tenant, users }: SeedResult) {
     mk(diego.id, "session_cancelled", "Sesión cancelada", "WOD Tarde del jueves a las 19:00 ha sido cancelada.", "/reservas", 60 * 12);
   }
 }
+
+// ---- Seeds Fase 11 ----
+
+import { challengesRepoFor, challengeParticipantsRepoFor } from "./storage/repositories/challenges.repo";
+import {
+  programsRepoFor,
+  programSessionsRepoFor,
+  programAssignmentsRepoFor,
+  programProgressRepoFor,
+} from "./storage/repositories/programs.repo";
+import { productsRepoFor } from "./storage/repositories/products.repo";
+import { ordersRepoFor } from "./storage/repositories/orders.repo";
+import { bodyMetricsRepoFor } from "./storage/repositories/bodyMetrics.repo";
+
+function seedChallengesFor({ tenant, users }: SeedResult) {
+  const chRepo = challengesRepoFor(tenant.id);
+  const partsRepo = challengeParticipantsRepoFor(tenant.id);
+  const exRepo = exercisesRepoFor(tenant.id);
+  const ana = users.find((u) => u.name === "Ana Socia");
+  const diego = users.find((u) => u.name === "Diego Socio");
+  const today = new Date();
+  const start = toDateKey(addDays(today, -10));
+  const end = toDateKey(addDays(today, 20));
+
+  const c1 = chRepo.create({
+    tenantId: tenant.id,
+    title: "12 clases este mes",
+    description: "Ven al box 12 veces en el periodo del reto y llévate la insignia.",
+    type: "attendance",
+    goal: 12,
+    startDate: start,
+    endDate: end,
+    status: "active",
+    badge: "🏋️",
+  });
+  const fran = exRepo.list().find((e) => e.name === "Fran");
+  if (fran) {
+    const c2 = chRepo.create({
+      tenantId: tenant.id,
+      title: "Baja tu Fran",
+      description: "Registra tu mejor Fran RX o escalado en el periodo del reto.",
+      type: "benchmark",
+      goal: fran.id,
+      startDate: start,
+      endDate: end,
+      status: "active",
+      badge: "🔥",
+    });
+    if (ana) partsRepo.create({ tenantId: tenant.id, challengeId: c2.id, userId: ana.id, progress: 0 });
+    if (diego) partsRepo.create({ tenantId: tenant.id, challengeId: c2.id, userId: diego.id, progress: 0 });
+  }
+  if (ana) partsRepo.create({ tenantId: tenant.id, challengeId: c1.id, userId: ana.id, progress: 4 });
+  if (diego) partsRepo.create({ tenantId: tenant.id, challengeId: c1.id, userId: diego.id, progress: 9 });
+}
+
+function seedProgramsFor({ tenant, users }: SeedResult) {
+  const owner = users.find((u) => u.role === "admin") ?? users[0];
+  if (!owner) return;
+  const prog = programsRepoFor(tenant.id).create({
+    tenantId: tenant.id,
+    title: "Fuerza básica 4 semanas",
+    description: "Programa progresivo de fuerza con 3 sesiones semanales.",
+    weeks: 4,
+    level: "iniciacion",
+    createdBy: owner.id,
+  });
+  const sessionsRepo = programSessionsRepoFor(tenant.id);
+  for (let w = 1; w <= 4; w++) {
+    sessionsRepo.create({
+      tenantId: tenant.id, programId: prog.id, weekNumber: w, dayNumber: 1,
+      title: "Squat day",
+      blocks: [
+        { type: "calentamiento", content: "3 rondas: 10 goblet + 10 band pull-apart" },
+        { type: "fuerza", content: `Back Squat 5x5 progresivo (semana ${w})` },
+      ],
+    });
+    sessionsRepo.create({
+      tenantId: tenant.id, programId: prog.id, weekNumber: w, dayNumber: 3,
+      title: "Press day",
+      blocks: [
+        { type: "calentamiento", content: "3 rondas: 10 push-ups + 10 dislocaciones" },
+        { type: "fuerza", content: `Strict Press 5x5 (semana ${w})` },
+      ],
+    });
+    sessionsRepo.create({
+      tenantId: tenant.id, programId: prog.id, weekNumber: w, dayNumber: 5,
+      title: "Deadlift day",
+      blocks: [
+        { type: "calentamiento", content: "3 rondas: 10 good mornings + 10 glute bridges" },
+        { type: "fuerza", content: `Deadlift 5-5-3-3-1 (semana ${w})` },
+      ],
+    });
+  }
+  const ana = users.find((u) => u.name === "Ana Socia");
+  if (ana) {
+    const assignment = programAssignmentsRepoFor(tenant.id).create({
+      tenantId: tenant.id, programId: prog.id, userId: ana.id, assignedBy: owner.id,
+      startDate: toDateKey(addDays(new Date(), -14)), status: "active",
+    });
+    const first3 = sessionsRepoFor_seed_helper(tenant.id, prog.id).slice(0, 3);
+    for (const s of first3) {
+      programProgressRepoFor(tenant.id).create({
+        tenantId: tenant.id, assignmentId: assignment.id, programSessionId: s.id,
+        completedAt: new Date().toISOString(),
+      });
+    }
+  }
+}
+
+function sessionsRepoFor_seed_helper(tenantId: string, programId: string) {
+  return programSessionsRepoFor(tenantId)
+    .query({ programId })
+    .sort((a, b) => a.weekNumber - b.weekNumber || a.dayNumber - b.dayNumber);
+}
+
+function seedShopFor({ tenant, users }: SeedResult) {
+  const pRepo = productsRepoFor(tenant.id);
+  const items = [
+    { name: "Camiseta del box", description: "Camiseta técnica con logo, tallas S–XL.", price: 25, category: "ropa" as const, stock: 30 },
+    { name: "Muñequeras", description: "Par de muñequeras negras.", price: 15, category: "accesorios" as const, stock: 20 },
+    { name: "Magnesio líquido", description: "Bote 250 ml.", price: 12, category: "accesorios" as const, stock: 15 },
+    { name: "Proteína whey 1 kg", description: "Sabor chocolate.", price: 32, category: "suplementacion" as const, stock: 10 },
+    { name: "Botella 750 ml", description: "Botella de acero inoxidable.", price: 18, category: "accesorios" as const, stock: 8 },
+    { name: "Sudadera del box", description: "Sudadera negra con logo bordado.", price: 45, category: "ropa" as const, stock: 12 },
+  ];
+  const created = items.map((it) => pRepo.create({ tenantId: tenant.id, ...it, imageUrl: undefined, active: true }));
+  const ana = users.find((u) => u.name === "Ana Socia");
+  const diego = users.find((u) => u.name === "Diego Socio");
+  const oRepo = ordersRepoFor(tenant.id);
+  if (ana) {
+    const p = created[0];
+    oRepo.create({
+      tenantId: tenant.id, userId: ana.id,
+      items: [{ productId: p.id, qty: 1, priceAtOrder: p.price, name: p.name }],
+      total: p.price, status: "pendiente",
+    });
+  }
+  if (diego) {
+    const p1 = created[3], p2 = created[1];
+    oRepo.create({
+      tenantId: tenant.id, userId: diego.id,
+      items: [
+        { productId: p1.id, qty: 1, priceAtOrder: p1.price, name: p1.name },
+        { productId: p2.id, qty: 1, priceAtOrder: p2.price, name: p2.name },
+      ],
+      total: p1.price + p2.price, status: "listo",
+    });
+  }
+}
+
+function seedHealthFor({ tenant, users }: SeedResult) {
+  const ana = users.find((u) => u.name === "Ana Socia");
+  if (!ana) return;
+  const bm = bodyMetricsRepoFor(tenant.id);
+  const today = new Date();
+  const points = [
+    { d: 240, w: 66.5, f: 27, hr: 68 },
+    { d: 200, w: 66.2, f: 26.5, hr: 67 },
+    { d: 160, w: 65.8, f: 26, hr: 66 },
+    { d: 120, w: 65.4, f: 25.5, hr: 65 },
+    { d: 90, w: 65.0, f: 24.8, hr: 64 },
+    { d: 60, w: 64.7, f: 24.2, hr: 63 },
+    { d: 30, w: 64.4, f: 23.8, hr: 62 },
+    { d: 10, w: 64.1, f: 23.5, hr: 61 },
+    { d: 2, w: 64.0, f: 23.3, hr: 60 },
+  ];
+  for (const p of points) {
+    bm.create({
+      tenantId: tenant.id, userId: ana.id,
+      date: toDateKey(addDays(today, -p.d)),
+      weightKg: p.w, bodyFatPct: p.f, restingHr: p.hr,
+    });
+  }
+}
