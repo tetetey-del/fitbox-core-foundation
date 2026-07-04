@@ -8,7 +8,15 @@ import { hoursBetween, sessionStart, formatDate } from "@/lib/date";
 import { consumeCredit, inspectCredits, refundCredit } from "./membership.service";
 import { notify } from "./notifications.service";
 
-const DEFAULT_CANCELLATION_HOURS = 2;
+import { DEFAULT_CANCELLATION_HOURS } from "@/lib/constants";
+
+/**
+ * Mutex síncrono en memoria para evitar dobles reservas por doble-click en el
+ * mismo par (sessionId, userId). Como todo el storage es localStorage síncrono,
+ * un simple Set basta para bloquear reentradas dentro del mismo tick.
+ */
+const inFlightBookings = new Set<string>();
+const bookingKey = (sessionId: string, userId: string) => `${sessionId}::${userId}`;
 
 export function getCancellationWindow(tenantId: string): number {
   const t = tenantsRepo.getById(tenantId);
