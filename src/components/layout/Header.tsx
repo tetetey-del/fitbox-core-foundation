@@ -8,6 +8,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CreditsBadge } from "@/components/members/CreditsBadge";
+import { MembershipBadge } from "@/components/members/MembershipBadge";
+import { getMembershipStatus } from "@/lib/services/membership.service";
+import { useDataVersion } from "@/lib/data-bus";
 
 const ROLE_LABEL: Record<string, string> = {
   owner: "Owner",
