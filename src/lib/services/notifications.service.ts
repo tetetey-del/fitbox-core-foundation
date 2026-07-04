@@ -1,3 +1,9 @@
+/**
+ * @file Servicio de notificaciones internas.
+ * Responsabilidad: crear notificaciones dirigidas a un usuario (con dedupe
+ * opcional por clave), consultarlas para la sesión activa y escanear
+ * membresías próximas a expirar. No envía email ni push.
+ */
 import type { Notification, NotificationType } from "@/types";
 import { notificationsRepo, notificationsRepoFor } from "@/lib/storage/repositories/notifications.repo";
 import { listUsersOfTenant } from "@/lib/storage/repositories/users.repo";
