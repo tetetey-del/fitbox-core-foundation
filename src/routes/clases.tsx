@@ -192,6 +192,7 @@ function TemplateDialog({
   initial: ClassTemplate | null;
   coaches: { id: string; name: string }[];
 }) {
+  const { currentTenant } = useAuth();
   const [name, setName] = useState(initial?.name ?? "");
   const [type, setType] = useState<ClassType>(initial?.type ?? "wod");
   const [duration, setDuration] = useState(initial?.durationMinutes ?? 60);
@@ -212,6 +213,7 @@ function TemplateDialog({
 
   const submit = () => {
     if (!name.trim()) return toast.error("El nombre es obligatorio");
+    if (!currentTenant) return;
     const payload = {
       name: name.trim(),
       type,
@@ -224,12 +226,7 @@ function TemplateDialog({
       classTemplatesRepo.update(initial.id, payload);
       toast.success("Plantilla actualizada");
     } else {
-      const tenantId = initial as unknown; // placeholder
-      void tenantId;
-      classTemplatesRepo.create({ ...payload, tenantId: "" as string });
-      // El repo ya asigna a la colección del tenant activo; el campo tenantId
-      // en la entidad se sobreescribe desde el createTenantWithSeed cuando aplica.
-      // Aquí lo dejamos vacío porque el scope viene por el key.
+      classTemplatesRepo.create({ ...payload, tenantId: currentTenant.id });
       toast.success("Plantilla creada");
     }
     notifyDataChanged();
