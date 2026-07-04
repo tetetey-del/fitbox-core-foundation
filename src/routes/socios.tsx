@@ -62,7 +62,7 @@ function SociosPage() {
   useDataVersion();
 
   useEffect(() => {
-    if (currentUser && currentUser.role !== "owner" && currentUser.role !== "coach") {
+    if (currentUser && currentUser.role !== "admin" && currentUser.role !== "coach") {
       navigate({ to: "/dashboard" });
     }
   }, [currentUser, navigate]);

@@ -47,13 +47,13 @@ function ClasesPage() {
   useDataVersion();
 
   useEffect(() => {
-    if (currentUser && currentUser.role !== "owner" && currentUser.role !== "coach") {
+    if (currentUser && currentUser.role !== "admin" && currentUser.role !== "coach") {
       navigate({ to: "/dashboard" });
     }
   }, [currentUser, navigate]);
 
   const templates = classTemplatesRepo.list();
-  const coaches = tenantUsers.filter((u) => u.role === "coach" || u.role === "owner");
+  const coaches = tenantUsers.filter((u) => u.role === "coach" || u.role === "admin");
 
   const [tab, setTab] = useState<string>("plantillas");
   const [editing, setEditing] = useState<ClassTemplate | null>(null);

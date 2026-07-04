@@ -28,15 +28,15 @@ interface NavItem {
 }
 
 const PRIMARY: NavItem[] = [
-  { label: "Inicio", to: "/dashboard", icon: LayoutDashboard, roles: ["owner", "coach", "member"] },
-  { label: "Reservas", to: "/reservas", icon: CalendarDays, roles: ["owner", "coach", "member"] },
-  { label: "PRs", to: "/prs", icon: Trophy, roles: ["owner", "coach", "member"] },
+  { label: "Inicio", to: "/dashboard", icon: LayoutDashboard, roles: ["admin", "coach", "member"] },
+  { label: "Reservas", to: "/reservas", icon: CalendarDays, roles: ["admin", "coach", "member"] },
+  { label: "PRs", to: "/prs", icon: Trophy, roles: ["admin", "coach", "member"] },
 ];
 
 const SECONDARY: NavItem[] = [
-  { label: "Socios", to: "/socios", icon: Users, roles: ["owner", "coach"] },
-  { label: "Clases", to: "/clases", icon: Dumbbell, roles: ["owner", "coach"] },
-  { label: "Configuración", to: "/configuracion", icon: Settings, roles: ["owner"] },
+  { label: "Socios", to: "/socios", icon: Users, roles: ["admin", "coach"] },
+  { label: "Clases", to: "/clases", icon: Dumbbell, roles: ["admin", "coach"] },
+  { label: "Configuración", to: "/configuracion", icon: Settings, roles: ["admin"] },
 ];
 
 export function MobileNav() {

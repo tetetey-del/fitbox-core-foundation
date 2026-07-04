@@ -4,7 +4,7 @@ export interface BaseEntity {
   updatedAt: string;
 }
 
-export type UserRole = "owner" | "coach" | "member";
+export type UserRole = "admin" | "coach" | "member";
 
 export interface TenantSettings {
   cancellationWindowHours: number;

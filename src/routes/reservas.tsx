@@ -69,7 +69,7 @@ function ReservasPage() {
     ? sessionsThisWeek.find((s) => s.id === selectedId) ?? null
     : null;
 
-  const isStaff = currentUser?.role === "owner" || currentUser?.role === "coach";
+  const isStaff = currentUser?.role === "admin" || currentUser?.role === "coach";
 
   const handleCardClick = (s: ClassSession) => {
     if (isStaff) {

@@ -153,7 +153,7 @@ const FEATURES = [
   },
   {
     icon: BarChart3,
-    title: "Métricas del owner",
+    title: "Métricas del admin",
     desc: "Ingresos, altas, ocupación por día y membresías que expiran esta semana. Decisiones con datos.",
   },
 ];

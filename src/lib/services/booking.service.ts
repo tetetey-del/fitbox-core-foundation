@@ -117,7 +117,7 @@ export function cancelBooking(bookingId: string, actorRole: UserRole): CancelRes
   const session = classSessionsRepo.getById(booking.sessionId);
   if (!session) return { ok: false, reason: "La sesión no existe" };
 
-  const isStaff = actorRole === "owner" || actorRole === "coach";
+  const isStaff = actorRole === "admin" || actorRole === "coach";
   if (!isStaff && booking.status === "confirmed") {
     const start = sessionStart(session.date, session.startTime);
     const window = getCancellationWindow(session.tenantId);
@@ -188,7 +188,7 @@ export interface CheckInResult {
 }
 
 export function checkIn(bookingId: string, actorRole: UserRole): CheckInResult {
-  if (actorRole !== "owner" && actorRole !== "coach") {
+  if (actorRole !== "admin" && actorRole !== "coach") {
     return { ok: false, reason: "Solo el staff puede hacer check-in" };
   }
   const booking = bookingsRepo.getById(bookingId);
@@ -210,7 +210,7 @@ export function checkIn(bookingId: string, actorRole: UserRole): CheckInResult {
 }
 
 export function undoCheckIn(bookingId: string, actorRole: UserRole): CheckInResult {
-  if (actorRole !== "owner" && actorRole !== "coach") {
+  if (actorRole !== "admin" && actorRole !== "coach") {
     return { ok: false, reason: "Solo el staff puede deshacer check-in" };
   }
   const ci = checkinsRepo.query({ bookingId })[0];

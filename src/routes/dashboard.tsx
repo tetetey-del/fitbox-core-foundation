@@ -54,7 +54,7 @@ function DashboardPage() {
     .query({ date: today })
     .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
-  const isOwner = currentUser?.role === "owner";
+  const isOwner = currentUser?.role === "admin";
   const isMember = currentUser?.role === "member";
   const isCoach = currentUser?.role === "coach";
 
@@ -240,7 +240,7 @@ interface CoachOrOwnerTodayProps {
 
 function CoachOrOwnerToday({ sessions, templateById, userById, onOpenAgenda }: CoachOrOwnerTodayProps) {
   return (
-    <RoleGate allowed={["owner", "coach"]}>
+    <RoleGate allowed={["admin", "coach"]}>
       <section className="mt-2">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold tracking-tight">Clases de hoy</h2>

@@ -46,7 +46,7 @@ export function createTenantWithSeed(input: {
   const owner = createUserInTenant(tenant.id, {
     name: input.ownerName,
     email: input.ownerEmail,
-    role: "owner",
+    role: "admin",
   });
 
   const extras: User[] = [];

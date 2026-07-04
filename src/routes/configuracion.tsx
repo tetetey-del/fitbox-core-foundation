@@ -92,10 +92,10 @@ function ConfigPage() {
       <PageHeader title="Configuración" description="Ajustes del box, planes y datos locales." />
 
       <RoleGate
-        allowed={["owner"]}
+        allowed={["admin"]}
         fallback={
           <p className="text-sm text-muted-foreground">
-            Solo el owner del box puede modificar la configuración.
+            Solo el admin del box puede modificar la configuración.
           </p>
         }
       >
