@@ -115,8 +115,10 @@ export function bookSession(
     userId,
     status: "waitlist",
     position,
-  });
-  return { ok: true, booking };
+    return { ok: true, booking };
+  } finally {
+    inFlightBookings.delete(key);
+  }
 }
 
 export interface CancelResult {
