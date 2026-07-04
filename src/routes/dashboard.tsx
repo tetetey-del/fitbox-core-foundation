@@ -54,7 +54,7 @@ function DashboardPage() {
     .query({ date: today })
     .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
-  const isOwner = currentUser?.role === "admin";
+  const isAdmin = currentUser?.role === "admin";
   const isMember = currentUser?.role === "member";
   const isCoach = currentUser?.role === "coach";
 
@@ -89,7 +89,7 @@ function DashboardPage() {
         </div>
       )}
 
-      {isOwner && <OwnerDashboard />}
+      {isAdmin && <OwnerDashboard />}
       {isCoach && (
         <CoachOrOwnerToday
           sessions={todaySessions}
