@@ -10,8 +10,8 @@ import { notifyDataChanged } from "@/lib/data-bus";
 import { THEMES, DEFAULT_THEME_ID, applyTheme, getTheme } from "@/lib/themes";
 import type { ThemeId } from "@/types";
 import { cn } from "@/lib/utils";
-
-const MAX_LOGO_BYTES = 300 * 1024;
+import { MAX_LOGO_BYTES } from "@/lib/constants";
+import { compressImage, dataUrlBytes } from "@/lib/image";
 
 export function AppearanceSection() {
   const { currentTenant, refresh } = useAuth();
@@ -26,15 +26,18 @@ export function AppearanceSection() {
     setLogo(currentTenant?.logo);
   }, [currentTenant]);
 
-  const onFile = (file?: File | null) => {
+  const onFile = async (file?: File | null) => {
     if (!file) return;
-    if (file.size > MAX_LOGO_BYTES) {
-      toast.error("El logo debe pesar menos de 300 KB");
-      return;
+    try {
+      const dataUrl = await compressImage(file, { maxDimension: 512 });
+      if (dataUrlBytes(dataUrl) > MAX_LOGO_BYTES) {
+        toast.error("El logo pesa demasiado incluso tras comprimir");
+        return;
+      }
+      setLogo(dataUrl);
+    } catch {
+      toast.error("No se pudo procesar la imagen");
     }
-    const reader = new FileReader();
-    reader.onload = () => setLogo(reader.result as string);
-    reader.readAsDataURL(file);
   };
 
   const save = () => {
