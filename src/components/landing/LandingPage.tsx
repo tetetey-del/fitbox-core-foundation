@@ -122,6 +122,11 @@ function Reveal({ children, delay = 0 }: { children: ReactNode; delay?: number }
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
   useEffect(() => {
+    const reduce = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) {
+      setVisible(true);
+      return;
+    }
     const el = ref.current;
     if (!el) return;
     const obs = new IntersectionObserver(
@@ -146,6 +151,7 @@ function Reveal({ children, delay = 0 }: { children: ReactNode; delay?: number }
     </div>
   );
 }
+
 
 // ================== TopNav ==================
 function TopNav({ onEnter, onCreate }: { onEnter: () => void; onCreate: () => void }) {
