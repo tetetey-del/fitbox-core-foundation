@@ -8,7 +8,15 @@ import { hoursBetween, sessionStart, formatDate } from "@/lib/date";
 import { consumeCredit, inspectCredits, refundCredit } from "./membership.service";
 import { notify } from "./notifications.service";
 
-const DEFAULT_CANCELLATION_HOURS = 2;
+import { DEFAULT_CANCELLATION_HOURS } from "@/lib/constants";
+
+/**
+ * Mutex síncrono en memoria para evitar dobles reservas por doble-click en el
+ * mismo par (sessionId, userId). Como todo el storage es localStorage síncrono,
+ * un simple Set basta para bloquear reentradas dentro del mismo tick.
+ */
+const inFlightBookings = new Set<string>();
+const bookingKey = (sessionId: string, userId: string) => `${sessionId}::${userId}`;
 
 export function getCancellationWindow(tenantId: string): number {
   const t = tenantsRepo.getById(tenantId);
@@ -59,12 +67,18 @@ export function bookSession(
   userId: string,
   opts: BookOptions = {},
 ): BookResult {
-  const session = classSessionsRepo.getById(sessionId);
-  if (!session) return { ok: false, reason: "La sesión no existe" };
-  if (session.status === "cancelled") return { ok: false, reason: "La sesión está cancelada" };
+  const key = bookingKey(sessionId, userId);
+  if (inFlightBookings.has(key)) {
+    return { ok: false, reason: "Reserva en curso, espera un momento" };
+  }
+  inFlightBookings.add(key);
+  try {
+    const session = classSessionsRepo.getById(sessionId);
+    if (!session) return { ok: false, reason: "La sesión no existe" };
+    if (session.status === "cancelled") return { ok: false, reason: "La sesión está cancelada" };
 
-  const existing = getUserBooking(sessionId, userId);
-  if (existing) return { ok: false, reason: "Ya tienes una reserva en esta sesión" };
+    const existing = getUserBooking(sessionId, userId);
+    if (existing) return { ok: false, reason: "Ya tienes una reserva en esta sesión" };
 
   // Validación de créditos/plan (solo cuando el propio socio se apunta)
   if (!opts.bypassCredits) {
@@ -95,14 +109,17 @@ export function bookSession(
 
   // Lista de espera: no se consume crédito hasta la promoción
   const position = occ.waitlist.length + 1;
-  const booking = bookingsRepo.create({
-    tenantId: session.tenantId,
-    sessionId,
-    userId,
-    status: "waitlist",
-    position,
-  });
-  return { ok: true, booking };
+    const booking = bookingsRepo.create({
+      tenantId: session.tenantId,
+      sessionId,
+      userId,
+      status: "waitlist",
+      position,
+    });
+    return { ok: true, booking };
+  } finally {
+    inFlightBookings.delete(key);
+  }
 }
 
 export interface CancelResult {
