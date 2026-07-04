@@ -121,12 +121,12 @@ function AdminPanel() {
         </div>
 
         <div className="grid gap-3 sm:grid-cols-3">
-          <KpiCard label="Boxes activos" value={String(metrics.totalBoxes)} icon={Building2} />
-          <KpiCard label="Usuarios totales" value={String(metrics.totalUsers)} icon={Users} />
+          <KpiCard label="Boxes activos" value={String(metrics.totalBoxes)} icon={<Building2 className="h-4 w-4" strokeWidth={1.5} />} />
+          <KpiCard label="Usuarios totales" value={String(metrics.totalUsers)} icon={<Users className="h-4 w-4" strokeWidth={1.5} />} />
           <KpiCard
             label="Ingresos del mes"
             value={formatMoney(metrics.monthRevenue)}
-            icon={DollarSign}
+            icon={<DollarSign className="h-4 w-4" strokeWidth={1.5} />}
           />
         </div>
 
