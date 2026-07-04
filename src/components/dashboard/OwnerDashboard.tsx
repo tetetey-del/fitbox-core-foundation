@@ -22,6 +22,9 @@ import {
 } from "@/lib/services/analytics.service";
 import { formatMoney, formatMonthShort } from "@/lib/format";
 import { formatDate } from "@/lib/date";
+import { pendingOrdersCount } from "@/lib/services/shop.service";
+import { useModules } from "@/hooks/useModules";
+import { ShoppingBag } from "lucide-react";
 
 
 /**
