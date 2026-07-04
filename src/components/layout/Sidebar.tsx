@@ -6,9 +6,12 @@ import {
   Dumbbell,
   Trophy,
   Settings,
+  Newspaper,
 } from "lucide-react";
 import type { UserRole } from "@/types";
 import { useRole } from "@/hooks/useRole";
+import { useAuth } from "@/contexts/AuthContext";
+import { useModules } from "@/hooks/useModules";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -16,28 +19,41 @@ interface NavItem {
   to: string;
   icon: typeof LayoutDashboard;
   roles: UserRole[];
+  module?: keyof ReturnType<typeof useModules>;
 }
 
 const NAV: NavItem[] = [
   { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard, roles: ["admin", "coach", "member"] },
-  { label: "Reservas", to: "/reservas", icon: CalendarDays, roles: ["admin", "coach", "member"] },
-  { label: "Socios", to: "/socios", icon: Users, roles: ["admin", "coach"] },
-  { label: "Clases", to: "/clases", icon: Dumbbell, roles: ["admin", "coach"] },
-  { label: "PRs", to: "/prs", icon: Trophy, roles: ["admin", "coach", "member"] },
+  { label: "Reservas", to: "/reservas", icon: CalendarDays, roles: ["admin", "coach", "member"], module: "reservas" },
+  { label: "Feed", to: "/feed", icon: Newspaper, roles: ["admin", "coach", "member"], module: "feed" },
+  { label: "Socios", to: "/socios", icon: Users, roles: ["admin", "coach"], module: "socios" },
+  { label: "Clases", to: "/clases", icon: Dumbbell, roles: ["admin", "coach"], module: "reservas" },
+  { label: "PRs", to: "/prs", icon: Trophy, roles: ["admin", "coach", "member"], module: "prs" },
   { label: "Configuración", to: "/configuracion", icon: Settings, roles: ["admin"] },
 ];
 
 export function Sidebar() {
   const { isAny } = useRole();
+  const { currentTenant } = useAuth();
+  const modules = useModules();
   const pathname = useRouterState({ select: (r) => r.location.pathname });
+
+  const items = NAV.filter((n) => isAny(n.roles)).filter(
+    (n) => !n.module || modules[n.module],
+  );
 
   return (
     <aside className="hidden md:flex flex-col w-60 border-r border-border bg-background">
-      <div className="h-14 flex items-center px-6 border-b border-border">
-        <span className="font-semibold tracking-tight text-foreground">FitBox</span>
+      <div className="h-14 flex items-center gap-2 px-6 border-b border-border">
+        {currentTenant?.logo ? (
+          <img src={currentTenant.logo} alt="" className="h-6 w-6 rounded object-cover" />
+        ) : null}
+        <span className="font-semibold tracking-tight text-foreground truncate">
+          {currentTenant?.name ?? "FitBox"}
+        </span>
       </div>
       <nav className="flex-1 p-3 space-y-0.5">
-        {NAV.filter((item) => isAny(item.roles)).map((item) => {
+        {items.map((item) => {
           const active = pathname === item.to;
           const Icon = item.icon;
           return (
@@ -58,7 +74,7 @@ export function Sidebar() {
         })}
       </nav>
       <div className="p-4 text-xs text-muted-foreground border-t border-border">
-        v0.1 · Fase 1
+        FitBox · v0.6
       </div>
     </aside>
   );
