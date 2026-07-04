@@ -15,6 +15,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { bootstrapDemoIfNeeded } from "@/lib/seed";
 import { Toaster } from "@/components/ui/sonner";
+import { CookieBanner } from "@/components/legal/CookieBanner";
 
 function NotFoundComponent() {
   return (
@@ -148,6 +149,7 @@ function RootComponent() {
         <ThemeProvider>
           <Outlet />
           <Toaster position="top-right" richColors />
+          <CookieBanner />
         </ThemeProvider>
       </AuthProvider>
     </QueryClientProvider>

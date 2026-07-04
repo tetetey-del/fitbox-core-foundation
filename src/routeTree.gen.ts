@@ -24,6 +24,10 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as OnboardingOwnerRouteImport } from './routes/onboarding.owner'
 import { Route as OnboardingMemberRouteImport } from './routes/onboarding.member'
+import { Route as LegalTerminosRouteImport } from './routes/legal.terminos'
+import { Route as LegalPrivacidadRouteImport } from './routes/legal.privacidad'
+import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
+import { Route as LegalAvisoLegalRouteImport } from './routes/legal.aviso-legal'
 import { Route as InvitacionCodeRouteImport } from './routes/invitacion.$code'
 
 const SociosRoute = SociosRouteImport.update({
@@ -101,6 +105,26 @@ const OnboardingMemberRoute = OnboardingMemberRouteImport.update({
   path: '/onboarding/member',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalTerminosRoute = LegalTerminosRouteImport.update({
+  id: '/legal/terminos',
+  path: '/legal/terminos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalPrivacidadRoute = LegalPrivacidadRouteImport.update({
+  id: '/legal/privacidad',
+  path: '/legal/privacidad',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalCookiesRoute = LegalCookiesRouteImport.update({
+  id: '/legal/cookies',
+  path: '/legal/cookies',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalAvisoLegalRoute = LegalAvisoLegalRouteImport.update({
+  id: '/legal/aviso-legal',
+  path: '/legal/aviso-legal',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InvitacionCodeRoute = InvitacionCodeRouteImport.update({
   id: '/invitacion/$code',
   path: '/invitacion/$code',
@@ -122,6 +146,10 @@ export interface FileRoutesByFullPath {
   '/reservas': typeof ReservasRoute
   '/socios': typeof SociosRoute
   '/invitacion/$code': typeof InvitacionCodeRoute
+  '/legal/aviso-legal': typeof LegalAvisoLegalRoute
+  '/legal/cookies': typeof LegalCookiesRoute
+  '/legal/privacidad': typeof LegalPrivacidadRoute
+  '/legal/terminos': typeof LegalTerminosRoute
   '/onboarding/member': typeof OnboardingMemberRoute
   '/onboarding/owner': typeof OnboardingOwnerRoute
 }
@@ -140,6 +168,10 @@ export interface FileRoutesByTo {
   '/reservas': typeof ReservasRoute
   '/socios': typeof SociosRoute
   '/invitacion/$code': typeof InvitacionCodeRoute
+  '/legal/aviso-legal': typeof LegalAvisoLegalRoute
+  '/legal/cookies': typeof LegalCookiesRoute
+  '/legal/privacidad': typeof LegalPrivacidadRoute
+  '/legal/terminos': typeof LegalTerminosRoute
   '/onboarding/member': typeof OnboardingMemberRoute
   '/onboarding/owner': typeof OnboardingOwnerRoute
 }
@@ -159,6 +191,10 @@ export interface FileRoutesById {
   '/reservas': typeof ReservasRoute
   '/socios': typeof SociosRoute
   '/invitacion/$code': typeof InvitacionCodeRoute
+  '/legal/aviso-legal': typeof LegalAvisoLegalRoute
+  '/legal/cookies': typeof LegalCookiesRoute
+  '/legal/privacidad': typeof LegalPrivacidadRoute
+  '/legal/terminos': typeof LegalTerminosRoute
   '/onboarding/member': typeof OnboardingMemberRoute
   '/onboarding/owner': typeof OnboardingOwnerRoute
 }
@@ -179,6 +215,10 @@ export interface FileRouteTypes {
     | '/reservas'
     | '/socios'
     | '/invitacion/$code'
+    | '/legal/aviso-legal'
+    | '/legal/cookies'
+    | '/legal/privacidad'
+    | '/legal/terminos'
     | '/onboarding/member'
     | '/onboarding/owner'
   fileRoutesByTo: FileRoutesByTo
@@ -197,6 +237,10 @@ export interface FileRouteTypes {
     | '/reservas'
     | '/socios'
     | '/invitacion/$code'
+    | '/legal/aviso-legal'
+    | '/legal/cookies'
+    | '/legal/privacidad'
+    | '/legal/terminos'
     | '/onboarding/member'
     | '/onboarding/owner'
   id:
@@ -215,6 +259,10 @@ export interface FileRouteTypes {
     | '/reservas'
     | '/socios'
     | '/invitacion/$code'
+    | '/legal/aviso-legal'
+    | '/legal/cookies'
+    | '/legal/privacidad'
+    | '/legal/terminos'
     | '/onboarding/member'
     | '/onboarding/owner'
   fileRoutesById: FileRoutesById
@@ -234,6 +282,10 @@ export interface RootRouteChildren {
   ReservasRoute: typeof ReservasRoute
   SociosRoute: typeof SociosRoute
   InvitacionCodeRoute: typeof InvitacionCodeRoute
+  LegalAvisoLegalRoute: typeof LegalAvisoLegalRoute
+  LegalCookiesRoute: typeof LegalCookiesRoute
+  LegalPrivacidadRoute: typeof LegalPrivacidadRoute
+  LegalTerminosRoute: typeof LegalTerminosRoute
   OnboardingMemberRoute: typeof OnboardingMemberRoute
   OnboardingOwnerRoute: typeof OnboardingOwnerRoute
 }
@@ -345,6 +397,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingMemberRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legal/terminos': {
+      id: '/legal/terminos'
+      path: '/legal/terminos'
+      fullPath: '/legal/terminos'
+      preLoaderRoute: typeof LegalTerminosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/privacidad': {
+      id: '/legal/privacidad'
+      path: '/legal/privacidad'
+      fullPath: '/legal/privacidad'
+      preLoaderRoute: typeof LegalPrivacidadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/cookies': {
+      id: '/legal/cookies'
+      path: '/legal/cookies'
+      fullPath: '/legal/cookies'
+      preLoaderRoute: typeof LegalCookiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/aviso-legal': {
+      id: '/legal/aviso-legal'
+      path: '/legal/aviso-legal'
+      fullPath: '/legal/aviso-legal'
+      preLoaderRoute: typeof LegalAvisoLegalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/invitacion/$code': {
       id: '/invitacion/$code'
       path: '/invitacion/$code'
@@ -370,6 +450,10 @@ const rootRouteChildren: RootRouteChildren = {
   ReservasRoute: ReservasRoute,
   SociosRoute: SociosRoute,
   InvitacionCodeRoute: InvitacionCodeRoute,
+  LegalAvisoLegalRoute: LegalAvisoLegalRoute,
+  LegalCookiesRoute: LegalCookiesRoute,
+  LegalPrivacidadRoute: LegalPrivacidadRoute,
+  LegalTerminosRoute: LegalTerminosRoute,
   OnboardingMemberRoute: OnboardingMemberRoute,
   OnboardingOwnerRoute: OnboardingOwnerRoute,
 }

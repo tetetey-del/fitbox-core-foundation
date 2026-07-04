@@ -13,8 +13,11 @@ function Index() {
 
   useEffect(() => {
     if (!ready) return;
-    if (session) navigate({ to: "/dashboard" });
-    else if (superAdmin) navigate({ to: "/admin" });
+    if (session) {
+      navigate({ to: session.role === "member" ? "/feed" : "/dashboard" });
+    } else if (superAdmin) {
+      navigate({ to: "/admin" });
+    }
   }, [ready, session, superAdmin, navigate]);
 
   if (!ready) return <div className="min-h-screen bg-background" />;
