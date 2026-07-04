@@ -58,10 +58,58 @@ export function MemberDashboard({ userId, membership, membershipStatus, plan }: 
     [modules.reservas],
   );
 
+  useEffect(() => {
+    if (modules.challenges) refreshChallenges();
+  }, [modules.challenges]);
+
+  const myChallenge = modules.challenges ? getMyActiveChallenge(userId) : null;
+  const myPrograms = modules.programs ? listMyAssignments(userId).filter((a) => a.assignment.status === "active") : [];
+  const nextRoutine = myPrograms[0] ? { assignment: myPrograms[0].assignment, program: myPrograms[0].program, session: nextPendingSession(myPrograms[0].assignment.id) } : null;
+
   return (
     <div className="grid gap-6 lg:grid-cols-3">
       <div className="lg:col-span-1 space-y-4">
         {todayWod && <WodViewer wod={todayWod} defaultOpen />}
+        {myChallenge && (
+          <div className="rounded-lg border border-border bg-card p-5">
+            <div className="text-xs uppercase tracking-wide text-muted-foreground mb-2">Mi reto activo</div>
+            <div className="flex items-center gap-2">
+              <span className="text-xl">{myChallenge.challenge.badge}</span>
+              <span className="font-medium">{myChallenge.challenge.title}</span>
+            </div>
+            {myChallenge.challenge.type === "attendance" && (
+              <div className="mt-3">
+                <div className="flex justify-between text-xs mb-1">
+                  <span>Progreso</span>
+                  <span>{myChallenge.participant.progress} / {String(myChallenge.challenge.goal)}</span>
+                </div>
+                <div className="h-2 rounded-full bg-muted overflow-hidden">
+                  <div
+                    className="h-full bg-[#F97316]"
+                    style={{
+                      width: `${Math.min(100, Math.round((myChallenge.participant.progress / Number(myChallenge.challenge.goal)) * 100))}%`,
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+            <Button asChild variant="ghost" size="sm" className="mt-2">
+              <Link to="/retos">Ver retos <ArrowRight className="h-4 w-4 ml-1" strokeWidth={1.5} /></Link>
+            </Button>
+          </div>
+        )}
+        {nextRoutine && nextRoutine.session && (
+          <div className="rounded-lg border border-border bg-card p-5">
+            <div className="text-xs uppercase tracking-wide text-muted-foreground mb-2">Rutina · siguiente sesión</div>
+            <div className="font-medium">{nextRoutine.program.title}</div>
+            <p className="text-sm text-muted-foreground">
+              Semana {nextRoutine.session.weekNumber} · Día {nextRoutine.session.dayNumber} · {nextRoutine.session.title}
+            </p>
+            <Button asChild variant="ghost" size="sm" className="mt-2">
+              <Link to="/rutinas">Ir a mis rutinas <ArrowRight className="h-4 w-4 ml-1" strokeWidth={1.5} /></Link>
+            </Button>
+          </div>
+        )}
         <div className="rounded-lg border border-border bg-card p-5">
           <div className="text-xs uppercase tracking-wide text-muted-foreground mb-2">Mi membresía</div>
           {membership ? (
