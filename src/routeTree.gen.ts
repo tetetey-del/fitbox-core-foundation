@@ -14,6 +14,7 @@ import { Route as ReservasRouteImport } from './routes/reservas'
 import { Route as RegistroRouteImport } from './routes/registro'
 import { Route as RecuperarRouteImport } from './routes/recuperar'
 import { Route as PrsRouteImport } from './routes/prs'
+import { Route as MiCuentaRouteImport } from './routes/mi-cuenta'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as FeedRouteImport } from './routes/feed'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -21,6 +22,9 @@ import { Route as ConfiguracionRouteImport } from './routes/configuracion'
 import { Route as ClasesRouteImport } from './routes/clases'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as OnboardingOwnerRouteImport } from './routes/onboarding.owner'
+import { Route as OnboardingMemberRouteImport } from './routes/onboarding.member'
+import { Route as InvitacionCodeRouteImport } from './routes/invitacion.$code'
 
 const SociosRoute = SociosRouteImport.update({
   id: '/socios',
@@ -45,6 +49,11 @@ const RecuperarRoute = RecuperarRouteImport.update({
 const PrsRoute = PrsRouteImport.update({
   id: '/prs',
   path: '/prs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MiCuentaRoute = MiCuentaRouteImport.update({
+  id: '/mi-cuenta',
+  path: '/mi-cuenta',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -82,6 +91,21 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OnboardingOwnerRoute = OnboardingOwnerRouteImport.update({
+  id: '/onboarding/owner',
+  path: '/onboarding/owner',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingMemberRoute = OnboardingMemberRouteImport.update({
+  id: '/onboarding/member',
+  path: '/onboarding/member',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InvitacionCodeRoute = InvitacionCodeRouteImport.update({
+  id: '/invitacion/$code',
+  path: '/invitacion/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -91,11 +115,15 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/feed': typeof FeedRoute
   '/login': typeof LoginRoute
+  '/mi-cuenta': typeof MiCuentaRoute
   '/prs': typeof PrsRoute
   '/recuperar': typeof RecuperarRoute
   '/registro': typeof RegistroRoute
   '/reservas': typeof ReservasRoute
   '/socios': typeof SociosRoute
+  '/invitacion/$code': typeof InvitacionCodeRoute
+  '/onboarding/member': typeof OnboardingMemberRoute
+  '/onboarding/owner': typeof OnboardingOwnerRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -105,11 +133,15 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/feed': typeof FeedRoute
   '/login': typeof LoginRoute
+  '/mi-cuenta': typeof MiCuentaRoute
   '/prs': typeof PrsRoute
   '/recuperar': typeof RecuperarRoute
   '/registro': typeof RegistroRoute
   '/reservas': typeof ReservasRoute
   '/socios': typeof SociosRoute
+  '/invitacion/$code': typeof InvitacionCodeRoute
+  '/onboarding/member': typeof OnboardingMemberRoute
+  '/onboarding/owner': typeof OnboardingOwnerRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -120,11 +152,15 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/feed': typeof FeedRoute
   '/login': typeof LoginRoute
+  '/mi-cuenta': typeof MiCuentaRoute
   '/prs': typeof PrsRoute
   '/recuperar': typeof RecuperarRoute
   '/registro': typeof RegistroRoute
   '/reservas': typeof ReservasRoute
   '/socios': typeof SociosRoute
+  '/invitacion/$code': typeof InvitacionCodeRoute
+  '/onboarding/member': typeof OnboardingMemberRoute
+  '/onboarding/owner': typeof OnboardingOwnerRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -136,11 +172,15 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/feed'
     | '/login'
+    | '/mi-cuenta'
     | '/prs'
     | '/recuperar'
     | '/registro'
     | '/reservas'
     | '/socios'
+    | '/invitacion/$code'
+    | '/onboarding/member'
+    | '/onboarding/owner'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -150,11 +190,15 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/feed'
     | '/login'
+    | '/mi-cuenta'
     | '/prs'
     | '/recuperar'
     | '/registro'
     | '/reservas'
     | '/socios'
+    | '/invitacion/$code'
+    | '/onboarding/member'
+    | '/onboarding/owner'
   id:
     | '__root__'
     | '/'
@@ -164,11 +208,15 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/feed'
     | '/login'
+    | '/mi-cuenta'
     | '/prs'
     | '/recuperar'
     | '/registro'
     | '/reservas'
     | '/socios'
+    | '/invitacion/$code'
+    | '/onboarding/member'
+    | '/onboarding/owner'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -179,11 +227,15 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   FeedRoute: typeof FeedRoute
   LoginRoute: typeof LoginRoute
+  MiCuentaRoute: typeof MiCuentaRoute
   PrsRoute: typeof PrsRoute
   RecuperarRoute: typeof RecuperarRoute
   RegistroRoute: typeof RegistroRoute
   ReservasRoute: typeof ReservasRoute
   SociosRoute: typeof SociosRoute
+  InvitacionCodeRoute: typeof InvitacionCodeRoute
+  OnboardingMemberRoute: typeof OnboardingMemberRoute
+  OnboardingOwnerRoute: typeof OnboardingOwnerRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -221,6 +273,13 @@ declare module '@tanstack/react-router' {
       path: '/prs'
       fullPath: '/prs'
       preLoaderRoute: typeof PrsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mi-cuenta': {
+      id: '/mi-cuenta'
+      path: '/mi-cuenta'
+      fullPath: '/mi-cuenta'
+      preLoaderRoute: typeof MiCuentaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -272,6 +331,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/onboarding/owner': {
+      id: '/onboarding/owner'
+      path: '/onboarding/owner'
+      fullPath: '/onboarding/owner'
+      preLoaderRoute: typeof OnboardingOwnerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/member': {
+      id: '/onboarding/member'
+      path: '/onboarding/member'
+      fullPath: '/onboarding/member'
+      preLoaderRoute: typeof OnboardingMemberRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invitacion/$code': {
+      id: '/invitacion/$code'
+      path: '/invitacion/$code'
+      fullPath: '/invitacion/$code'
+      preLoaderRoute: typeof InvitacionCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -283,11 +363,15 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   FeedRoute: FeedRoute,
   LoginRoute: LoginRoute,
+  MiCuentaRoute: MiCuentaRoute,
   PrsRoute: PrsRoute,
   RecuperarRoute: RecuperarRoute,
   RegistroRoute: RegistroRoute,
   ReservasRoute: ReservasRoute,
   SociosRoute: SociosRoute,
+  InvitacionCodeRoute: InvitacionCodeRoute,
+  OnboardingMemberRoute: OnboardingMemberRoute,
+  OnboardingOwnerRoute: OnboardingOwnerRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
