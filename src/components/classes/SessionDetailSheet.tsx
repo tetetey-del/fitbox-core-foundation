@@ -1,22 +1,15 @@
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Check, X, UserPlus, Trash2, Ban } from "lucide-react";
+import { Ban } from "lucide-react";
 import type { ClassSession, ClassTemplate, User } from "@/types";
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetDescription,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { OccupancyBar } from "./OccupancyBar";
 import {
@@ -30,6 +23,9 @@ import {
 } from "@/lib/services/booking.service";
 import { useAuth } from "@/contexts/AuthContext";
 import { notifyDataChanged, useDataVersion } from "@/lib/data-bus";
+import { AttendeesList } from "./sessionDetail/AttendeesList";
+import { WaitlistList } from "./sessionDetail/WaitlistList";
+import { AddAttendeeCombobox } from "./sessionDetail/AddAttendeeCombobox";
 
 interface Props {
   open: boolean;
@@ -40,13 +36,13 @@ interface Props {
   tenantUsers: User[];
 }
 
+/**
+ * Sheet lateral con la ficha completa de una sesión: ocupación, altas manuales,
+ * lista de confirmados/espera y acción de cancelar la sesión completa. Las
+ * subvistas viven en `./sessionDetail/*` para mantener este archivo delgado.
+ */
 export function SessionDetailSheet({
-  open,
-  onOpenChange,
-  session,
-  template,
-  coach,
-  tenantUsers,
+  open, onOpenChange, session, template, coach, tenantUsers,
 }: Props) {
   const { currentUser } = useAuth();
   useDataVersion();
@@ -132,124 +128,31 @@ export function SessionDetailSheet({
         {isStaff && (
           <>
             <Separator className="my-5" />
-            <div className="space-y-2">
-              <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                Añadir asistente
-              </div>
-              <div className="flex gap-2">
-                <Select value={addUserId} onValueChange={setAddUserId}>
-                  <SelectTrigger className="h-9">
-                    <SelectValue placeholder="Seleccionar usuario" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {addable.map((u) => (
-                      <SelectItem key={u.id} value={u.id}>
-                        {u.name}
-                      </SelectItem>
-                    ))}
-                    {addable.length === 0 && (
-                      <div className="p-2 text-xs text-muted-foreground">
-                        Todos los usuarios ya están apuntados.
-                      </div>
-                    )}
-                  </SelectContent>
-                </Select>
-                <Button size="sm" onClick={handleAdd} disabled={!addUserId}>
-                  <UserPlus className="h-4 w-4" strokeWidth={1.5} />
-                </Button>
-              </div>
-            </div>
+            <AddAttendeeCombobox
+              addable={addable}
+              addUserId={addUserId}
+              onChangeUserId={setAddUserId}
+              onAdd={handleAdd}
+            />
           </>
         )}
 
         <Separator className="my-5" />
 
-        <section className="space-y-2">
-          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-            Confirmados ({occ.confirmed.length})
-          </div>
-          {occ.confirmed.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Sin asistentes todavía.</p>
-          ) : (
-            <ul className="space-y-1">
-              {occ.confirmed.map((b) => {
-                const u = userById.get(b.userId);
-                const done = hasCheckIn(b.id);
-                return (
-                  <li
-                    key={b.id}
-                    className="flex items-center justify-between rounded-md border border-border bg-card px-3 py-2"
-                  >
-                    <div className="min-w-0">
-                      <div className="text-sm font-medium truncate">{u?.name ?? "—"}</div>
-                      {done && (
-                        <div className="text-[11px] text-emerald-400 flex items-center gap-1">
-                          <Check className="h-3 w-3" strokeWidth={2} /> Check-in hecho
-                        </div>
-                      )}
-                    </div>
-                    {isStaff && (
-                      <div className="flex items-center gap-1">
-                        <Button
-                          size="icon"
-                          variant={done ? "secondary" : "outline"}
-                          onClick={() => handleCheckIn(b.id)}
-                          title={done ? "Deshacer check-in" : "Check-in"}
-                          className="h-8 w-8"
-                        >
-                          <Check className="h-3.5 w-3.5" strokeWidth={1.5} />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => handleRemove(b.id)}
-                          title="Quitar asistente"
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" strokeWidth={1.5} />
-                        </Button>
-                      </div>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </section>
+        <AttendeesList
+          confirmed={occ.confirmed}
+          userById={userById}
+          isStaff={isStaff}
+          onCheckIn={handleCheckIn}
+          onRemove={handleRemove}
+        />
 
-        {occ.waitlist.length > 0 && (
-          <section className="mt-5 space-y-2">
-            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Lista de espera ({occ.waitlist.length})
-            </div>
-            <ul className="space-y-1">
-              {occ.waitlist.map((b) => {
-                const u = userById.get(b.userId);
-                return (
-                  <li
-                    key={b.id}
-                    className="flex items-center justify-between rounded-md border border-border bg-card px-3 py-2"
-                  >
-                    <div className="text-sm truncate">
-                      <span className="text-muted-foreground mr-2">#{b.position}</span>
-                      {u?.name ?? "—"}
-                    </div>
-                    {isStaff && (
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => handleRemove(b.id)}
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                      >
-                        <X className="h-3.5 w-3.5" strokeWidth={1.5} />
-                      </Button>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        )}
+        <WaitlistList
+          waitlist={occ.waitlist}
+          userById={userById}
+          isStaff={isStaff}
+          onRemove={handleRemove}
+        />
 
         {isStaff && session.status !== "cancelled" && (
           <>
