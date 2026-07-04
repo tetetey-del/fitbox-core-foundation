@@ -26,6 +26,10 @@ export interface TenantModules {
   prs: boolean;
   feed: boolean;
   pagos: boolean;
+  challenges: boolean;
+  programs: boolean;
+  shop: boolean;
+  health: boolean;
 }
 
 export const DEFAULT_MODULES: TenantModules = {
@@ -34,6 +38,10 @@ export const DEFAULT_MODULES: TenantModules = {
   prs: true,
   feed: true,
   pagos: true,
+  challenges: true,
+  programs: true,
+  shop: true,
+  health: true,
 };
 
 export interface TenantSettings {
