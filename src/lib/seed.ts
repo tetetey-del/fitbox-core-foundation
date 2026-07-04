@@ -7,8 +7,12 @@ import { checkinsRepoFor } from "./storage/repositories/checkins.repo";
 import { membershipPlansRepoFor } from "./storage/repositories/membershipPlans.repo";
 import { membershipsRepoFor } from "./storage/repositories/memberships.repo";
 import { paymentsRepoFor } from "./storage/repositories/payments.repo";
+import { exercisesRepoFor } from "./storage/repositories/exercises.repo";
+import { personalRecordsRepoFor } from "./storage/repositories/personalRecords.repo";
+import { DEFAULT_EXERCISES } from "./services/prs.service";
 import { addDays, addMonths, startOfWeek, toDateKey } from "./date";
-import type { ClassTemplate, ClassType, MembershipPlan, Tenant, User } from "@/types";
+import type { ClassTemplate, ClassType, Exercise, MembershipPlan, Tenant, User } from "@/types";
+
 
 export interface SeedResult {
   tenant: Tenant;
