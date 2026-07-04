@@ -4,8 +4,11 @@ import { classTemplatesRepoFor } from "./storage/repositories/classTemplates.rep
 import { classSessionsRepoFor } from "./storage/repositories/classSessions.repo";
 import { bookingsRepoFor } from "./storage/repositories/bookings.repo";
 import { checkinsRepoFor } from "./storage/repositories/checkins.repo";
-import { addDays, startOfWeek, toDateKey } from "./date";
-import type { ClassTemplate, ClassType, Tenant, User } from "@/types";
+import { membershipPlansRepoFor } from "./storage/repositories/membershipPlans.repo";
+import { membershipsRepoFor } from "./storage/repositories/memberships.repo";
+import { paymentsRepoFor } from "./storage/repositories/payments.repo";
+import { addDays, addMonths, startOfWeek, toDateKey } from "./date";
+import type { ClassTemplate, ClassType, MembershipPlan, Tenant, User } from "@/types";
 
 export interface SeedResult {
   tenant: Tenant;
