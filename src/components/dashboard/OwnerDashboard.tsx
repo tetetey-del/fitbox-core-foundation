@@ -68,6 +68,24 @@ export function OwnerDashboard() {
         />
       </div>
 
+      {modules.shop && pendingOrders > 0 && (
+        <Link
+          to="/tienda"
+          className="flex items-center justify-between rounded-lg border border-border bg-card p-4 hover:bg-muted/50 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <ShoppingBag className="h-5 w-5 text-[#F97316]" strokeWidth={1.5} />
+            <div>
+              <div className="text-sm font-medium">Pedidos pendientes en la tienda</div>
+              <p className="text-xs text-muted-foreground">
+                {pendingOrders} pedido{pendingOrders === 1 ? "" : "s"} sin preparar.
+              </p>
+            </div>
+          </div>
+          <ArrowRight className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
+        </Link>
+      )}
+
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="rounded-lg border border-border bg-card p-5">
           <h3 className="text-sm font-medium mb-1">Ingresos por mes</h3>
