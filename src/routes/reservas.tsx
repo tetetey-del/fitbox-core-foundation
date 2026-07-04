@@ -27,10 +27,7 @@ import {
   getUserBooking,
 } from "@/lib/services/booking.service";
 
-  cancelBooking,
-  getSessionOccupancy,
-  getUserBooking,
-} from "@/lib/services/booking.service";
+
 import { getPublishedWodByDate } from "@/lib/services/wods.service";
 import { WodViewer } from "@/components/wods/WodViewer";
 
