@@ -37,7 +37,7 @@ type Mode = "create" | "enter" | "platform" | null;
 
 export function LandingPage() {
   const [mode, setMode] = useState<Mode>(null);
-  const { login } = useAuth();
+  const { login, loginAsSuperAdmin } = useAuth();
   const navigate = useNavigate();
 
   const goDashboard = () => navigate({ to: "/dashboard" });
