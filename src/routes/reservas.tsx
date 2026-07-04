@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { CalendarDays, Clock } from "lucide-react";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
-import { Button } from "@/components/ui/button";
 import { WeekNavigator } from "@/components/classes/WeekNavigator";
 import { SessionCard } from "@/components/classes/SessionCard";
 import { SessionDetailSheet } from "@/components/classes/SessionDetailSheet";
@@ -12,6 +11,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useDataVersion, notifyDataChanged } from "@/lib/data-bus";
 import { classTemplatesRepo } from "@/lib/storage/repositories/classTemplates.repo";
 import { classSessionsRepo } from "@/lib/storage/repositories/classSessions.repo";
+import { bookingsRepo } from "@/lib/storage/repositories/bookings.repo";
+
 import {
   addDays,
   formatDayHeader,
