@@ -63,7 +63,14 @@ export function LandingPage() {
 
       <footer className="border-t border-border p-6 text-center text-xs text-muted-foreground">
         Demo local · Los datos se guardan en tu navegador ·{" "}
-        <span className="text-foreground">FitBox</span>
+        <span className="text-foreground">FitBox</span> ·{" "}
+        <button
+          type="button"
+          onClick={() => setMode("platform")}
+          className="underline underline-offset-2 hover:text-foreground"
+        >
+          Acceso plataforma
+        </button>
       </footer>
 
       <Dialog open={mode !== null} onOpenChange={(o) => !o && setMode(null)}>
