@@ -98,7 +98,7 @@ function PrivacidadPage() {
         <p>
           Puedes ejercer en cualquier momento tus derechos de <strong>acceso, rectificación, supresión,
           oposición, limitación del tratamiento y portabilidad</strong>, así como retirar el consentimiento
-          prestado, escribiendo a <strong>[EMAIL]</strong>. También tienes derecho a presentar una reclamación
+          prestado, escribiendo a <strong>{company.emails.privacy}</strong>. También tienes derecho a presentar una reclamación
           ante la Agencia Española de Protección de Datos (www.aepd.es).
         </p>
       </LegalSectionBlock>
