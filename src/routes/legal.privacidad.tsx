@@ -83,7 +83,7 @@ function PrivacidadPage() {
         <p>
           No se cederán datos a terceros salvo obligación legal. Podemos utilizar proveedores tecnológicos que
           actúan como encargados del tratamiento con garantías adecuadas, en particular servicios de hosting y
-          envío de comunicaciones. El listado actualizado puede solicitarse a <strong>[EMAIL]</strong>.
+          envío de comunicaciones. El listado actualizado puede solicitarse a <strong>{company.emails.privacy}</strong>.
         </p>
       </LegalSectionBlock>
 
