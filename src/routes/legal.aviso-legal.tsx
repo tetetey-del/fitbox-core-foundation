@@ -78,7 +78,7 @@ function AvisoLegalPage() {
       <LegalSectionBlock id="ley" title={SECTIONS[6].title}>
         <p>
           La relación entre el usuario y FitBox se rige por la legislación española. Para la resolución de
-          controversias, las partes se someten a los Juzgados y Tribunales de [CIUDAD].
+          controversias, las partes se someten a los Juzgados y Tribunales de {company.jurisdiction}.
         </p>
       </LegalSectionBlock>
     </LegalLayout>
