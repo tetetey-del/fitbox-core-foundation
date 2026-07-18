@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { LegalLayout, LegalSectionBlock } from "@/components/legal/LegalLayout";
+import { company } from "@/config/company";
 
 const SECTIONS = [
   { id: "responsable", title: "1. Responsable del tratamiento" },
