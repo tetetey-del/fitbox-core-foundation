@@ -47,9 +47,9 @@ export function LegalLayout({
           <h1 className="text-3xl font-semibold tracking-tight mt-2">{title}</h1>
           <p className="mt-2 text-xs text-muted-foreground">Última actualización: {updatedAt}</p>
           <div className="mt-4 rounded-md border border-[#F97316]/30 bg-[#F97316]/10 px-4 py-3 text-xs">
-            Este documento es una <strong>plantilla</strong> y debe revisarse por un profesional jurídico
-            antes de usarse en producción. Los placeholders entre corchetes ({"[NOMBRE EMPRESA]"}, etc.)
-            deben sustituirse por los datos reales del responsable del tratamiento.
+            Estos textos son una <strong>plantilla base</strong>. Antes de operar en producción,
+            revísalos con un profesional jurídico y confirma que los datos del titular
+            configurados en <code>src/config/company.ts</code> son los correctos.
           </div>
         </header>
 
