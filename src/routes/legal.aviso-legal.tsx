@@ -31,11 +31,11 @@ function AvisoLegalPage() {
           comercio electrónico (LSSICE), se informa que el titular de este sitio web es:
         </p>
         <ul className="list-disc pl-5 space-y-1">
-          <li><strong>Denominación:</strong> [NOMBRE EMPRESA]</li>
-          <li><strong>CIF:</strong> [CIF]</li>
-          <li><strong>Domicilio:</strong> [DIRECCIÓN]</li>
-          <li><strong>Correo electrónico:</strong> [EMAIL]</li>
-          <li><strong>Datos registrales:</strong> [REGISTRO MERCANTIL, TOMO, FOLIO, HOJA]</li>
+          <li><strong>Denominación:</strong> {company.legalName}</li>
+          <li><strong>CIF:</strong> {company.taxId}</li>
+          <li><strong>Domicilio:</strong> {company.address}</li>
+          <li><strong>Correo electrónico:</strong> {company.emails.contact}</li>
+          <li><strong>Datos registrales:</strong> {company.registryData}</li>
         </ul>
       </LegalSectionBlock>
 
