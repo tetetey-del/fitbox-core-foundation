@@ -90,7 +90,7 @@ function TerminosPage() {
       <LegalSectionBlock id="ley" title={SECTIONS[8].title}>
         <p>
           Estos términos se rigen por la <strong>legislación española</strong>. Para la resolución de cualquier
-          controversia las partes se someten a los <strong>Juzgados y Tribunales de [CIUDAD]</strong>, con
+          controversia las partes se someten a los <strong>Juzgados y Tribunales de {company.jurisdiction}</strong>, con
           renuncia expresa a cualquier otro fuero que pudiera corresponderles, salvo que la normativa aplicable
           disponga otra cosa.
         </p>
