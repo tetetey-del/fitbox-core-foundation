@@ -32,8 +32,8 @@ function PrivacidadPage() {
       <LegalSectionBlock id="responsable" title={SECTIONS[0].title}>
         <p>
           El responsable del tratamiento de los datos personales recogidos a través de la plataforma FitBox es
-          <strong> [NOMBRE EMPRESA]</strong>, con CIF <strong>[CIF]</strong>, domicilio en <strong>[DIRECCIÓN]</strong>
-          y correo electrónico de contacto <strong>[EMAIL]</strong>.
+          <strong> {company.legalName}</strong>, con CIF <strong>{company.taxId}</strong>, domicilio en <strong>{company.address}</strong>
+          y correo electrónico de contacto <strong>{company.emails.privacy}</strong>.
         </p>
         <p>
           Si has contratado FitBox como titular de un gimnasio o box, actúas como responsable del tratamiento de los
