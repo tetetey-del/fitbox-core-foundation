@@ -26,8 +26,8 @@ repos. Los servicios y componentes no cambian de forma.
 ## 2. Servicios: única fuente de lógica de negocio
 
 Los componentes son intencionadamente "tontos": renderizan y disparan
-callbacks. Toda regla — ventana de cancelación, promoción de lista de espera,
-consumo/devolución de créditos, dedupe de notificaciones — vive en
+callbacks. Toda regla: ventana de cancelación, promoción de lista de espera,
+consumo/devolución de créditos, dedupe de notificaciones: vive en
 `src/lib/services/*.service.ts`.
 
 Beneficios concretos:
@@ -103,7 +103,7 @@ crea un tenant `<nombre> (importado)` con sufijo timestamp en el slug.
 
 `buildKey(tenantId, collection)` produce claves como
 `fitbox:t_XyZ:bookings`. Para "borrar un tenant" basta con iterar
-`localStorage` y eliminar todas las claves que empiezan por el prefijo — sin
+`localStorage` y eliminar todas las claves que empiezan por el prefijo: sin
 tener que cargar cada colección en memoria.
 
 ## 7. Sesión y super-sesión separadas
@@ -150,11 +150,11 @@ Realtime: cuando se migre a Supabase se reemplaza por
 Cuatro módulos de fidelización siguen el patrón estándar (tipos → repos
 scoped → servicios → rutas):
 
-- **Retos** (`challenges`) — asistencia y benchmarks con ranking e
+- **Retos** (`challenges`): asistencia y benchmarks con ranking e
   insignias. Progreso automático leyendo `check-ins` o `personal_records`.
-- **Rutinas** (`programs`) — programas semanales asignables a socios.
-- **Tienda** (`shop`) — pedido con recogida en el box y control de stock.
-- **Salud** (`health`) — peso/% graso/FC + gráficas Recharts (lazy).
+- **Rutinas** (`programs`): programas semanales asignables a socios.
+- **Tienda** (`shop`): pedido con recogida en el box y control de stock.
+- **Salud** (`health`): peso/% graso/FC + gráficas Recharts (lazy).
 
 Backup subido a `BACKUP_SCHEMA_VERSION = 2` con las 9 colecciones nuevas;
 se mantiene compatibilidad de import con v1.
