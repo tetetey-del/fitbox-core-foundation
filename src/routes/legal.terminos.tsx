@@ -29,8 +29,8 @@ function TerminosPage() {
     <LegalLayout title="Términos y condiciones" sections={SECTIONS} updatedAt="4 de julio de 2026">
       <LegalSectionBlock id="objeto" title={SECTIONS[0].title}>
         <p>
-          Los presentes términos regulan el acceso y uso de la plataforma FitBox, titularidad de <strong>[NOMBRE EMPRESA]</strong>,
-          con CIF <strong>[CIF]</strong>. El registro y uso de la plataforma implican la aceptación expresa de estos términos.
+          Los presentes términos regulan el acceso y uso de la plataforma FitBox, titularidad de <strong>{company.legalName}</strong>,
+          con CIF <strong>{company.taxId}</strong>. El registro y uso de la plataforma implican la aceptación expresa de estos términos.
         </p>
       </LegalSectionBlock>
 
