@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { LegalLayout, LegalSectionBlock } from "@/components/legal/LegalLayout";
+import { company } from "@/config/company";
 
 const SECTIONS = [
   { id: "responsable", title: "1. Responsable del tratamiento" },
@@ -31,8 +32,8 @@ function PrivacidadPage() {
       <LegalSectionBlock id="responsable" title={SECTIONS[0].title}>
         <p>
           El responsable del tratamiento de los datos personales recogidos a través de la plataforma FitBox es
-          <strong> [NOMBRE EMPRESA]</strong>, con CIF <strong>[CIF]</strong>, domicilio en <strong>[DIRECCIÓN]</strong>
-          y correo electrónico de contacto <strong>[EMAIL]</strong>.
+          <strong> {company.legalName}</strong>, con CIF <strong>{company.taxId}</strong>, domicilio en <strong>{company.address}</strong>
+          y correo electrónico de contacto <strong>{company.emails.privacy}</strong>.
         </p>
         <p>
           Si has contratado FitBox como titular de un gimnasio o box, actúas como responsable del tratamiento de los
@@ -82,7 +83,7 @@ function PrivacidadPage() {
         <p>
           No se cederán datos a terceros salvo obligación legal. Podemos utilizar proveedores tecnológicos que
           actúan como encargados del tratamiento con garantías adecuadas, en particular servicios de hosting y
-          envío de comunicaciones. El listado actualizado puede solicitarse a <strong>[EMAIL]</strong>.
+          envío de comunicaciones. El listado actualizado puede solicitarse a <strong>{company.emails.privacy}</strong>.
         </p>
       </LegalSectionBlock>
 
@@ -97,7 +98,7 @@ function PrivacidadPage() {
         <p>
           Puedes ejercer en cualquier momento tus derechos de <strong>acceso, rectificación, supresión,
           oposición, limitación del tratamiento y portabilidad</strong>, así como retirar el consentimiento
-          prestado, escribiendo a <strong>[EMAIL]</strong>. También tienes derecho a presentar una reclamación
+          prestado, escribiendo a <strong>{company.emails.privacy}</strong>. También tienes derecho a presentar una reclamación
           ante la Agencia Española de Protección de Datos (www.aepd.es).
         </p>
       </LegalSectionBlock>

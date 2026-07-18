@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Dumbbell } from "lucide-react";
+import { credits } from "@/config/company";
 
 interface FooterItem { label: string; href?: string; to?: string }
 
@@ -43,8 +44,28 @@ export function LandingFooter() {
           ]}
         />
       </div>
-      <div className="border-t border-border/60 py-4 text-center text-[11px] text-muted-foreground">
-        © {new Date().getFullYear()} FitBox · Demo local, los datos se guardan en tu navegador
+      <div className="border-t border-border/60 py-4 text-center text-[11px] text-muted-foreground space-y-1">
+        <div>
+          Un producto de{" "}
+          <a
+            href={credits.productOf.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-foreground transition-colors"
+          >
+            {credits.productOf.name}
+          </a>
+          {" "}· Creado por{" "}
+          <a
+            href={credits.createdBy.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-foreground transition-colors"
+          >
+            {credits.createdBy.name}
+          </a>
+        </div>
+        <div>© {new Date().getFullYear()} FitBox · Demo local, los datos se guardan en tu navegador</div>
       </div>
     </footer>
   );

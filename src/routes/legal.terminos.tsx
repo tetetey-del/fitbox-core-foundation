@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { LegalLayout, LegalSectionBlock } from "@/components/legal/LegalLayout";
+import { company } from "@/config/company";
 
 const SECTIONS = [
   { id: "objeto", title: "1. Objeto y aceptación" },
@@ -28,8 +29,8 @@ function TerminosPage() {
     <LegalLayout title="Términos y condiciones" sections={SECTIONS} updatedAt="4 de julio de 2026">
       <LegalSectionBlock id="objeto" title={SECTIONS[0].title}>
         <p>
-          Los presentes términos regulan el acceso y uso de la plataforma FitBox, titularidad de <strong>[NOMBRE EMPRESA]</strong>,
-          con CIF <strong>[CIF]</strong>. El registro y uso de la plataforma implican la aceptación expresa de estos términos.
+          Los presentes términos regulan el acceso y uso de la plataforma FitBox, titularidad de <strong>{company.legalName}</strong>,
+          con CIF <strong>{company.taxId}</strong>. El registro y uso de la plataforma implican la aceptación expresa de estos términos.
         </p>
       </LegalSectionBlock>
 
@@ -89,7 +90,7 @@ function TerminosPage() {
       <LegalSectionBlock id="ley" title={SECTIONS[8].title}>
         <p>
           Estos términos se rigen por la <strong>legislación española</strong>. Para la resolución de cualquier
-          controversia las partes se someten a los <strong>Juzgados y Tribunales de [CIUDAD]</strong>, con
+          controversia las partes se someten a los <strong>Juzgados y Tribunales de {company.jurisdiction}</strong>, con
           renuncia expresa a cualquier otro fuero que pudiera corresponderles, salvo que la normativa aplicable
           disponga otra cosa.
         </p>

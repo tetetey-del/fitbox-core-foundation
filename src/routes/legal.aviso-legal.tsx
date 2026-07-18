@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { LegalLayout, LegalSectionBlock } from "@/components/legal/LegalLayout";
+import { company } from "@/config/company";
 
 const SECTIONS = [
   { id: "titular", title: "1. Datos del titular" },
@@ -30,11 +31,11 @@ function AvisoLegalPage() {
           comercio electrónico (LSSICE), se informa que el titular de este sitio web es:
         </p>
         <ul className="list-disc pl-5 space-y-1">
-          <li><strong>Denominación:</strong> [NOMBRE EMPRESA]</li>
-          <li><strong>CIF:</strong> [CIF]</li>
-          <li><strong>Domicilio:</strong> [DIRECCIÓN]</li>
-          <li><strong>Correo electrónico:</strong> [EMAIL]</li>
-          <li><strong>Datos registrales:</strong> [REGISTRO MERCANTIL, TOMO, FOLIO, HOJA]</li>
+          <li><strong>Denominación:</strong> {company.legalName}</li>
+          <li><strong>CIF:</strong> {company.taxId}</li>
+          <li><strong>Domicilio:</strong> {company.address}</li>
+          <li><strong>Correo electrónico:</strong> {company.emails.contact}</li>
+          <li><strong>Datos registrales:</strong> {company.registryData}</li>
         </ul>
       </LegalSectionBlock>
 
@@ -77,7 +78,7 @@ function AvisoLegalPage() {
       <LegalSectionBlock id="ley" title={SECTIONS[6].title}>
         <p>
           La relación entre el usuario y FitBox se rige por la legislación española. Para la resolución de
-          controversias, las partes se someten a los Juzgados y Tribunales de [CIUDAD].
+          controversias, las partes se someten a los Juzgados y Tribunales de {company.jurisdiction}.
         </p>
       </LegalSectionBlock>
     </LegalLayout>
