@@ -23,9 +23,9 @@ export const company = {
   registryData: "[Registro Mercantil, tomo, folio, hoja]",
   /** Correos electrónicos de contacto por área. */
   emails: {
-    contact: "chiatrainingc.cba@gmail.com",
-    privacy: "privacidad@ejemplo.com",
-    support: "soporte@ejemplo.com",
+    contact: "chiatraining.cba@gmail.com",
+    privacy: "chiatraining.cba@gmail.com",
+    support: "chiatraining.cba@gmail.com",
   },
   /** Horario de atención al cliente. */
   businessHours: "Lunes a viernes, 9:00 a 18:00 (hora local)",
