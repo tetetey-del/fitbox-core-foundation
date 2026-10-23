@@ -148,7 +148,34 @@ const WARM_EARTH: ThemeDef = {
     destructiveForeground: "#FFFFFF",
   },
 };
-
+const CHIA: ThemeDef = {
+  id: "chia",
+  name: "Chia",
+  description: "Carbón, magenta y amarillo. La identidad de Chia Training.",
+  mode: "dark",
+  previewAccent: "#F2D04A",
+  vars: {
+    background: "#1C1C1C",
+    foreground: "#F5F5F5",
+    card: "#262626",
+    cardForeground: "#F5F5F5",
+    popover: "#262626",
+    popoverForeground: "#F5F5F5",
+    primary: "#A3226E",
+    primaryForeground: "#FFFFFF",
+    secondary: "#333333",
+    secondaryForeground: "#F5F5F5",
+    muted: "#2E2E2E",
+    mutedForeground: "#B3B3B3",
+    accent: "#3A1A2E",
+    accentForeground: "#F2D04A",
+    border: "#3A3A3A",
+    input: "#3A3A3A",
+    ring: "#F2D04A",
+    destructive: "#DC2626",
+    destructiveForeground: "#FFFFFF",
+  },
+};
 const CORPORATE_BLUE: ThemeDef = {
   id: "corporate-blue",
   name: "Corporate Blue",
@@ -179,6 +206,7 @@ const CORPORATE_BLUE: ThemeDef = {
 };
 
 export const THEMES: ThemeDef[] = [
+  CHIA,
   DARK_CARBON,
   LIGHT_CLEAN,
   NEON,
@@ -186,7 +214,7 @@ export const THEMES: ThemeDef[] = [
   CORPORATE_BLUE,
 ];
 
-export const DEFAULT_THEME_ID: ThemeId = "dark-carbon";
+export const DEFAULT_THEME_ID: ThemeId = "chia";
 
 export function getTheme(id?: ThemeId | null): ThemeDef {
   return THEMES.find((t) => t.id === id) ?? DARK_CARBON;
