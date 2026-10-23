@@ -12,18 +12,18 @@
 
 export const company = {
   /** Denominación social completa de la empresa titular. */
-  legalName: "[Nombre de la Empresa]",
+  legalName: "[Chia Training]",
   /** Identificador fiscal (CIF/NIF/VAT) de la empresa titular. */
   taxId: "[CIF/NIF]",
   /** Dirección postal completa. */
   address: "[Dirección postal de la empresa]",
   /** Ciudad utilizada en cláusulas de jurisdicción. */
-  jurisdiction: "[Ciudad de jurisdicción]",
+  jurisdiction: "[Palma de Mallorca]",
   /** Datos registrales (registro mercantil, tomo, folio, hoja). */
   registryData: "[Registro Mercantil, tomo, folio, hoja]",
   /** Correos electrónicos de contacto por área. */
   emails: {
-    contact: "hola@ejemplo.com",
+    contact: "chiatrainingc.cba@gmail.com",
     privacy: "privacidad@ejemplo.com",
     support: "soporte@ejemplo.com",
   },
