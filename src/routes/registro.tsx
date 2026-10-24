@@ -52,7 +52,7 @@ function RegisterPage() {
     >
       <form onSubmit={submit} className="space-y-4">
         <Field label="Nombre del box">
-          <Input value={boxName} onChange={(e) => setBoxName(e.target.value)} required autoFocus placeholder="CrossFit Norte" />
+          <Input value={boxName} onChange={(e) => setBoxName(e.target.value)} required autoFocus placeholder="Nombre de tu box" />
         </Field>
         <Field label="Tu nombre">
           <Input value={ownerName} onChange={(e) => setOwnerName(e.target.value)} required placeholder="Sergio Torres" />

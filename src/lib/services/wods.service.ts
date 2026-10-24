@@ -3,28 +3,57 @@
  * Responsabilidad: publicar/editar el WOD de una fecha y, al publicar,
  * crear un post en el feed y notificar a los socios (efectos idempotentes).
  */
-import type { Wod, WodBlock } from "@/types";
+import type { Wod, WodBlock, WodVisibility } from "@/types";
 import { WOD_BLOCK_LABEL } from "@/types";
 import { wodsRepo, wodsRepoFor } from "@/lib/storage/repositories/wods.repo";
 import { postsRepo, postsRepoFor } from "@/lib/storage/repositories/posts.repo";
 import { listUsersOfTenant } from "@/lib/storage/repositories/users.repo";
 import { sessionStore } from "@/lib/storage/session";
 import { notifyManyUsers } from "./notifications.service";
-import { formatDate } from "@/lib/date";
+import { formatDate, toDateKey } from "@/lib/date";
+import { tenantsRepo } from "@/lib/storage/repositories/tenants.repo";
 
 export function getWodByDate(date: string): Wod | null {
   return wodsRepo.list().find((w) => w.date === date) ?? null;
 }
 
+function wodVisibilityOf(tenantId: string): WodVisibility {
+  return tenantsRepo.getById(tenantId)?.settings?.wodVisibility ?? "visible";
+}
+
+/** ¿El usuario con sesión es socio (no admin ni coach)? */
+function currentUserIsMember(): boolean {
+  const s = sessionStore.read();
+  if (!s) return false;
+  return listUsersOfTenant(s.tenantId).find((u) => u.id === s.userId)?.role === "member";
+}
+
+/** ¿El usuario con sesión puede ver el WOD de esa fecha, según la configuración del box? */
+export function canSeeWodOn(date: string): boolean {
+  const s = sessionStore.read();
+  if (!s || !currentUserIsMember()) return true;
+  const visibility = wodVisibilityOf(s.tenantId);
+  if (visibility === "visible") return true;
+  if (visibility === "after_day") return date < toDateKey(new Date());
+  return false;
+}
+
+/** Los posts de WOD del feed se ocultan a los socios si el box no muestra el WOD de antemano. */
+export function hideWodPostsForCurrentUser(): boolean {
+  const s = sessionStore.read();
+  if (!s || !currentUserIsMember()) return false;
+  return wodVisibilityOf(s.tenantId) !== "visible";
+}
+
 export function getPublishedWodByDate(date: string): Wod | null {
   const w = getWodByDate(date);
-  return w && w.published ? w : null;
+  return w && w.published && canSeeWodOn(date) ? w : null;
 }
 
 function summarize(blocks: WodBlock[]): string {
   return blocks
     .filter((b) => b.content.trim())
-    .map((b) => `**${WOD_BLOCK_LABEL[b.type]}**\n${b.content.trim()}`)
+    .map((b) => `${WOD_BLOCK_LABEL[b.type]}:\n${b.content.trim()}`)
     .join("\n\n");
 }
 
@@ -58,6 +87,8 @@ export function saveWod(input: SaveWodInput): Wod {
 }
 
 function publishWodSideEffects(wod: Wod) {
+  // Si el box no muestra el WOD de antemano, no se anuncia en el feed ni se avisa a los socios.
+  if (wodVisibilityOf(wod.tenantId) !== "visible") return;
   // Crear post de feed (si no existe ya para ese WOD)
   const existingPost = postsRepo
     .list()
@@ -100,9 +131,10 @@ export function seedWod(
     publishedBy: publisherId,
   };
   const wod = repo.create(payload);
-  if (input.publish) {
+  // En la demo solo se anuncian en el feed los WODs de hoy o anteriores, con su fecha real.
+  if (input.publish && input.date <= toDateKey(new Date())) {
     const posts = postsRepoFor(tenantId);
-    posts.create({
+    const post = posts.create({
       tenantId,
       authorId: publisherId,
       type: "wod",
@@ -110,6 +142,8 @@ export function seedWod(
       content: summarize(wod.blocks),
       pinned: false,
     });
+    const createdAt = new Date(`${wod.date}T06:00:00`).toISOString();
+    posts.replaceAll(posts.list().map((p) => (p.id === post.id ? { ...p, createdAt } : p)));
   }
   return wod;
 }

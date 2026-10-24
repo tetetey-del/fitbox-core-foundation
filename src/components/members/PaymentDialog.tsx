@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { PaymentMethod } from "@/types";
+import { currencySymbol } from "@/lib/format";
 import { PAYMENT_METHOD_LABEL } from "@/types";
 import { toDateKey } from "@/lib/date";
 import { registerPayment } from "@/lib/services/membership.service";
@@ -77,7 +78,7 @@ export function PaymentDialog({
         <div className="grid gap-3">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Importe (€)</Label>
+              <Label className="text-xs text-muted-foreground">Importe ({currencySymbol()})</Label>
               <Input
                 type="number"
                 min={0}

@@ -24,6 +24,7 @@ import { parseDateKey, toDateKey } from "@/lib/date";
 import { notifyDataChanged } from "@/lib/data-bus";
 import { registerPayment } from "@/lib/services/membership.service";
 import type { PaymentMethod } from "@/types";
+import { formatMoney } from "@/lib/format";
 import { PAYMENT_METHOD_LABEL } from "@/types";
 
 interface Props {
@@ -88,7 +89,7 @@ export function AssignPlanDialog({ open, onOpenChange, userId }: Props) {
                 <SelectContent>
                   {plans.map((p) => (
                     <SelectItem key={p.id} value={p.id}>
-                      {p.name} — {p.priceMonthly}€
+                      {p.name} — {formatMoney(p.priceMonthly)}
                       {p.type === "credits" ? ` · ${p.creditsPerMonth} créditos` : " · Ilimitado"}
                     </SelectItem>
                   ))}
@@ -106,7 +107,7 @@ export function AssignPlanDialog({ open, onOpenChange, userId }: Props) {
                 onCheckedChange={(v) => setWithPayment(!!v)}
               />
               <Label htmlFor="pay" className="text-sm font-normal">
-                Registrar pago de {plan?.priceMonthly ?? 0}€
+                Registrar pago de {formatMoney(plan?.priceMonthly ?? 0)}
               </Label>
             </div>
             {withPayment && (

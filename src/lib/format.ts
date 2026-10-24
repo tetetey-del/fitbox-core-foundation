@@ -1,4 +1,4 @@
-import type { ExerciseUnit } from "@/types";
+import type { CurrencyCode, ExerciseUnit } from "@/types";
 
 /** Formatea segundos como mm:ss (o hh:mm:ss si ≥ 1h). */
 export function formatSeconds(total: number): string {
@@ -39,12 +39,32 @@ export function formatPrValue(value: number, unit: ExerciseUnit): string {
   }
 }
 
-export function formatMoney(amount: number): string {
-  return new Intl.NumberFormat("es-ES", {
+const CURRENCY_LOCALE: Record<CurrencyCode, string> = { EUR: "es-ES", ARS: "es-AR", USD: "en-US" };
+
+/** Moneda del box con sesión activa. La actualiza AuthContext al cambiar de box. */
+let activeCurrency: CurrencyCode = "EUR";
+
+export function setActiveCurrency(currency: CurrencyCode | undefined): void {
+  activeCurrency = currency ?? "EUR";
+}
+
+export function getActiveCurrency(): CurrencyCode {
+  return activeCurrency;
+}
+
+/** Formatea un importe en la moneda del box activo (o en la que se indique). */
+export function formatMoney(amount: number, currency: CurrencyCode = activeCurrency): string {
+  return new Intl.NumberFormat(CURRENCY_LOCALE[currency], {
     style: "currency",
-    currency: "EUR",
-    maximumFractionDigits: 0,
+    currency,
+    maximumFractionDigits: currency === "ARS" ? 0 : 2,
+    minimumFractionDigits: 0,
   }).format(amount);
+}
+
+/** Símbolo de la moneda, para etiquetas como "Precio ($)". */
+export function currencySymbol(currency: CurrencyCode = activeCurrency): string {
+  return currency === "EUR" ? "€" : currency === "USD" ? "US$" : "$";
 }
 
 export function formatMonthShort(iso: string): string {

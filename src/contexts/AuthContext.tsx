@@ -10,6 +10,7 @@ import {
 import type { Session, SuperAdmin, Tenant, User } from "@/types";
 import { sessionStore } from "@/lib/storage/session";
 import { tenantsRepo } from "@/lib/storage/repositories/tenants.repo";
+import { setActiveCurrency } from "@/lib/format";
 import { listUsersOfTenant } from "@/lib/storage/repositories/users.repo";
 import {
   superAdminsStore,
@@ -73,8 +74,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [superAdminId, tick]);
 
   const currentTenant = useMemo<Tenant | null>(() => {
-    if (!session) return null;
-    return tenantsRepo.getById(session.tenantId);
+    if (!session) {
+      setActiveCurrency(undefined);
+      return null;
+    }
+    const t = tenantsRepo.getById(session.tenantId);
+    setActiveCurrency(t?.settings?.currency);
+    return t;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, tick]);
 
