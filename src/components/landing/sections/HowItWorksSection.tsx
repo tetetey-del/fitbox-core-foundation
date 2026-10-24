@@ -19,15 +19,13 @@ export function HowItWorksSection() {
             </p>
           </Reveal>
         </div>
-        <div className="grid gap-3 sm:gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4">
           {steps.map((s, i) => (
             <Reveal key={s.n} delay={i * 100}>
-              <div className="rounded-xl border border-border bg-background p-4 sm:p-6 h-full transition-colors hover:border-[#14B8A6]/40">
-                <div className="flex items-baseline gap-2 sm:block">
-                  <div className="text-xs font-mono text-[#14B8A6]">{s.n}</div>
-                  <h3 className="sm:mt-2 text-base font-semibold tracking-tight">{s.title}</h3>
-                </div>
-                <p className="mt-1.5 text-sm text-muted-foreground">{s.desc}</p>
+              <div className="rounded-xl border border-border bg-background p-3 sm:p-6 h-full transition-colors hover:border-[#14B8A6]/40">
+                <div className="text-[11px] sm:text-xs font-mono text-[#14B8A6]">{s.n}</div>
+                <h3 className="mt-1 sm:mt-2 text-sm sm:text-base font-semibold tracking-tight leading-tight">{s.title}</h3>
+                <p className="mt-1 sm:mt-1.5 text-xs sm:text-sm text-muted-foreground leading-snug">{s.desc}</p>
               </div>
             </Reveal>
           ))}

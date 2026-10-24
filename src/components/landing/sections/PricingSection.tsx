@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "../animations";
@@ -32,6 +32,16 @@ const PLANS: Plan[] = [
 export function PricingSection({ onCreate }: { onCreate: () => void }) {
   const t = useT().pricing;
   const [annual, setAnnual] = useState(false);
+  const rowRef = useRef<HTMLDivElement>(null);
+  // En el celular, arranca mostrando el plan destacado (Pro) en el centro.
+  useEffect(() => {
+    const row = rowRef.current;
+    const featured = row?.querySelector<HTMLElement>("[data-featured]");
+    if (!row || !featured || row.scrollWidth <= row.clientWidth) return;
+    const r = row.getBoundingClientRect();
+    const f = featured.getBoundingClientRect();
+    row.scrollLeft += f.left - r.left - (r.width - f.width) / 2;
+  }, []);
   const price = (m: number) => (annual ? Math.round(m * 12 * 0.8) : m);
   return (
     <section id="pricing" className="relative mx-auto max-w-6xl px-4 sm:px-6 py-14 sm:py-24 overflow-hidden">
@@ -78,12 +88,14 @@ export function PricingSection({ onCreate }: { onCreate: () => void }) {
           </div>
         </Reveal>
       </div>
-      <div className="mt-8 sm:mt-12 grid gap-4 sm:gap-5 lg:grid-cols-3">
+      {/* En el celular las tarjetas van en fila y se deslizan de costado; en pantallas grandes, grilla de 3 */}
+      <div ref={rowRef} className="mt-8 sm:mt-12 -mx-4 px-4 pt-3 pb-2 flex gap-3 overflow-x-auto snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:px-0 sm:pt-0 sm:pb-0 sm:grid sm:gap-5 sm:overflow-visible lg:grid-cols-3">
         {PLANS.map((p, i) => (
-          <Reveal key={p.name} delay={i * 80}>
+          <Reveal key={p.name} delay={i * 80} className="shrink-0 w-[70%] snap-center sm:w-auto">
+            <div data-featured={p.featured ? "" : undefined} className="h-full">
             {p.featured ? (
               <div className="relative h-full rounded-xl p-[1.5px] bg-gradient-to-br from-[#14B8A6] via-[#2DD4BF] to-[#A3E635]">
-                <div className="relative rounded-[10px] bg-card p-5 sm:p-6 h-full flex flex-col">
+                <div className="relative rounded-[10px] bg-card p-4 sm:p-6 h-full flex flex-col">
                   <span className="absolute -top-3 left-6 rounded-full bg-gradient-to-r from-[#14B8A6] to-[#2DD4BF] text-white text-[10px] font-semibold px-2.5 py-1 uppercase tracking-wide shadow-lg">
                     {t.popular}
                   </span>
@@ -91,10 +103,11 @@ export function PricingSection({ onCreate }: { onCreate: () => void }) {
                 </div>
               </div>
             ) : (
-              <div className="relative rounded-xl border border-border bg-card p-5 sm:p-6 h-full flex flex-col transition-colors hover:border-[#14B8A6]/40">
+              <div className="relative rounded-xl border border-border bg-card p-4 sm:p-6 h-full flex flex-col transition-colors hover:border-[#14B8A6]/40">
                 <PlanBody plan={p} price={price(p.monthly)} annual={annual} onCreate={onCreate} />
               </div>
             )}
+            </div>
           </Reveal>
         ))}
       </div>
@@ -117,10 +130,10 @@ function PlanBody({
   const info = t.plans[plan.name];
   return (
     <>
-      <h3 className="text-lg font-semibold tracking-tight">{plan.name}</h3>
-      <p className="mt-1 text-xs text-muted-foreground">{info.desc}</p>
+      <h3 className="text-base sm:text-lg font-semibold tracking-tight">{plan.name}</h3>
+      <p className="mt-1 text-[11px] sm:text-xs text-muted-foreground leading-snug">{info.desc}</p>
       <div className="mt-3 sm:mt-5 flex items-baseline gap-1.5">
-        <span className="text-3xl sm:text-4xl font-semibold tracking-tight">{price} €</span>
+        <span className="text-[26px] sm:text-4xl font-semibold tracking-tight">{price} €</span>
         <span className="text-xs text-muted-foreground">/ {annual ? t.perYear : t.perMonth}</span>
       </div>
       {annual && (
@@ -128,15 +141,15 @@ function PlanBody({
           {t.equals(Math.round(plan.monthly * 0.8))}
         </div>
       )}
-      <ul className="mt-4 sm:mt-6 space-y-2 sm:space-y-2.5 flex-1">
+      <ul className="mt-3 sm:mt-6 space-y-1.5 sm:space-y-2.5 flex-1">
         {info.features.map((f) => (
-          <li key={f} className="flex items-start gap-2 text-sm">
-            <Check className="h-4 w-4 mt-0.5 shrink-0 text-[#14B8A6]" strokeWidth={1.5} />
+          <li key={f} className="flex items-start gap-2 text-[13px] sm:text-sm">
+            <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 mt-0.5 shrink-0 text-[#14B8A6]" strokeWidth={1.5} />
             <span>{f}</span>
           </li>
         ))}
       </ul>
-      <Button className="mt-5 sm:mt-6 h-10" variant={plan.featured ? "default" : "outline"} onClick={onCreate}>
+      <Button className="mt-4 sm:mt-6 h-10" variant={plan.featured ? "default" : "outline"} onClick={onCreate}>
         {t.start(plan.name)}
       </Button>
     </>

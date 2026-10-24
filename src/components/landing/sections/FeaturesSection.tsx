@@ -27,23 +27,23 @@ export function FeaturesSection() {
           </p>
         </Reveal>
       </div>
-      <div className="mt-8 sm:mt-10 grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-6 sm:mt-10 grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-3">
         {features.map(({ icon: Icon, title, desc }, i) => (
           <Reveal key={title} delay={i * 80}>
-            <div className="group relative rounded-xl border border-border bg-card p-4 sm:p-6 h-full transition-all duration-300 hover:-translate-y-0.5 hover:border-[#14B8A6]/40">
+            <div className="group relative rounded-xl border border-border bg-card p-3 sm:p-6 h-full transition-all duration-300 hover:-translate-y-0.5 hover:border-[#14B8A6]/40">
               <div
                 aria-hidden
                 className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
                 style={{ boxShadow: "0 0 0 1px rgba(20,184,166,0.35), 0 24px 48px -20px rgba(20,184,166,0.35)" }}
               />
               <div
-                className="float-left mr-3 sm:float-none sm:mr-0 inline-flex items-center justify-center h-9 w-9 sm:h-10 sm:w-10 rounded-lg bg-[#14B8A6]/10 text-[#14B8A6]"
+                className="inline-flex items-center justify-center h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-[#14B8A6]/10 text-[#14B8A6]"
                 style={{ boxShadow: "inset 0 0 0 1px rgba(20,184,166,0.28)" }}
               >
-                <Icon className="h-5 w-5" strokeWidth={1.5} />
+                <Icon className="h-4 w-4 sm:h-5 sm:w-5" strokeWidth={1.5} />
               </div>
-              <h3 className="mt-1.5 sm:mt-4 text-base font-semibold tracking-tight">{title}</h3>
-              <p className="clear-left sm:clear-none mt-2 sm:mt-1.5 text-sm text-muted-foreground">{desc}</p>
+              <h3 className="mt-2 sm:mt-4 text-sm sm:text-base font-semibold tracking-tight leading-tight">{title}</h3>
+              <p className="mt-1 sm:mt-1.5 text-xs sm:text-sm text-muted-foreground leading-snug">{desc}</p>
             </div>
           </Reveal>
         ))}
