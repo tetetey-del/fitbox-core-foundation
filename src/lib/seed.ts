@@ -85,6 +85,8 @@ const CHIA = {
  * `priceMonthly` es el precio de cada período (6 meses en el semestral, 12 en el anual).
  */
 const CHIA_PLANS: Array<{ key: string; name: string; price: number; type: "credits" | "unlimited"; credits?: number; months?: number; perWeek: number }> = [
+  { key: "prueba", name: "Clase de prueba", price: 0, type: "credits", credits: 1, perWeek: 1 },
+  { key: "suelta", name: "Clase suelta", price: 8000, type: "credits", credits: 1, perWeek: 1 },
   { key: "8", name: "8 clases · 2 por semana", price: 30000, type: "credits", credits: 8, perWeek: 2 },
   { key: "12", name: "12 clases · 3 por semana", price: 36000, type: "credits", credits: 12, perWeek: 3 },
   { key: "16", name: "16 clases · 4 por semana", price: 41000, type: "credits", credits: 16, perWeek: 4 },
@@ -118,6 +120,8 @@ const CHIA_MEMBERS: ChiaMemberDef[] = [
   { name: "Agustín Molina", email: "agustin@chiatraining.com", plan: "16", times: ["07:00", "18:00"], startedDaysAgo: 21, method: "transferencia" },
   { name: "Micaela Castro", email: "micaela@chiatraining.com", plan: "12", times: ["08:00", "17:00"], startedDaysAgo: 29, method: "efectivo" },
   { name: "Federico Ruiz", email: "federico@chiatraining.com", plan: "libre", times: ["12:00", "18:00"], startedDaysAgo: 8, method: "tarjeta" },
+  { name: "Rocío Paz", email: "rocio@chiatraining.com", plan: "prueba", times: ["19:00"], startedDaysAgo: 1, method: "efectivo", joinedDaysAgo: 1 },
+  { name: "Gastón Vera", email: "gaston@chiatraining.com", plan: "suelta", times: ["12:00"], startedDaysAgo: 3, method: "efectivo", joinedDaysAgo: 3 },
 ];
 
 const FIRST_NAMES = ["Juli", "Mateo", "Carolina", "Santiago", "Rocío", "Facundo", "Paz", "Ignacio", "Milagros", "Gonzalo", "Antonella", "Joaquín", "Brenda", "Matías", "Victoria", "Lautaro", "Daniela", "Franco", "Josefina", "Ezequiel", "Carla", "Emiliano", "Belén", "Ramiro", "Aldana", "Bruno", "Celina", "Maximiliano", "Lourdes", "Diego"];
@@ -401,7 +405,7 @@ function seedClassesFor({ tenant, coaches, members }: SeedResult) {
     });
     // Pago del período actual y, en los mensuales, los anteriores desde que se hizo socio (hasta 6)
     const periods = months === 1 ? Math.max(1, Math.min(6, Math.ceil((def.joinedDaysAgo ?? 30) / 30))) : 1;
-    for (let k = 0; k < periods; k++) {
+    for (let k = 0; k < (plan.priceMonthly > 0 ? periods : 0); k++) {
       paymentsRepo.create({
         tenantId: tenant.id,
         userId: user.id,

@@ -62,6 +62,11 @@ export function formatMoney(amount: number, currency: CurrencyCode = activeCurre
   }).format(amount);
 }
 
+/** Precio de un plan: "Gratis" si vale 0 (por ejemplo, la clase de prueba). */
+export function formatPlanPrice(amount: number): string {
+  return amount === 0 ? "Gratis" : formatMoney(amount);
+}
+
 /** Símbolo de la moneda, para etiquetas como "Precio ($)". */
 export function currencySymbol(currency: CurrencyCode = activeCurrency): string {
   return currency === "EUR" ? "€" : currency === "USD" ? "US$" : "$";

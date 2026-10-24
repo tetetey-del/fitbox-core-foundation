@@ -47,7 +47,7 @@ import {
 import { clearAll } from "@/lib/storage/db";
 import type { CurrencyCode, MembershipPlan, PlanType, WodVisibility } from "@/types";
 import { CURRENCY_LABEL, PLAN_DURATION_LABEL, WOD_VISIBILITY_LABEL } from "@/types";
-import { currencySymbol, formatMoney } from "@/lib/format";
+import { currencySymbol, formatPlanPrice } from "@/lib/format";
 import { notifyDataChanged, useDataVersion } from "@/lib/data-bus";
 import { DataSection } from "@/components/config/DataSection";
 import { AppearanceSection } from "@/components/config/AppearanceSection";
@@ -229,12 +229,14 @@ function PlansSection() {
           <TableHeader>
             <TableRow>
               <TableHead>Nombre</TableHead>
-              <TableHead>Tipo</TableHead>
-              <TableHead>Créditos/mes</TableHead>
-              <TableHead>Duración</TableHead>
+              <TableHead className="hidden sm:table-cell">Tipo</TableHead>
+              <TableHead className="hidden sm:table-cell">Créditos/mes</TableHead>
+              <TableHead className="hidden sm:table-cell">Duración</TableHead>
               <TableHead>Precio</TableHead>
-              <TableHead>Estado</TableHead>
-              <TableHead className="w-[100px] text-right">Acciones</TableHead>
+              <TableHead className="hidden sm:table-cell">Estado</TableHead>
+              <TableHead className="w-[100px] text-right">
+                <span className="sr-only sm:not-sr-only">Acciones</span>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -247,25 +249,36 @@ function PlansSection() {
             )}
             {plans.map((p) => (
               <TableRow key={p.id} className={p.active ? "" : "opacity-60"}>
-                <TableCell className="font-medium">{p.name}</TableCell>
-                <TableCell className="text-muted-foreground">
+                <TableCell className="font-medium">
+                  {p.name}
+                  {/* En el celular, el resumen va debajo del nombre en lugar de en columnas */}
+                  <div className="sm:hidden text-xs font-normal text-muted-foreground">
+                    {p.type === "credits"
+                      ? `${p.creditsPerMonth} ${p.creditsPerMonth === 1 ? "clase" : "clases"}`
+                      : "Ilimitado"}
+                    {" · "}
+                    {PLAN_DURATION_LABEL[p.durationMonths ?? 1] ?? `${p.durationMonths} meses`}
+                    {!p.active && " · Archivado"}
+                  </div>
+                </TableCell>
+                <TableCell className="hidden sm:table-cell text-muted-foreground">
                   {p.type === "unlimited" ? "Ilimitado" : "Créditos"}
                 </TableCell>
-                <TableCell className="text-muted-foreground">
+                <TableCell className="hidden sm:table-cell text-muted-foreground">
                   {p.type === "credits" ? p.creditsPerMonth : "—"}
                 </TableCell>
-                <TableCell className="text-muted-foreground">
+                <TableCell className="hidden sm:table-cell text-muted-foreground">
                   {PLAN_DURATION_LABEL[p.durationMonths ?? 1] ?? `${p.durationMonths} meses`}
                 </TableCell>
-                <TableCell>{formatMoney(p.priceMonthly)}</TableCell>
-                <TableCell>
+                <TableCell className="whitespace-nowrap">{formatPlanPrice(p.priceMonthly)}</TableCell>
+                <TableCell className="hidden sm:table-cell">
                   {p.active ? (
                     <span className="text-xs text-emerald-400 font-medium">Activo</span>
                   ) : (
                     <span className="text-xs text-muted-foreground font-medium">Archivado</span>
                   )}
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right whitespace-nowrap">
                   <Button size="icon" variant="ghost" onClick={() => setEditing(p)}>
                     <Pencil className="h-4 w-4" strokeWidth={1.5} />
                   </Button>
@@ -334,7 +347,7 @@ function PlanDialog({
   const submit = () => {
     if (!currentTenant) return;
     if (!name.trim()) return toast.error("El nombre es obligatorio");
-    if (price <= 0) return toast.error("El precio debe ser mayor que 0");
+    if (price < 0) return toast.error("El precio no puede ser negativo");
     if (type === "credits" && credits <= 0)
       return toast.error("Los créditos deben ser mayores que 0");
 
@@ -383,7 +396,7 @@ function PlanDialog({
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">
-                Precio por período ({currencySymbol()})
+                Precio por período ({currencySymbol()}, 0 = gratis)
               </Label>
               <Input
                 type="number"
