@@ -1,6 +1,6 @@
 {
-  "name": "FitBox — Gestión para tu box",
-  "short_name": "FitBox",
+  "name": "Kinflow — Gestión para tu box",
+  "short_name": "Kinflow",
   "description": "Software todo-en-uno para boxes de CrossFit y gimnasios boutique.",
   "start_url": "/",
   "scope": "/",

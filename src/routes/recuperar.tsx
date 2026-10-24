@@ -10,8 +10,8 @@ import { AuthShell, ErrorBox, Field } from "./login";
 export const Route = createFileRoute("/recuperar")({
   head: () => ({
     meta: [
-      { title: "Recuperar contraseña — FitBox" },
-      { name: "description", content: "Recupera el acceso a tu cuenta FitBox." },
+      { title: "Recuperar contraseña — Kinflow" },
+      { name: "description", content: "Recupera el acceso a tu cuenta Kinflow." },
     ],
   }),
   component: RecoverPage,

@@ -19,8 +19,8 @@ const SECTIONS = [
 export const Route = createFileRoute("/legal/privacidad")({
   head: () => ({
     meta: [
-      { title: "Política de privacidad — FitBox" },
-      { name: "description", content: "Política de privacidad de FitBox conforme al RGPD y a la LOPDGDD." },
+      { title: "Política de privacidad — Kinflow" },
+      { name: "description", content: "Política de privacidad de Kinflow conforme al RGPD y a la LOPDGDD." },
     ],
   }),
   component: PrivacidadPage,
@@ -31,13 +31,13 @@ function PrivacidadPage() {
     <LegalLayout title="Política de privacidad" sections={SECTIONS} updatedAt="4 de julio de 2026">
       <LegalSectionBlock id="responsable" title={SECTIONS[0].title}>
         <p>
-          El responsable del tratamiento de los datos personales recogidos a través de la plataforma FitBox es
+          El responsable del tratamiento de los datos personales recogidos a través de la plataforma Kinflow es
           <strong> {company.legalName}</strong>, con CIF <strong>{company.taxId}</strong>, domicilio en <strong>{company.address}</strong>
           y correo electrónico de contacto <strong>{company.emails.privacy}</strong>.
         </p>
         <p>
-          Si has contratado FitBox como titular de un gimnasio o box, actúas como responsable del tratamiento de los
-          datos de tus socios; FitBox actúa en tal caso como encargado del tratamiento en los términos del contrato
+          Si has contratado Kinflow como titular de un gimnasio o box, actúas como responsable del tratamiento de los
+          datos de tus socios; Kinflow actúa en tal caso como encargado del tratamiento en los términos del contrato
           suscrito.
         </p>
       </LegalSectionBlock>
@@ -64,7 +64,7 @@ function PrivacidadPage() {
 
       <LegalSectionBlock id="base" title={SECTIONS[3].title}>
         <p>
-          La base legitimadora principal es la <strong>ejecución del contrato</strong> suscrito con FitBox
+          La base legitimadora principal es la <strong>ejecución del contrato</strong> suscrito con Kinflow
           (art. 6.1.b RGPD), así como el <strong>cumplimiento de obligaciones legales</strong> aplicables
           (art. 6.1.c RGPD) y, en su caso, el <strong>interés legítimo</strong> en garantizar la seguridad y
           continuidad del servicio (art. 6.1.f RGPD).
@@ -106,7 +106,7 @@ function PrivacidadPage() {
       <LegalSectionBlock id="seguridad" title={SECTIONS[8].title}>
         <p>
           Aplicamos medidas técnicas y organizativas apropiadas al riesgo, incluyendo control de accesos por rol,
-          cifrado de contraseñas y trazabilidad de operaciones críticas. La demostración pública de FitBox almacena
+          cifrado de contraseñas y trazabilidad de operaciones críticas. La demostración pública de Kinflow almacena
           datos únicamente en el navegador del usuario.
         </p>
       </LegalSectionBlock>

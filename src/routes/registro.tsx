@@ -10,8 +10,8 @@ import { AuthShell, ErrorBox, Field } from "./login";
 export const Route = createFileRoute("/registro")({
   head: () => ({
     meta: [
-      { title: "Crear cuenta — FitBox" },
-      { name: "description", content: "Crea tu box en FitBox en menos de un minuto." },
+      { title: "Crear cuenta — Kinflow" },
+      { name: "description", content: "Crea tu box en Kinflow en menos de un minuto." },
     ],
   }),
   component: RegisterPage,

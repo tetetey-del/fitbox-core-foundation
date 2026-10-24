@@ -19,7 +19,7 @@ import { StepPlans, type DraftPlan } from "@/components/onboarding/StepPlans";
 import { StepInvites } from "@/components/onboarding/StepInvites";
 
 export const Route = createFileRoute("/onboarding/owner")({
-  head: () => ({ meta: [{ title: "Bienvenido — FitBox" }] }),
+  head: () => ({ meta: [{ title: "Bienvenido — Kinflow" }] }),
   component: OwnerOnboarding,
 });
 

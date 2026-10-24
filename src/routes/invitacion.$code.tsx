@@ -11,7 +11,7 @@ import { AuthShell, ErrorBox, Field } from "./login";
 export const Route = createFileRoute("/invitacion/$code")({
   head: () => ({
     meta: [
-      { title: "Invitación — FitBox" },
+      { title: "Invitación — Kinflow" },
       { name: "description", content: "Acepta tu invitación para unirte al box." },
     ],
   }),

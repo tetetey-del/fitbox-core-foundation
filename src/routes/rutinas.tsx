@@ -49,7 +49,7 @@ import { PROGRAM_LEVEL_LABEL, WOD_BLOCK_LABEL } from "@/types";
 import { DAY_LABELS } from "@/lib/date";
 
 export const Route = createFileRoute("/rutinas")({
-  head: () => ({ meta: [{ title: "Rutinas — FitBox" }] }),
+  head: () => ({ meta: [{ title: "Rutinas — Kinflow" }] }),
   component: RutinasPage,
 });
 

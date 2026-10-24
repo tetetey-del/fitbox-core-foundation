@@ -13,8 +13,8 @@ const SECTIONS = [
 export const Route = createFileRoute("/legal/cookies")({
   head: () => ({
     meta: [
-      { title: "Política de cookies — FitBox" },
-      { name: "description", content: "Información sobre las cookies utilizadas por FitBox." },
+      { title: "Política de cookies — Kinflow" },
+      { name: "description", content: "Información sobre las cookies utilizadas por Kinflow." },
     ],
   }),
   component: CookiesPage,
@@ -31,7 +31,7 @@ function CookiesPage() {
       </LegalSectionBlock>
 
       <LegalSectionBlock id="tipos" title={SECTIONS[1].title}>
-        <p>En FitBox utilizamos tres categorías de cookies o almacenamiento local equivalente:</p>
+        <p>En Kinflow utilizamos tres categorías de cookies o almacenamiento local equivalente:</p>
         <ul className="list-disc pl-5 space-y-2">
           <li>
             <strong>Técnicas (obligatorias):</strong> imprescindibles para iniciar sesión, mantener la sesión
@@ -50,7 +50,7 @@ function CookiesPage() {
 
       <LegalSectionBlock id="terceros" title={SECTIONS[2].title}>
         <p>
-          FitBox puede utilizar servicios de terceros (por ejemplo, para hosting, notificaciones o analítica).
+          Kinflow puede utilizar servicios de terceros (por ejemplo, para hosting, notificaciones o analítica).
           Cuando sea el caso, dichos terceros se listarán como encargados del tratamiento en la política de
           privacidad y actuarán conforme a la normativa aplicable.
         </p>
@@ -59,7 +59,7 @@ function CookiesPage() {
       <LegalSectionBlock id="gestion" title={SECTIONS[3].title}>
         <p>
           Puedes aceptar, rechazar o configurar tus preferencias en el aviso que aparece la primera vez que
-          accedes a FitBox. La configuración se guarda de forma local en tu dispositivo. Además, la mayoría de
+          accedes a Kinflow. La configuración se guarda de forma local en tu dispositivo. Además, la mayoría de
           navegadores permiten controlar las cookies desde su configuración.
         </p>
       </LegalSectionBlock>

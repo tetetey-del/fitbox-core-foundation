@@ -116,7 +116,7 @@ function AdminPanel() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Plataforma</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Todos los boxes de FitBox y sus métricas globales.
+            Todos los boxes de Kinflow y sus métricas globales.
           </p>
         </div>
 

@@ -1,5 +1,5 @@
 /**
- * Configuración centralizada de la empresa titular de la instancia de FitBox.
+ * Configuración centralizada de la empresa titular de la instancia de Kinflow.
  *
  * ESTE ES EL ÚNICO LUGAR donde deben editarse los datos legales, de contacto
  * y de créditos que se muestran en la aplicación (footer, páginas legales,

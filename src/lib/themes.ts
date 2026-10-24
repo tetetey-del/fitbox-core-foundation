@@ -36,7 +36,7 @@ export interface ThemeDef {
 const DARK_CARBON: ThemeDef = {
   id: "dark-carbon",
   name: "Dark Carbon",
-  description: "Oscuro sobrio, alto contraste. El clásico de FitBox.",
+  description: "Oscuro sobrio, alto contraste. El clásico de Kinflow.",
   mode: "dark",
   previewAccent: "#14B8A6",
   vars: {

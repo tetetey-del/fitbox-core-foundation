@@ -10,7 +10,7 @@ import { MEMBER_GOAL_LABEL } from "@/types";
 import { AuthShell, Field } from "./login";
 
 export const Route = createFileRoute("/onboarding/member")({
-  head: () => ({ meta: [{ title: "Bienvenido — FitBox" }] }),
+  head: () => ({ meta: [{ title: "Bienvenido — Kinflow" }] }),
   component: MemberOnboarding,
 });
 

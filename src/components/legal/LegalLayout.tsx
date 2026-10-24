@@ -30,7 +30,7 @@ export function LegalLayout({
       <header className="h-14 flex items-center justify-between px-4 sm:px-6 border-b border-border/60">
         <Link to="/" className="flex items-center gap-2">
           <Dumbbell className="h-5 w-5 text-[#14B8A6]" strokeWidth={1.5} />
-          <span className="font-semibold tracking-tight">FitBox</span>
+          <span className="font-semibold tracking-tight">Kinflow</span>
         </Link>
         <nav className="hidden md:flex items-center gap-4 text-xs text-muted-foreground">
           {LEGAL_LINKS.map((l) => (

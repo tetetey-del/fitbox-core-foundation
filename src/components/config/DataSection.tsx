@@ -82,7 +82,7 @@ export function DataSection() {
       <div>
         <h2 className="text-base font-semibold">Backup y datos</h2>
         <p className="text-sm text-muted-foreground">
-          Exporta todo el box a un archivo JSON o importa uno recibido de otro FitBox.
+          Exporta todo el box a un archivo JSON o importa uno recibido de otro Kinflow.
         </p>
       </div>
       <div className="flex flex-wrap gap-2">

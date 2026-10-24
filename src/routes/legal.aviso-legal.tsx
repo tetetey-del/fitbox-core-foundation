@@ -15,8 +15,8 @@ const SECTIONS = [
 export const Route = createFileRoute("/legal/aviso-legal")({
   head: () => ({
     meta: [
-      { title: "Aviso legal — FitBox" },
-      { name: "description", content: "Aviso legal de la plataforma FitBox." },
+      { title: "Aviso legal — Kinflow" },
+      { name: "description", content: "Aviso legal de la plataforma Kinflow." },
     ],
   }),
   component: AvisoLegalPage,
@@ -41,7 +41,7 @@ function AvisoLegalPage() {
 
       <LegalSectionBlock id="objeto" title={SECTIONS[1].title}>
         <p>
-          El presente aviso legal regula el uso del sitio web y de la plataforma FitBox, sin perjuicio de los
+          El presente aviso legal regula el uso del sitio web y de la plataforma Kinflow, sin perjuicio de los
           términos y condiciones específicos aplicables al servicio contratado.
         </p>
       </LegalSectionBlock>
@@ -56,14 +56,14 @@ function AvisoLegalPage() {
 
       <LegalSectionBlock id="responsabilidad" title={SECTIONS[3].title}>
         <p>
-          FitBox realiza esfuerzos razonables para garantizar la disponibilidad y exactitud de la información,
+          Kinflow realiza esfuerzos razonables para garantizar la disponibilidad y exactitud de la información,
           pero no puede garantizar la ausencia total de errores, interrupciones o incidencias técnicas.
         </p>
       </LegalSectionBlock>
 
       <LegalSectionBlock id="enlaces" title={SECTIONS[4].title}>
         <p>
-          El sitio puede contener enlaces a sitios de terceros. FitBox no asume responsabilidad sobre el
+          El sitio puede contener enlaces a sitios de terceros. Kinflow no asume responsabilidad sobre el
           contenido o las prácticas de dichos sitios.
         </p>
       </LegalSectionBlock>
@@ -77,7 +77,7 @@ function AvisoLegalPage() {
 
       <LegalSectionBlock id="ley" title={SECTIONS[6].title}>
         <p>
-          La relación entre el usuario y FitBox se rige por la legislación española. Para la resolución de
+          La relación entre el usuario y Kinflow se rige por la legislación española. Para la resolución de
           controversias, las partes se someten a los Juzgados y Tribunales de {company.jurisdiction}.
         </p>
       </LegalSectionBlock>

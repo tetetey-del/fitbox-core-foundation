@@ -26,7 +26,7 @@ import { useDataVersion } from "@/lib/data-bus";
 const ProgressPanel = lazy(() => import("@/components/health/ProgressPanel"));
 
 export const Route = createFileRoute("/mi-cuenta")({
-  head: () => ({ meta: [{ title: "Mi cuenta — FitBox" }] }),
+  head: () => ({ meta: [{ title: "Mi cuenta — Kinflow" }] }),
   component: MyAccountPage,
 });
 

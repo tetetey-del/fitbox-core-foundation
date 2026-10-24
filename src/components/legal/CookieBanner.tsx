@@ -81,7 +81,7 @@ export function CookieBanner() {
             <Cookie className="h-4 w-4" strokeWidth={1.5} />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium">Cookies en FitBox</div>
+            <div className="text-sm font-medium">Cookies en Kinflow</div>
             <p className="mt-1 text-xs text-muted-foreground">
               Usamos cookies técnicas necesarias y, si aceptas, cookies de preferencia y analítica para mejorar tu
               experiencia. Consulta la{" "}
@@ -127,7 +127,7 @@ export function CookieBanner() {
             />
             <PrefRow
               title="Analítica"
-              desc="Nos ayudan a entender cómo se usa FitBox. Datos anónimos."
+              desc="Nos ayudan a entender cómo se usa Kinflow. Datos anónimos."
               checked={prefs.analytics}
               onChange={(v) => setPrefs((p) => ({ ...p, analytics: v }))}
             />

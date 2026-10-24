@@ -44,7 +44,7 @@ import { compressImage, dataUrlBytes } from "@/lib/image";
 import { formatDate } from "@/lib/date";
 
 export const Route = createFileRoute("/tienda")({
-  head: () => ({ meta: [{ title: "Tienda — FitBox" }] }),
+  head: () => ({ meta: [{ title: "Tienda — Kinflow" }] }),
   component: TiendaPage,
 });
 

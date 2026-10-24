@@ -40,7 +40,7 @@ import { toDateKey, addDays, formatDate } from "@/lib/date";
 import { formatPrValue } from "@/lib/format";
 
 export const Route = createFileRoute("/retos")({
-  head: () => ({ meta: [{ title: "Retos — FitBox" }] }),
+  head: () => ({ meta: [{ title: "Retos — Kinflow" }] }),
   component: RetosPage,
 });
 
