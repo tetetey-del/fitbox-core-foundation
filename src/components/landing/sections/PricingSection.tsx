@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "../animations";
@@ -32,6 +32,16 @@ const PLANS: Plan[] = [
 export function PricingSection({ onCreate }: { onCreate: () => void }) {
   const t = useT().pricing;
   const [annual, setAnnual] = useState(false);
+  const rowRef = useRef<HTMLDivElement>(null);
+  // En el celular, arranca mostrando el plan destacado (Pro) en el centro.
+  useEffect(() => {
+    const row = rowRef.current;
+    const featured = row?.querySelector<HTMLElement>("[data-featured]");
+    if (!row || !featured || row.scrollWidth <= row.clientWidth) return;
+    const r = row.getBoundingClientRect();
+    const f = featured.getBoundingClientRect();
+    row.scrollLeft += f.left - r.left - (r.width - f.width) / 2;
+  }, []);
   const price = (m: number) => (annual ? Math.round(m * 12 * 0.8) : m);
   return (
     <section id="pricing" className="relative mx-auto max-w-6xl px-4 sm:px-6 py-14 sm:py-24 overflow-hidden">
@@ -78,9 +88,11 @@ export function PricingSection({ onCreate }: { onCreate: () => void }) {
           </div>
         </Reveal>
       </div>
-      <div className="mt-8 sm:mt-12 grid gap-4 sm:gap-5 lg:grid-cols-3">
+      {/* En el celular las tarjetas van en fila y se deslizan de costado; en pantallas grandes, grilla de 3 */}
+      <div ref={rowRef} className="mt-8 sm:mt-12 -mx-4 px-4 pt-3 pb-2 flex gap-3 overflow-x-auto snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:px-0 sm:pt-0 sm:pb-0 sm:grid sm:gap-5 sm:overflow-visible lg:grid-cols-3">
         {PLANS.map((p, i) => (
-          <Reveal key={p.name} delay={i * 80}>
+          <Reveal key={p.name} delay={i * 80} className="shrink-0 w-[78%] snap-center sm:w-auto">
+            <div data-featured={p.featured ? "" : undefined} className="h-full">
             {p.featured ? (
               <div className="relative h-full rounded-xl p-[1.5px] bg-gradient-to-br from-[#14B8A6] via-[#2DD4BF] to-[#A3E635]">
                 <div className="relative rounded-[10px] bg-card p-5 sm:p-6 h-full flex flex-col">
@@ -95,6 +107,7 @@ export function PricingSection({ onCreate }: { onCreate: () => void }) {
                 <PlanBody plan={p} price={price(p.monthly)} annual={annual} onCreate={onCreate} />
               </div>
             )}
+            </div>
           </Reveal>
         ))}
       </div>

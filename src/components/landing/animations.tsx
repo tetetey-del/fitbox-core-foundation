@@ -5,7 +5,15 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
  * o inmediatamente si el usuario tiene reduced-motion activo. Usado por
  * todas las secciones de la landing.
  */
-export function Reveal({ children, delay = 0 }: { children: ReactNode; delay?: number }) {
+export function Reveal({
+  children,
+  delay = 0,
+  className = "",
+}: {
+  children: ReactNode;
+  delay?: number;
+  className?: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
   useEffect(() => {
@@ -34,7 +42,7 @@ export function Reveal({ children, delay = 0 }: { children: ReactNode; delay?: n
     <div
       ref={ref}
       style={{ transitionDelay: `${delay}ms` }}
-      className={`transition-all duration-700 ease-out ${
+      className={`${className} transition-all duration-700 ease-out ${
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
       }`}
     >
