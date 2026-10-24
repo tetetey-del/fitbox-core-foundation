@@ -21,7 +21,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { notifyDataChanged, useDataVersion } from "@/lib/data-bus";
 import type { Invitation, InvitationStatus } from "@/types";
-import { formatMoney } from "@/lib/format";
+import { formatPlanPrice } from "@/lib/format";
 import {
   buildInvitationLink,
   createInvitation,
@@ -123,7 +123,7 @@ export function InviteMemberDialog({
                   <SelectTrigger><SelectValue placeholder="Sin preasignar" /></SelectTrigger>
                   <SelectContent>
                     {plans.map((p) => (
-                      <SelectItem key={p.id} value={p.id}>{p.name} · {formatMoney(p.priceMonthly)}</SelectItem>
+                      <SelectItem key={p.id} value={p.id}>{p.name} · {formatPlanPrice(p.priceMonthly)}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>

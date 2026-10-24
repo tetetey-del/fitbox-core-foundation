@@ -29,9 +29,9 @@ const SEEDED_KEY = buildKey(null, "seeded");
 const DEMO_CLEARED_KEY = buildKey(null, "demo_cleared");
 /** Versión del gimnasio de demo. Si cambia, los navegadores con la demo vieja se vuelven a sembrar. */
 const DEMO_VERSION_KEY = buildKey(null, "demo_version");
-const DEMO_VERSION = 2;
-/** Boxes de la demo anterior (FitBox) que se borran al pasar a la versión 2. */
-const OLD_DEMO_SLUGS = ["crossfit-norte", "box-sur"];
+const DEMO_VERSION = 3;
+/** Boxes de demos anteriores que se borran al actualizar: FitBox (v1) y Chia con su tema propio (v2). */
+const OLD_DEMO_SLUGS = ["crossfit-norte", "box-sur", "chia-training"];
 const OLD_SUPERADMIN_EMAILS = ["isaac@fitbox.io"];
 
 export interface SeedResult {
@@ -68,8 +68,9 @@ function seededRandom(seed: number): () => number {
 const CHIA = {
   name: "Chia Training",
   domain: "chiatraining.com",
-  brandColor: "#A3226E",
-  themeId: "chia" as ThemeId,
+  // La demo usa los colores de Kinflow; cada box elige los suyos en Configuración → Apariencia.
+  brandColor: "#14B8A6",
+  themeId: "flow" as ThemeId,
   owner: { name: "Celeste Teyssedou", email: "celeste@chiatraining.com" },
   coaches: [
     { key: "lucas", name: "Lucas", email: "lucas@chiatraining.com" },
@@ -84,6 +85,8 @@ const CHIA = {
  * `priceMonthly` es el precio de cada período (6 meses en el semestral, 12 en el anual).
  */
 const CHIA_PLANS: Array<{ key: string; name: string; price: number; type: "credits" | "unlimited"; credits?: number; months?: number; perWeek: number }> = [
+  { key: "prueba", name: "Clase de prueba", price: 0, type: "credits", credits: 1, perWeek: 1 },
+  { key: "suelta", name: "Clase individual", price: 8000, type: "credits", credits: 1, perWeek: 1 },
   { key: "8", name: "8 clases · 2 por semana", price: 30000, type: "credits", credits: 8, perWeek: 2 },
   { key: "12", name: "12 clases · 3 por semana", price: 36000, type: "credits", credits: 12, perWeek: 3 },
   { key: "16", name: "16 clases · 4 por semana", price: 41000, type: "credits", credits: 16, perWeek: 4 },
@@ -117,6 +120,8 @@ const CHIA_MEMBERS: ChiaMemberDef[] = [
   { name: "Agustín Molina", email: "agustin@chiatraining.com", plan: "16", times: ["07:00", "18:00"], startedDaysAgo: 21, method: "transferencia" },
   { name: "Micaela Castro", email: "micaela@chiatraining.com", plan: "12", times: ["08:00", "17:00"], startedDaysAgo: 29, method: "efectivo" },
   { name: "Federico Ruiz", email: "federico@chiatraining.com", plan: "libre", times: ["12:00", "18:00"], startedDaysAgo: 8, method: "tarjeta" },
+  { name: "Rocío Paz", email: "rocio@chiatraining.com", plan: "prueba", times: ["19:00"], startedDaysAgo: 1, method: "efectivo", joinedDaysAgo: 1 },
+  { name: "Gastón Vera", email: "gaston@chiatraining.com", plan: "suelta", times: ["12:00"], startedDaysAgo: 3, method: "efectivo", joinedDaysAgo: 3 },
 ];
 
 const FIRST_NAMES = ["Juli", "Mateo", "Carolina", "Santiago", "Rocío", "Facundo", "Paz", "Ignacio", "Milagros", "Gonzalo", "Antonella", "Joaquín", "Brenda", "Matías", "Victoria", "Lautaro", "Daniela", "Franco", "Josefina", "Ezequiel", "Carla", "Emiliano", "Belén", "Ramiro", "Aldana", "Bruno", "Celina", "Maximiliano", "Lourdes", "Diego"];
@@ -400,7 +405,7 @@ function seedClassesFor({ tenant, coaches, members }: SeedResult) {
     });
     // Pago del período actual y, en los mensuales, los anteriores desde que se hizo socio (hasta 6)
     const periods = months === 1 ? Math.max(1, Math.min(6, Math.ceil((def.joinedDaysAgo ?? 30) / 30))) : 1;
-    for (let k = 0; k < periods; k++) {
+    for (let k = 0; k < (plan.priceMonthly > 0 ? periods : 0); k++) {
       paymentsRepo.create({
         tenantId: tenant.id,
         userId: user.id,
@@ -415,11 +420,11 @@ function seedClassesFor({ tenant, coaches, members }: SeedResult) {
 
   // Plantillas de clase
   const tpl = {
-    crossfit: templatesRepo.create({ tenantId: tenant.id, name: "CrossFit", type: "wod", durationMinutes: 60, defaultCapacity: 14, defaultCoachId: lucas?.id, color: "#A3226E" }),
-    funcional: templatesRepo.create({ tenantId: tenant.id, name: "Funcional", type: "funcional", durationMinutes: 60, defaultCapacity: 16, defaultCoachId: paula?.id, color: "#F2D04A" }),
-    halterofilia: templatesRepo.create({ tenantId: tenant.id, name: "Halterofilia", type: "halterofilia", durationMinutes: 60, defaultCapacity: 8, defaultCoachId: ana?.id, color: "#14B8A6" }),
-    openBox: templatesRepo.create({ tenantId: tenant.id, name: "Open Box", type: "open_box", durationMinutes: 120, defaultCapacity: 10, color: "#64748B" }),
-    movilidad: templatesRepo.create({ tenantId: tenant.id, name: "Movilidad", type: "movilidad", durationMinutes: 60, defaultCapacity: 12, defaultCoachId: paula?.id, color: "#22C55E" }),
+    crossfit: templatesRepo.create({ tenantId: tenant.id, name: "CrossFit", type: "wod", durationMinutes: 60, defaultCapacity: 14, defaultCoachId: lucas?.id, color: "#14B8A6" }),
+    funcional: templatesRepo.create({ tenantId: tenant.id, name: "Funcional", type: "funcional", durationMinutes: 60, defaultCapacity: 16, defaultCoachId: paula?.id, color: "#A3E635" }),
+    halterofilia: templatesRepo.create({ tenantId: tenant.id, name: "Halterofilia", type: "halterofilia", durationMinutes: 60, defaultCapacity: 8, defaultCoachId: ana?.id, color: "#38BDF8" }),
+    openBox: templatesRepo.create({ tenantId: tenant.id, name: "Open Box", type: "open_box", durationMinutes: 120, defaultCapacity: 10, color: "#94A3B8" }),
+    movilidad: templatesRepo.create({ tenantId: tenant.id, name: "Movilidad", type: "movilidad", durationMinutes: 60, defaultCapacity: 12, defaultCoachId: paula?.id, color: "#FBBF24" }),
   };
 
   // Horario: lunes a viernes de 6 a 21, sábados de 9 a 13.

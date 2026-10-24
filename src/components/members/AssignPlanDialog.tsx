@@ -24,7 +24,7 @@ import { parseDateKey, toDateKey } from "@/lib/date";
 import { notifyDataChanged } from "@/lib/data-bus";
 import { registerPayment } from "@/lib/services/membership.service";
 import type { PaymentMethod } from "@/types";
-import { formatMoney } from "@/lib/format";
+import { formatMoney, formatPlanPrice } from "@/lib/format";
 import { PAYMENT_METHOD_LABEL } from "@/types";
 
 interface Props {
@@ -55,7 +55,7 @@ export function AssignPlanDialog({ open, onOpenChange, userId }: Props) {
     if (!plan) return toast.error("Selecciona un plan");
     const res = assignMembership(userId, plan.id, parseDateKey(startDate));
     if (!res.ok || !res.membership) return toast.error(res.reason ?? "No se pudo asignar");
-    if (withPayment) {
+    if (withPayment && plan.priceMonthly > 0) {
       registerPayment({
         userId,
         membershipId: res.membership.id,
@@ -89,7 +89,7 @@ export function AssignPlanDialog({ open, onOpenChange, userId }: Props) {
                 <SelectContent>
                   {plans.map((p) => (
                     <SelectItem key={p.id} value={p.id}>
-                      {p.name} — {formatMoney(p.priceMonthly)}
+                      {p.name} — {formatPlanPrice(p.priceMonthly)}
                       {p.type === "credits" ? ` · ${p.creditsPerMonth} créditos` : " · Ilimitado"}
                     </SelectItem>
                   ))}
@@ -100,6 +100,7 @@ export function AssignPlanDialog({ open, onOpenChange, userId }: Props) {
               <Label className="text-xs text-muted-foreground">Fecha de inicio</Label>
               <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
             </div>
+            {(plan?.priceMonthly ?? 0) > 0 && (
             <div className="flex items-center gap-2 pt-1">
               <Checkbox
                 id="pay"
@@ -110,7 +111,8 @@ export function AssignPlanDialog({ open, onOpenChange, userId }: Props) {
                 Registrar pago de {formatMoney(plan?.priceMonthly ?? 0)}
               </Label>
             </div>
-            {withPayment && (
+            )}
+            {withPayment && (plan?.priceMonthly ?? 0) > 0 && (
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">Método de pago</Label>
                 <Select value={method} onValueChange={(v) => setMethod(v as PaymentMethod)}>

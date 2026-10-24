@@ -51,8 +51,8 @@ export function FeedWidget() {
                     <Icon className="h-3 w-3" strokeWidth={1.5} />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-sm font-medium truncate">{p.title}</span>
+                    <div className="flex min-w-0 items-center gap-1.5">
+                      <span className="min-w-0 text-sm font-medium truncate">{p.title}</span>
                       {p.pinned && <Pin className="h-3 w-3 text-muted-foreground shrink-0" strokeWidth={1.5} />}
                     </div>
                     <div className="text-xs text-muted-foreground truncate">
