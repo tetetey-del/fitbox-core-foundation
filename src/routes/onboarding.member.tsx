@@ -45,7 +45,7 @@ function MemberOnboarding() {
     <AuthShell title={`Bienvenido, ${currentUser.name.split(" ")[0]}`} subtitle="Solo dos pasos y estás dentro.">
       <div className="mb-6 flex gap-1.5">
         {[1, 2].map((n) => (
-          <div key={n} className={`h-1.5 flex-1 rounded-full ${n <= step ? "bg-[#F97316]" : "bg-muted"}`} />
+          <div key={n} className={`h-1.5 flex-1 rounded-full ${n <= step ? "bg-[#14B8A6]" : "bg-muted"}`} />
         ))}
       </div>
 
@@ -61,7 +61,7 @@ function MemberOnboarding() {
                   type="button"
                   key={g}
                   onClick={() => setGoal(g)}
-                  className={`rounded-md border p-3 text-sm text-left transition-colors ${goal === g ? "border-[#F97316] bg-[#F97316]/5" : "border-border"}`}
+                  className={`rounded-md border p-3 text-sm text-left transition-colors ${goal === g ? "border-[#14B8A6] bg-[#14B8A6]/5" : "border-border"}`}
                 >
                   {MEMBER_GOAL_LABEL[g]}
                 </button>
@@ -102,7 +102,7 @@ function MemberOnboarding() {
 function Hint({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
   return (
     <div className="flex items-start gap-3">
-      <div className="h-8 w-8 rounded-md bg-[#F97316]/10 text-[#F97316] flex items-center justify-center shrink-0">
+      <div className="h-8 w-8 rounded-md bg-[#14B8A6]/10 text-[#14B8A6] flex items-center justify-center shrink-0">
         {icon}
       </div>
       <div>

@@ -44,7 +44,7 @@ export function PricingSection({ onCreate }: { onCreate: () => void }) {
         className="absolute inset-x-0 top-0 -z-10 h-full fb-gradient-anim"
         style={{
           background:
-            "radial-gradient(45% 45% at 50% 20%, rgba(249,115,22,0.16) 0%, transparent 70%), radial-gradient(35% 40% at 15% 70%, rgba(251,146,60,0.10) 0%, transparent 70%), radial-gradient(35% 40% at 85% 70%, rgba(252,211,77,0.10) 0%, transparent 70%)",
+            "radial-gradient(45% 45% at 50% 20%, rgba(20,184,166,0.16) 0%, transparent 70%), radial-gradient(35% 40% at 15% 70%, rgba(45,212,191,0.10) 0%, transparent 70%), radial-gradient(35% 40% at 85% 70%, rgba(163,230,53,0.10) 0%, transparent 70%)",
         }}
       />
       <div className="text-center max-w-2xl mx-auto">
@@ -75,7 +75,7 @@ export function PricingSection({ onCreate }: { onCreate: () => void }) {
               }`}
             >
               Anual
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#F97316]/15 text-[#F97316] font-semibold">
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#14B8A6]/15 text-[#14B8A6] font-semibold">
                 -20%
               </span>
             </button>
@@ -86,16 +86,16 @@ export function PricingSection({ onCreate }: { onCreate: () => void }) {
         {PLANS.map((p, i) => (
           <Reveal key={p.name} delay={i * 80}>
             {p.featured ? (
-              <div className="relative h-full rounded-xl p-[1.5px] bg-gradient-to-br from-[#F97316] via-[#FB923C] to-[#FCD34D]">
+              <div className="relative h-full rounded-xl p-[1.5px] bg-gradient-to-br from-[#14B8A6] via-[#2DD4BF] to-[#A3E635]">
                 <div className="relative rounded-[10px] bg-card p-6 h-full flex flex-col">
-                  <span className="absolute -top-3 left-6 rounded-full bg-gradient-to-r from-[#F97316] to-[#FB923C] text-white text-[10px] font-semibold px-2.5 py-1 uppercase tracking-wide shadow-lg">
+                  <span className="absolute -top-3 left-6 rounded-full bg-gradient-to-r from-[#14B8A6] to-[#2DD4BF] text-white text-[10px] font-semibold px-2.5 py-1 uppercase tracking-wide shadow-lg">
                     Más popular
                   </span>
                   <PlanBody plan={p} price={price(p.monthly)} annual={annual} onCreate={onCreate} />
                 </div>
               </div>
             ) : (
-              <div className="relative rounded-xl border border-border bg-card p-6 h-full flex flex-col transition-colors hover:border-[#F97316]/40">
+              <div className="relative rounded-xl border border-border bg-card p-6 h-full flex flex-col transition-colors hover:border-[#14B8A6]/40">
                 <PlanBody plan={p} price={price(p.monthly)} annual={annual} onCreate={onCreate} />
               </div>
             )}
@@ -126,14 +126,14 @@ function PlanBody({
         <span className="text-xs text-muted-foreground">/ {annual ? "año" : "mes"}</span>
       </div>
       {annual && (
-        <div className="text-[11px] mt-1 text-[#F97316]">
+        <div className="text-[11px] mt-1 text-[#14B8A6]">
           Equivale a {Math.round(plan.monthly * 0.8)}€/mes
         </div>
       )}
       <ul className="mt-6 space-y-2.5 flex-1">
         {plan.features.map((f) => (
           <li key={f} className="flex items-start gap-2 text-sm">
-            <Check className="h-4 w-4 mt-0.5 shrink-0 text-[#F97316]" strokeWidth={1.5} />
+            <Check className="h-4 w-4 mt-0.5 shrink-0 text-[#14B8A6]" strokeWidth={1.5} />
             <span>{f}</span>
           </li>
         ))}

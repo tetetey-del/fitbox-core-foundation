@@ -11,7 +11,7 @@ export function LandingFooter() {
       <div className="mx-auto max-w-6xl px-4 sm:px-6 py-10 grid gap-8 sm:grid-cols-4 text-sm">
         <div>
           <div className="flex items-center gap-2">
-            <Dumbbell className="h-4 w-4 text-[#F97316]" strokeWidth={1.5} />
+            <Dumbbell className="h-4 w-4 text-[#14B8A6]" strokeWidth={1.5} />
             <span className="font-semibold tracking-tight">FitBox</span>
           </div>
           <p className="mt-2 text-xs text-muted-foreground">

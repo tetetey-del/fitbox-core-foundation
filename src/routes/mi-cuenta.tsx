@@ -185,7 +185,7 @@ function ProfileCard({ onSaved }: { onSaved: () => void }) {
               type="button"
               key={g}
               onClick={() => setGoal(g)}
-              className={`rounded-md border p-2 text-sm text-left transition-colors ${goal === g ? "border-[#F97316] bg-[#F97316]/5" : "border-border"}`}
+              className={`rounded-md border p-2 text-sm text-left transition-colors ${goal === g ? "border-[#14B8A6] bg-[#14B8A6]/5" : "border-border"}`}
             >
               {MEMBER_GOAL_LABEL[g]}
             </button>

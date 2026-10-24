@@ -124,7 +124,7 @@ async function seedAsync(): Promise<void> {
     name: "CrossFit Norte",
     ownerName: "Sergio Torres",
     ownerEmail: "sergio@crossfitnorte.com",
-    brandColor: "#F97316",
+    brandColor: "#14B8A6",
     themeId: "dark-carbon",
   });
   applyPasswordToUsers(norte.tenant.id, demoHash);
@@ -181,7 +181,7 @@ export function loadDemoData(): SeedResult {
     name: "CrossFit Norte",
     ownerName: "Sergio Torres",
     ownerEmail: "sergio@crossfitnorte.com",
-    brandColor: "#F97316",
+    brandColor: "#14B8A6",
   });
   seedClassesFor(base);
   seedPRsFor(base);
@@ -352,7 +352,7 @@ function seedClassesFor({ tenant, users }: SeedResult) {
 
   // Plantillas
   const templateDefs: Array<Parameters<typeof templatesRepo.create>[0]> = [
-    { tenantId: tenant.id, name: "WOD Mañana", type: "wod", durationMinutes: 60, defaultCapacity: 12, defaultCoachId: laura?.id, color: "#F97316" },
+    { tenantId: tenant.id, name: "WOD Mañana", type: "wod", durationMinutes: 60, defaultCapacity: 12, defaultCoachId: laura?.id, color: "#14B8A6" },
     { tenantId: tenant.id, name: "WOD Tarde", type: "wod", durationMinutes: 60, defaultCapacity: 14, defaultCoachId: marcos?.id, color: "#EAB308" },
     { tenantId: tenant.id, name: "Halterofilia", type: "halterofilia", durationMinutes: 75, defaultCapacity: 8, defaultCoachId: laura?.id, color: "#22C55E" },
     { tenantId: tenant.id, name: "Open Box", type: "open_box", durationMinutes: 60, defaultCapacity: 10, color: "#0EA5E9" },

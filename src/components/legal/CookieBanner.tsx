@@ -77,7 +77,7 @@ export function CookieBanner() {
         className="fixed bottom-4 inset-x-4 md:inset-x-auto md:right-4 md:max-w-md z-50 rounded-lg border border-border bg-background/95 backdrop-blur shadow-2xl p-4"
       >
         <div className="flex items-start gap-3">
-          <div className="h-8 w-8 rounded-md bg-[#F97316]/10 text-[#F97316] flex items-center justify-center shrink-0">
+          <div className="h-8 w-8 rounded-md bg-[#14B8A6]/10 text-[#14B8A6] flex items-center justify-center shrink-0">
             <Cookie className="h-4 w-4" strokeWidth={1.5} />
           </div>
           <div className="flex-1 min-w-0">

@@ -77,8 +77,8 @@ function RecoverPage() {
       {step === 2 && (
         <form onSubmit={doReset} className="space-y-4">
           {issuedCode && (
-            <div className="flex items-start gap-2 rounded-md border border-[#F97316]/30 bg-[#F97316]/10 px-3 py-2 text-xs">
-              <Info className="h-3.5 w-3.5 mt-0.5 shrink-0 text-[#F97316]" strokeWidth={1.5} />
+            <div className="flex items-start gap-2 rounded-md border border-[#14B8A6]/30 bg-[#14B8A6]/10 px-3 py-2 text-xs">
+              <Info className="h-3.5 w-3.5 mt-0.5 shrink-0 text-[#14B8A6]" strokeWidth={1.5} />
               <div>
                 <div className="font-medium">Modo demo</div>
                 <div className="text-muted-foreground mt-0.5">

@@ -39,7 +39,7 @@ export function TestimonialsSection() {
                   “{t.quote}”
                 </blockquote>
                 <figcaption className="mt-6 pt-4 border-t border-border/60 flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#F97316] to-[#c2410c] flex items-center justify-center text-white text-xs font-semibold">
+                  <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#14B8A6] to-[#0F766E] flex items-center justify-center text-white text-xs font-semibold">
                     {t.name.split(" ").map((p) => p[0]).slice(0, 2).join("")}
                   </div>
                   <div className="text-xs">

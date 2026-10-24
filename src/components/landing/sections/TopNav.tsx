@@ -6,7 +6,7 @@ export function TopNav({ onEnter, onCreate }: { onEnter: () => void; onCreate: (
   return (
     <header className="sticky top-0 z-30 h-14 flex items-center justify-between px-4 sm:px-6 border-b border-border/60 bg-background/80 backdrop-blur">
       <div className="flex items-center gap-2">
-        <Dumbbell className="h-5 w-5 text-[#F97316]" strokeWidth={1.5} />
+        <Dumbbell className="h-5 w-5 text-[#14B8A6]" strokeWidth={1.5} />
         <span className="font-semibold tracking-tight">FitBox</span>
       </div>
       <nav className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">

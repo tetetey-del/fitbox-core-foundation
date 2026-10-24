@@ -155,7 +155,7 @@ export function AuthShell({
     <div className="min-h-dvh bg-background text-foreground flex flex-col">
       <header className="h-14 flex items-center px-4 sm:px-6 border-b border-border/60">
         <Link to="/" className="flex items-center gap-2">
-          <Dumbbell className="h-5 w-5 text-[#F97316]" strokeWidth={1.5} />
+          <Dumbbell className="h-5 w-5 text-[#14B8A6]" strokeWidth={1.5} />
           <span className="font-semibold tracking-tight">Kinflow</span>
         </Link>
       </header>

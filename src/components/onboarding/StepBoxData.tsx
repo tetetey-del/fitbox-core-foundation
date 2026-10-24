@@ -43,7 +43,7 @@ export function StepBoxData({
               key={t.id}
               onClick={() => onThemeChange(t.id)}
               className={`rounded-md border p-2 text-left text-xs transition-colors ${
-                themeId === t.id ? "border-[#F97316] bg-[#F97316]/5" : "border-border"
+                themeId === t.id ? "border-[#14B8A6] bg-[#14B8A6]/5" : "border-border"
               }`}
             >
               <div className="font-medium">{t.name}</div>

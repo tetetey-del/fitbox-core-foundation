@@ -38,7 +38,7 @@ const DARK_CARBON: ThemeDef = {
   name: "Dark Carbon",
   description: "Oscuro sobrio, alto contraste. El clásico de FitBox.",
   mode: "dark",
-  previewAccent: "#F97316",
+  previewAccent: "#14B8A6",
   vars: {
     background: "#0A0A0A",
     foreground: "#FAFAFA",
@@ -148,6 +148,34 @@ const WARM_EARTH: ThemeDef = {
     destructiveForeground: "#FFFFFF",
   },
 };
+const FLOW: ThemeDef = {
+  id: "flow",
+  name: "Flow",
+  description: "Petróleo y turquesa. El tema de Kinflow.",
+  mode: "dark",
+  previewAccent: "#14B8A6",
+  vars: {
+    background: "#0E2A3A",
+    foreground: "#F1F5F4",
+    card: "#133447",
+    cardForeground: "#F1F5F4",
+    popover: "#133447",
+    popoverForeground: "#F1F5F4",
+    primary: "#14B8A6",
+    primaryForeground: "#0E2A3A",
+    secondary: "#183D51",
+    secondaryForeground: "#F1F5F4",
+    muted: "#183D51",
+    mutedForeground: "#9FB8C2",
+    accent: "#134E4A",
+    accentForeground: "#A3E635",
+    border: "#23485C",
+    input: "#23485C",
+    ring: "#14B8A6",
+    destructive: "#F43F5E",
+    destructiveForeground: "#FFFFFF",
+  },
+};
 const CHIA: ThemeDef = {
   id: "chia",
   name: "Chia",
@@ -206,6 +234,7 @@ const CORPORATE_BLUE: ThemeDef = {
 };
 
 export const THEMES: ThemeDef[] = [
+  FLOW,
   CHIA,
   DARK_CARBON,
   LIGHT_CLEAN,
@@ -214,7 +243,7 @@ export const THEMES: ThemeDef[] = [
   CORPORATE_BLUE,
 ];
 
-export const DEFAULT_THEME_ID: ThemeId = "chia";
+export const DEFAULT_THEME_ID: ThemeId = "flow";
 
 export function getTheme(id?: ThemeId | null): ThemeDef {
   return THEMES.find((t) => t.id === id) ?? DARK_CARBON;

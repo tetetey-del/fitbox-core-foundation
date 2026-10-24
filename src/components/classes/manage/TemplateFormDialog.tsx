@@ -38,7 +38,7 @@ export function TemplateFormDialog({ open, onOpenChange, initial, coaches }: Pro
   const [duration, setDuration] = useState(initial?.durationMinutes ?? 60);
   const [capacity, setCapacity] = useState(initial?.defaultCapacity ?? 12);
   const [coach, setCoach] = useState<string>(initial?.defaultCoachId ?? "");
-  const [color, setColor] = useState(initial?.color ?? "#F97316");
+  const [color, setColor] = useState(initial?.color ?? "#14B8A6");
 
   useEffect(() => {
     if (open) {
@@ -47,7 +47,7 @@ export function TemplateFormDialog({ open, onOpenChange, initial, coaches }: Pro
       setDuration(initial?.durationMinutes ?? 60);
       setCapacity(initial?.defaultCapacity ?? 12);
       setCoach(initial?.defaultCoachId ?? "");
-      setColor(initial?.color ?? "#F97316");
+      setColor(initial?.color ?? "#14B8A6");
     }
   }, [open, initial]);
 

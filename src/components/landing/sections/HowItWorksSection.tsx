@@ -24,8 +24,8 @@ export function HowItWorksSection() {
         <div className="grid gap-4 sm:grid-cols-3">
           {STEPS.map((s, i) => (
             <Reveal key={s.n} delay={i * 100}>
-              <div className="rounded-xl border border-border bg-background p-6 h-full transition-colors hover:border-[#F97316]/40">
-                <div className="text-xs font-mono text-[#F97316]">{s.n}</div>
+              <div className="rounded-xl border border-border bg-background p-6 h-full transition-colors hover:border-[#14B8A6]/40">
+                <div className="text-xs font-mono text-[#14B8A6]">{s.n}</div>
                 <h3 className="mt-2 text-base font-semibold tracking-tight">{s.title}</h3>
                 <p className="mt-1.5 text-sm text-muted-foreground">{s.desc}</p>
               </div>

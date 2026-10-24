@@ -29,7 +29,7 @@ function OwnerOnboarding() {
   const [step, setStep] = useState(1);
 
   const [boxName, setBoxName] = useState("");
-  const [color, setColor] = useState("#F97316");
+  const [color, setColor] = useState("#14B8A6");
   const [themeId, setThemeId] = useState<ThemeId>(DEFAULT_THEME_ID);
   const [logo, setLogo] = useState<string>("");
 
@@ -147,7 +147,7 @@ function OwnerOnboarding() {
         {[1, 2, 3, 4].map((n) => (
           <div
             key={n}
-            className={`h-1.5 flex-1 rounded-full ${n <= step ? "bg-[#F97316]" : "bg-muted"}`}
+            className={`h-1.5 flex-1 rounded-full ${n <= step ? "bg-[#14B8A6]" : "bg-muted"}`}
           />
         ))}
       </div>

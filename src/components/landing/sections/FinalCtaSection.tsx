@@ -11,7 +11,7 @@ export function FinalCtaSection({ onCreate }: { onCreate: () => void }) {
         className="absolute inset-0 -z-10 opacity-70"
         style={{
           background:
-            "radial-gradient(50% 60% at 50% 50%, rgba(249,115,22,0.20) 0%, transparent 70%)",
+            "radial-gradient(50% 60% at 50% 50%, rgba(20,184,166,0.20) 0%, transparent 70%)",
         }}
       />
       <div className="mx-auto max-w-3xl px-4 sm:px-6 py-24 text-center">

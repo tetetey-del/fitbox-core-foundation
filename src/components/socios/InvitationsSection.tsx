@@ -39,7 +39,7 @@ const STATUS_LABEL: Record<InvitationStatus, string> = {
 };
 
 const STATUS_STYLE: Record<InvitationStatus, string> = {
-  pending: "bg-[#F97316]/10 text-[#F97316] border-[#F97316]/30",
+  pending: "bg-[#14B8A6]/10 text-[#14B8A6] border-[#14B8A6]/30",
   accepted: "bg-emerald-500/10 text-emerald-500 border-emerald-500/30",
   revoked: "bg-muted text-muted-foreground border-border",
   expired: "bg-muted text-muted-foreground border-border",

@@ -114,7 +114,7 @@ export async function registerOwner(input: RegisterOwnerInput): Promise<Session>
   const tenant = tenantsRepo.create({
     name: input.boxName.trim(),
     slug: `${slugify(input.boxName)}-${Date.now().toString(36).slice(-4)}`,
-    brandColor: input.brandColor ?? "#F97316",
+    brandColor: input.brandColor ?? "#14B8A6",
     themeId: "dark-carbon",
     status: "active",
     settings: { cancellationWindowHours: 2, enabledModules: DEFAULT_MODULES },

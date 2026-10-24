@@ -175,7 +175,7 @@ function ChallengeCard({
             <span>{my.progress} / {target}</span>
           </div>
           <div className="h-2 rounded-full bg-muted overflow-hidden">
-            <div className="h-full bg-[#F97316]" style={{ width: `${pct}%` }} />
+            <div className="h-full bg-[#14B8A6]" style={{ width: `${pct}%` }} />
           </div>
         </div>
       )}

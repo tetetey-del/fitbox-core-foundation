@@ -16,13 +16,13 @@ import { compressImage, dataUrlBytes } from "@/lib/image";
 export function AppearanceSection() {
   const { currentTenant, refresh } = useAuth();
   const [themeId, setThemeId] = useState<ThemeId>(currentTenant?.themeId ?? DEFAULT_THEME_ID);
-  const [brandColor, setBrandColor] = useState(currentTenant?.brandColor ?? "#F97316");
+  const [brandColor, setBrandColor] = useState(currentTenant?.brandColor ?? "#14B8A6");
   const [logo, setLogo] = useState<string | undefined>(currentTenant?.logo);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setThemeId(currentTenant?.themeId ?? DEFAULT_THEME_ID);
-    setBrandColor(currentTenant?.brandColor ?? "#F97316");
+    setBrandColor(currentTenant?.brandColor ?? "#14B8A6");
     setLogo(currentTenant?.logo);
   }, [currentTenant]);
 

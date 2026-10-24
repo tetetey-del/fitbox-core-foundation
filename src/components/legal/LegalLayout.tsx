@@ -29,7 +29,7 @@ export function LegalLayout({
     <div className="min-h-dvh bg-background text-foreground">
       <header className="h-14 flex items-center justify-between px-4 sm:px-6 border-b border-border/60">
         <Link to="/" className="flex items-center gap-2">
-          <Dumbbell className="h-5 w-5 text-[#F97316]" strokeWidth={1.5} />
+          <Dumbbell className="h-5 w-5 text-[#14B8A6]" strokeWidth={1.5} />
           <span className="font-semibold tracking-tight">FitBox</span>
         </Link>
         <nav className="hidden md:flex items-center gap-4 text-xs text-muted-foreground">
@@ -46,7 +46,7 @@ export function LegalLayout({
           <p className="text-xs text-muted-foreground uppercase tracking-wide">Legal</p>
           <h1 className="text-3xl font-semibold tracking-tight mt-2">{title}</h1>
           <p className="mt-2 text-xs text-muted-foreground">Última actualización: {updatedAt}</p>
-          <div className="mt-4 rounded-md border border-[#F97316]/30 bg-[#F97316]/10 px-4 py-3 text-xs">
+          <div className="mt-4 rounded-md border border-[#14B8A6]/30 bg-[#14B8A6]/10 px-4 py-3 text-xs">
             Estos textos son una <strong>plantilla base</strong>. Antes de operar en producción,
             revísalos con un profesional jurídico y confirma que los datos del titular
             configurados en <code>src/config/company.ts</code> son los correctos.

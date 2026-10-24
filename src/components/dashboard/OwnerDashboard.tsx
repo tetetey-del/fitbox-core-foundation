@@ -74,7 +74,7 @@ export function OwnerDashboard() {
           className="flex items-center justify-between rounded-lg border border-border bg-card p-4 hover:bg-muted/50 transition-colors"
         >
           <div className="flex items-center gap-3">
-            <ShoppingBag className="h-5 w-5 text-[#F97316]" strokeWidth={1.5} />
+            <ShoppingBag className="h-5 w-5 text-[#14B8A6]" strokeWidth={1.5} />
             <div>
               <div className="text-sm font-medium">Pedidos pendientes en la tienda</div>
               <p className="text-xs text-muted-foreground">

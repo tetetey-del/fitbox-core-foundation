@@ -18,7 +18,7 @@ export default function MetricChart({ data, label }: { data: SeriesPoint[]; labe
             labelFormatter={(l) => String(l)}
             formatter={(v: number) => [v, label]}
           />
-          <Line type="monotone" dataKey="value" stroke="#F97316" strokeWidth={2} dot={{ r: 3 }} />
+          <Line type="monotone" dataKey="value" stroke="#14B8A6" strokeWidth={2} dot={{ r: 3 }} />
         </LineChart>
       </ResponsiveContainer>
     </div>

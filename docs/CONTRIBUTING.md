@@ -68,7 +68,7 @@ Todos deben pasar sin warnings nuevos.
 - **Iconos**: Lucide con `strokeWidth={1.5}`. Nunca iconos rellenos.
 - **Estilos**: Tailwind v4 + tokens de `src/styles.css`. No hardcodees
   colores; usa `bg-background`, `text-foreground`, etc. La única excepción
-  aceptada es el naranja de marca `#F97316` en el logo y algún acento.
+  aceptada es el naranja de marca `#14B8A6` en el logo y algún acento.
 - **UI en español** en toda la aplicación.
 
 ---

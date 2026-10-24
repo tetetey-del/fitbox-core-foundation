@@ -12,13 +12,13 @@ export function HeroSection({ onCreate, onEnter }: { onCreate: () => void; onEnt
         className="absolute inset-0 -z-10 fb-gradient-anim"
         style={{
           background:
-            "radial-gradient(65% 55% at 20% 0%, rgba(249,115,22,0.32) 0%, transparent 60%), radial-gradient(50% 50% at 85% 15%, rgba(251,146,60,0.22) 0%, transparent 65%), radial-gradient(60% 55% at 55% 100%, rgba(234,88,12,0.18) 0%, transparent 70%)",
+            "radial-gradient(65% 55% at 20% 0%, rgba(20,184,166,0.32) 0%, transparent 60%), radial-gradient(50% 50% at 85% 15%, rgba(45,212,191,0.22) 0%, transparent 65%), radial-gradient(60% 55% at 55% 100%, rgba(15,118,110,0.18) 0%, transparent 70%)",
         }}
       />
       <div className="mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-24 grid gap-12 lg:grid-cols-2 items-center">
         <div>
           <Reveal>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#F97316]/30 bg-[#F97316]/10 px-3 py-1 text-xs text-[#F97316] font-medium">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#14B8A6]/30 bg-[#14B8A6]/10 px-3 py-1 text-xs text-[#14B8A6] font-medium">
               Software para boxes y gimnasios boutique
             </span>
           </Reveal>
@@ -26,7 +26,7 @@ export function HeroSection({ onCreate, onEnter }: { onCreate: () => void; onEnt
             <h1 className="mt-6 text-4xl sm:text-6xl font-semibold tracking-tighter leading-[1.05]">
               Gestiona tu box
               <br />
-              <span className="bg-gradient-to-r from-[#F97316] via-[#FB923C] to-[#FCD34D] bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-[#14B8A6] via-[#2DD4BF] to-[#A3E635] bg-clip-text text-transparent">
                 como un atleta entrena.
               </span>
             </h1>
@@ -99,7 +99,7 @@ function MockupPreview() {
         className="absolute -inset-6 rounded-3xl blur-2xl opacity-60"
         style={{
           background:
-            "linear-gradient(135deg, rgba(249,115,22,0.45), rgba(251,146,60,0.30) 55%, rgba(252,211,77,0.18))",
+            "linear-gradient(135deg, rgba(20,184,166,0.45), rgba(45,212,191,0.30) 55%, rgba(163,230,53,0.18))",
         }}
       />
       <div className="relative rounded-xl border border-border bg-card/80 backdrop-blur p-4 shadow-2xl">
@@ -118,7 +118,7 @@ function MockupPreview() {
             <div
               key={c.day}
               className={`rounded-md border p-2 space-y-1.5 ${
-                c.active ? "border-[#F97316]/60 bg-[#F97316]/5" : "border-border"
+                c.active ? "border-[#14B8A6]/60 bg-[#14B8A6]/5" : "border-border"
               }`}
             >
               <div className="text-[10px] font-medium text-muted-foreground">{c.day}</div>
@@ -132,7 +132,7 @@ function MockupPreview() {
                   </div>
                   <div className="mt-1 h-1 w-full rounded bg-muted overflow-hidden">
                     <div
-                      className="h-full bg-[#F97316]"
+                      className="h-full bg-[#14B8A6]"
                       style={{ width: `${40 + i * 15}%` }}
                     />
                   </div>
@@ -144,8 +144,8 @@ function MockupPreview() {
             </div>
           ))}
         </div>
-        <div className="mt-3 rounded-md border border-[#F97316]/30 bg-[#F97316]/5 p-2">
-          <div className="text-[10px] font-medium uppercase text-[#F97316]">
+        <div className="mt-3 rounded-md border border-[#14B8A6]/30 bg-[#14B8A6]/5 p-2">
+          <div className="text-[10px] font-medium uppercase text-[#14B8A6]">
             WOD del día · Fran
           </div>
           <div className="text-[11px] mt-1">

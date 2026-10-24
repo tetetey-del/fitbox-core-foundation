@@ -87,7 +87,7 @@ function InvitationPage() {
         {resolved.tenantLogo ? (
           <img src={resolved.tenantLogo} alt="" className="h-9 w-9 rounded object-cover" />
         ) : (
-          <div className="h-9 w-9 rounded" style={{ background: resolved.brandColor ?? "#F97316" }} />
+          <div className="h-9 w-9 rounded" style={{ background: resolved.brandColor ?? "#14B8A6" }} />
         )}
         <div>
           <div className="text-sm font-medium">{resolved.tenantName}</div>

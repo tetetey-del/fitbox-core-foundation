@@ -19,7 +19,8 @@ export type ThemeId =
   | "neon"
   | "warm-earth"
   | "corporate-blue"
-  | "chia";
+  | "chia"
+  | "flow";
 
 export interface TenantModules {
   reservas: boolean;
