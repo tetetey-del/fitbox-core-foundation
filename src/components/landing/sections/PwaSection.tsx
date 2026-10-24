@@ -1,15 +1,14 @@
 import { ArrowRight, Download, Dumbbell, Smartphone, WifiOff, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "../animations";
+import { useT } from "../i18n";
 
-const ITEMS = [
-  { icon: Download, title: "Instalable en el móvil", desc: "Sin App Store ni descargas. Añádela a tu pantalla de inicio en un toque." },
-  { icon: Zap, title: "Rápida como una app", desc: "Carga instantánea, transiciones suaves y navegación pensada para el móvil." },
-  { icon: WifiOff, title: "Datos siempre a mano", desc: "Consulta reservas y PRs incluso con conexión débil dentro del box." },
-];
+const ICONS = [Download, Zap, WifiOff];
 
 /** Sección que promociona el soporte PWA y muestra un mockup del móvil. */
 export function PwaSection({ onCreate }: { onCreate: () => void }) {
+  const t = useT().pwa;
+  const items = t.items.map((it, i) => ({ ...it, icon: ICONS[i] }));
   return (
     <section className="relative border-y border-border/60 overflow-hidden">
       <div
@@ -25,22 +24,21 @@ export function PwaSection({ onCreate }: { onCreate: () => void }) {
           <Reveal>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-[#14B8A6]/30 bg-[#14B8A6]/10 px-3 py-1 text-xs text-[#14B8A6] font-medium">
               <Smartphone className="h-3.5 w-3.5" strokeWidth={1.5} />
-              Funciona como app
+              {t.badge}
             </span>
           </Reveal>
           <Reveal delay={80}>
             <h2 className="mt-5 text-3xl sm:text-4xl font-semibold tracking-tight">
-              Una <span className="bg-gradient-to-r from-[#14B8A6] to-[#A3E635] bg-clip-text text-transparent">Progressive Web App</span> real.
+              {t.titleA} <span className="bg-gradient-to-r from-[#14B8A6] to-[#A3E635] bg-clip-text text-transparent">{t.titleB}</span>{t.titleC}
             </h2>
           </Reveal>
           <Reveal delay={140}>
             <p className="mt-3 text-sm sm:text-base text-muted-foreground max-w-lg">
-              FitBox se instala en el móvil de tus socios como una app nativa: icono en el escritorio,
-              pantalla completa y experiencia fluida. Sin fricciones ni pop-ups.
+              {t.subtitle}
             </p>
           </Reveal>
           <div className="mt-8 space-y-3">
-            {ITEMS.map(({ icon: Icon, title, desc }, i) => (
+            {items.map(({ icon: Icon, title, desc }, i) => (
               <Reveal key={title} delay={200 + i * 80}>
                 <div className="flex items-start gap-3">
                   <div
@@ -59,7 +57,7 @@ export function PwaSection({ onCreate }: { onCreate: () => void }) {
           </div>
           <Reveal delay={480}>
             <Button className="mt-8 h-11 px-6" onClick={onCreate}>
-              Probar FitBox
+              {t.cta}
               <ArrowRight className="h-4 w-4 ml-1" strokeWidth={1.5} />
             </Button>
           </Reveal>
@@ -82,24 +80,24 @@ export function PwaSection({ onCreate }: { onCreate: () => void }) {
                       <Dumbbell className="h-4 w-4 text-white" strokeWidth={2} />
                     </div>
                     <div>
-                      <div className="text-[11px] font-semibold">FitBox</div>
-                      <div className="text-[9px] text-muted-foreground">CrossFit Norte</div>
+                      <div className="text-[11px] font-semibold">Kinflow</div>
+                      <div className="text-[9px] text-muted-foreground">{t.phoneBox}</div>
                     </div>
                   </div>
                   <div className="rounded-lg border border-border p-2.5">
-                    <div className="text-[10px] font-medium">Hoy · 19:00 WOD</div>
+                    <div className="text-[10px] font-medium">{t.phoneClass}</div>
                     <div className="mt-1 h-1 rounded bg-muted overflow-hidden">
                       <div className="h-full bg-[#14B8A6]" style={{ width: "75%" }} />
                     </div>
-                    <div className="mt-1 text-[9px] text-muted-foreground">9/12 · reservada</div>
+                    <div className="mt-1 text-[9px] text-muted-foreground">{t.phoneBooked}</div>
                   </div>
                   <div className="rounded-lg border border-[#14B8A6]/30 bg-[#14B8A6]/5 p-2.5">
                     <div className="text-[10px] font-medium text-[#14B8A6]">WOD · Fran</div>
                     <div className="text-[9px] text-muted-foreground mt-0.5">21-15-9 Thrusters + Pull-ups</div>
                   </div>
                   <div className="rounded-lg border border-[#14B8A6]/20 bg-[#14B8A6]/5 p-2.5">
-                    <div className="text-[10px] font-medium text-[#14B8A6]">PR</div>
-                    <div className="text-[9px] text-muted-foreground mt-0.5">Back Squat · 120kg</div>
+                    <div className="text-[10px] font-medium text-[#14B8A6]">{t.phonePr}</div>
+                    <div className="text-[9px] text-muted-foreground mt-0.5">Back Squat · 120 kg</div>
                   </div>
                 </div>
               </div>

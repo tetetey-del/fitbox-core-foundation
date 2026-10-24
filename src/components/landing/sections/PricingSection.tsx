@@ -2,39 +2,35 @@ import { useState } from "react";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "../animations";
+import { useT, type LandingCopy } from "../i18n";
+
+type PlanName = keyof LandingCopy["pricing"]["plans"];
 
 interface Plan {
-  name: string;
+  name: PlanName;
   monthly: number;
   featured?: boolean;
-  desc: string;
-  features: string[];
 }
 
 const PLANS: Plan[] = [
   {
     name: "Starter",
     monthly: 29,
-    desc: "Para boxes pequeños que empiezan.",
-    features: ["Hasta 50 socios", "Reservas y cuotas", "1 admin y 1 coach", "Feed básico", "Soporte por email"],
   },
   {
     name: "Pro",
     monthly: 59,
     featured: true,
-    desc: "Para boxes en crecimiento.",
-    features: ["Socios ilimitados", "Todos los módulos", "PRs y leaderboard", "Temas y logo personalizado", "Coaches ilimitados", "Notificaciones internas"],
   },
   {
     name: "Business",
     monthly: 99,
-    desc: "Para cadenas y multi-box.",
-    features: ["Todo lo del plan Pro", "Multi-box con panel global", "Exportación de datos", "Soporte prioritario", "Onboarding personalizado"],
   },
 ];
 
 /** Sección de precios con selector mensual/anual. */
 export function PricingSection({ onCreate }: { onCreate: () => void }) {
+  const t = useT().pricing;
   const [annual, setAnnual] = useState(false);
   const price = (m: number) => (annual ? Math.round(m * 12 * 0.8) : m);
   return (
@@ -49,11 +45,11 @@ export function PricingSection({ onCreate }: { onCreate: () => void }) {
       />
       <div className="text-center max-w-2xl mx-auto">
         <Reveal>
-          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">Planes que crecen contigo</h2>
+          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">{t.title}</h2>
         </Reveal>
         <Reveal delay={80}>
           <p className="mt-3 text-sm sm:text-base text-muted-foreground">
-            Empieza gratis 14 días. Cambia o cancela cuando quieras.
+            {t.subtitle}
           </p>
         </Reveal>
         <Reveal delay={140}>
@@ -65,7 +61,7 @@ export function PricingSection({ onCreate }: { onCreate: () => void }) {
                 !annual ? "bg-foreground text-background" : "text-muted-foreground"
               }`}
             >
-              Mensual
+              {t.monthly}
             </button>
             <button
               type="button"
@@ -74,7 +70,7 @@ export function PricingSection({ onCreate }: { onCreate: () => void }) {
                 annual ? "bg-foreground text-background" : "text-muted-foreground"
               }`}
             >
-              Anual
+              {t.annual}
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#14B8A6]/15 text-[#14B8A6] font-semibold">
                 -20%
               </span>
@@ -89,7 +85,7 @@ export function PricingSection({ onCreate }: { onCreate: () => void }) {
               <div className="relative h-full rounded-xl p-[1.5px] bg-gradient-to-br from-[#14B8A6] via-[#2DD4BF] to-[#A3E635]">
                 <div className="relative rounded-[10px] bg-card p-6 h-full flex flex-col">
                   <span className="absolute -top-3 left-6 rounded-full bg-gradient-to-r from-[#14B8A6] to-[#2DD4BF] text-white text-[10px] font-semibold px-2.5 py-1 uppercase tracking-wide shadow-lg">
-                    Más popular
+                    {t.popular}
                   </span>
                   <PlanBody plan={p} price={price(p.monthly)} annual={annual} onCreate={onCreate} />
                 </div>
@@ -117,21 +113,23 @@ function PlanBody({
   annual: boolean;
   onCreate: () => void;
 }) {
+  const t = useT().pricing;
+  const info = t.plans[plan.name];
   return (
     <>
       <h3 className="text-lg font-semibold tracking-tight">{plan.name}</h3>
-      <p className="mt-1 text-xs text-muted-foreground">{plan.desc}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{info.desc}</p>
       <div className="mt-5 flex items-baseline gap-1.5">
-        <span className="text-4xl font-semibold tracking-tight">{price}€</span>
-        <span className="text-xs text-muted-foreground">/ {annual ? "año" : "mes"}</span>
+        <span className="text-4xl font-semibold tracking-tight">{price} €</span>
+        <span className="text-xs text-muted-foreground">/ {annual ? t.perYear : t.perMonth}</span>
       </div>
       {annual && (
         <div className="text-[11px] mt-1 text-[#14B8A6]">
-          Equivale a {Math.round(plan.monthly * 0.8)}€/mes
+          {t.equals(Math.round(plan.monthly * 0.8))}
         </div>
       )}
       <ul className="mt-6 space-y-2.5 flex-1">
-        {plan.features.map((f) => (
+        {info.features.map((f) => (
           <li key={f} className="flex items-start gap-2 text-sm">
             <Check className="h-4 w-4 mt-0.5 shrink-0 text-[#14B8A6]" strokeWidth={1.5} />
             <span>{f}</span>
@@ -139,7 +137,7 @@ function PlanBody({
         ))}
       </ul>
       <Button className="mt-6 h-10" variant={plan.featured ? "default" : "outline"} onClick={onCreate}>
-        Empezar con {plan.name}
+        {t.start(plan.name)}
       </Button>
     </>
   );
