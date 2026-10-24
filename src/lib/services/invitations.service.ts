@@ -129,7 +129,7 @@ export async function acceptInvitation(input: AcceptInvitationInput) {
         userId: user.id,
         planId: plan.id,
         startDate: toDateKey(start),
-        endDate: toDateKey(addMonths(start, 1)),
+        endDate: toDateKey(addMonths(start, plan.durationMonths ?? 1)),
         status: "active",
         creditsRemaining:
           plan.type === "credits" ? plan.creditsPerMonth : undefined,

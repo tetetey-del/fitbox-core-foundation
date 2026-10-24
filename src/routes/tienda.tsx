@@ -42,6 +42,7 @@ import type { Order, OrderStatus, Product, ProductCategory } from "@/types";
 import { ORDER_STATUS_LABEL, PRODUCT_CATEGORY_LABEL } from "@/types";
 import { compressImage, dataUrlBytes } from "@/lib/image";
 import { formatDate } from "@/lib/date";
+import { currencySymbol, formatMoney } from "@/lib/format";
 
 export const Route = createFileRoute("/tienda")({
   head: () => ({ meta: [{ title: "Tienda — Kinflow" }] }),
@@ -137,12 +138,12 @@ function MemberShop({ userId }: { userId: string }) {
               {cartItems.map(({ product, qty }) => (
                 <li key={product.id} className="py-1 flex justify-between">
                   <span>{qty} × {product.name}</span>
-                  <span>{(product.price * qty).toFixed(2)} €</span>
+                  <span>{formatMoney(product.price * qty)}</span>
                 </li>
               ))}
             </ul>
             <div className="flex justify-between font-medium">
-              <span>Total</span><span>{total.toFixed(2)} €</span>
+              <span>Total</span><span>{formatMoney(total)}</span>
             </div>
             <Button className="w-full" onClick={() => setConfirmOpen(true)}>Confirmar pedido</Button>
           </div>
@@ -164,7 +165,7 @@ function MemberShop({ userId }: { userId: string }) {
             <DialogTitle>Confirmar pedido</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            Pasa a recogerlo por el box. Total: <span className="font-medium text-foreground">{total.toFixed(2)} €</span>.
+            Pasa a recogerlo por el box. Total: <span className="font-medium text-foreground">{formatMoney(total)}</span>.
           </p>
           <div>
             <Label>Notas (opcional)</Label>
@@ -207,7 +208,7 @@ function ProductCard({
           <p className="text-xs text-muted-foreground line-clamp-2">{product.description}</p>
         </div>
         <div className="flex items-center justify-between">
-          <span className="font-semibold">{product.price.toFixed(2)} €</span>
+          <span className="font-semibold">{formatMoney(product.price)}</span>
           <span className="text-xs text-muted-foreground">
             {product.stock === null ? "En stock" : product.stock > 0 ? `Stock: ${product.stock}` : "Agotado"}
           </span>
@@ -240,7 +241,7 @@ function MemberOrderCard({ order }: { order: Order }) {
       </ul>
       <div className="flex justify-between text-sm mt-2">
         <span>{formatDate(order.createdAt.slice(0, 10))}</span>
-        <span className="font-medium">{order.total.toFixed(2)} €</span>
+        <span className="font-medium">{formatMoney(order.total)}</span>
       </div>
     </div>
   );
@@ -314,7 +315,7 @@ function StaffOrderCard({
         {order.items.map((it, i) => <li key={i}>{it.qty}× {it.name}</li>)}
       </ul>
       <div className="flex justify-between">
-        <span>{order.total.toFixed(2)} €</span>
+        <span>{formatMoney(order.total)}</span>
         {showPaid && (
           <span className={order.paidAt ? "text-emerald-600 text-xs" : "text-xs text-muted-foreground"}>
             {order.paidAt ? "Pagado" : "No pagado"}
@@ -375,7 +376,7 @@ function StaffProductsPanel() {
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between">
                   <span className="font-medium truncate">{p.name}</span>
-                  <span className="text-sm">{p.price.toFixed(2)} €</span>
+                  <span className="text-sm">{formatMoney(p.price)}</span>
                 </div>
                 <p className="text-xs text-muted-foreground truncate">
                   {PRODUCT_CATEGORY_LABEL[p.category]} · {p.stock === null ? "∞" : `${p.stock} uds`} · {p.active ? "Activo" : "Oculto"}
@@ -474,7 +475,7 @@ function ProductForm({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>Precio (€)</Label>
+              <Label>Precio ({currencySymbol()})</Label>
               <Input type="number" min={0} step="0.01" value={price} onChange={(e) => setPrice(Number(e.target.value))} />
             </div>
             <div>

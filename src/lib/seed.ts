@@ -15,19 +15,30 @@ import { seedWod } from "./services/wods.service";
 import { superAdminsStore } from "./storage/superadmins";
 import { DEFAULT_EXERCISES } from "./services/prs.service";
 import { addDays, addMonths, startOfWeek, toDateKey } from "./date";
-import { buildKey, get, set } from "./storage/db";
+import { buildKey, get, isBrowser, remove, set } from "./storage/db";
+import { sessionStore } from "./storage/session";
+import { superSessionStore } from "./storage/superadmins";
+import { notifyDataChanged } from "./data-bus";
 import { hashPassword } from "./crypto";
 import { usersRepoFor } from "./storage/repositories/users.repo";
 import { createInvitation } from "./services/invitations.service";
-import type { Exercise, MembershipPlan, PostType, Tenant, ThemeId, User, WodBlock } from "@/types";
+import type { ClassTemplate, Exercise, MembershipPlan, PaymentMethod, PostType, Tenant, ThemeId, User, WodBlock } from "@/types";
 import { DEFAULT_MODULES } from "@/types";
 
 const SEEDED_KEY = buildKey(null, "seeded");
 const DEMO_CLEARED_KEY = buildKey(null, "demo_cleared");
+/** Versión del gimnasio de demo. Si cambia, los navegadores con la demo vieja se vuelven a sembrar. */
+const DEMO_VERSION_KEY = buildKey(null, "demo_version");
+const DEMO_VERSION = 2;
+/** Boxes de la demo anterior (FitBox) que se borran al pasar a la versión 2. */
+const OLD_DEMO_SLUGS = ["crossfit-norte", "box-sur"];
+const OLD_SUPERADMIN_EMAILS = ["isaac@fitbox.io"];
 
 export interface SeedResult {
   tenant: Tenant;
   owner: User;
+  coaches: User[];
+  members: User[];
   users: User[];
 }
 
@@ -35,131 +46,210 @@ export function slugify(name: string): string {
   return name
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[̀-ͯ]/g, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 }
 
-export function createTenantWithSeed(input: {
-  name: string;
-  ownerName: string;
-  ownerEmail: string;
-  brandColor: string;
-  themeId?: ThemeId;
-  extras?: boolean;
-}): SeedResult {
-  const tenant = tenantsRepo.create({
-    name: input.name,
-    slug: slugify(input.name),
-    brandColor: input.brandColor,
-    themeId: input.themeId ?? "dark-carbon",
-    status: "active",
-    settings: { cancellationWindowHours: 2, enabledModules: DEFAULT_MODULES },
-  });
-
-  const owner = createUserInTenant(tenant.id, {
-    name: input.ownerName,
-    email: input.ownerEmail,
-    role: "admin",
-  });
-
-  const extras: User[] = [];
-  if (input.extras !== false) {
-    extras.push(
-      createUserInTenant(tenant.id, {
-        name: "Laura Coach",
-        email: "laura@" + tenant.slug + ".com",
-        role: "coach",
-      }),
-      createUserInTenant(tenant.id, {
-        name: "Marcos Coach",
-        email: "marcos@" + tenant.slug + ".com",
-        role: "coach",
-      }),
-      createUserInTenant(tenant.id, {
-        name: "Ana Socia",
-        email: "ana@" + tenant.slug + ".com",
-        role: "member",
-      }),
-      createUserInTenant(tenant.id, {
-        name: "Diego Socio",
-        email: "diego@" + tenant.slug + ".com",
-        role: "member",
-      }),
-    );
-  }
-
-  const exercisesRepo = exercisesRepoFor(tenant.id);
-  DEFAULT_EXERCISES.forEach((d) =>
-    exercisesRepo.create({ tenantId: tenant.id, isCustom: false, ...d }),
-  );
-
-  return { tenant, owner, users: [owner, ...extras] };
+/** Generador pseudoaleatorio con semilla: la demo sale igual en todos los navegadores. */
+function seededRandom(seed: number): () => number {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
 }
 
-/** Auto-seed inicial: super admin + CrossFit Norte + Box Sur. Idempotente. */
+// ---- Gimnasio de demo: Chia Training (Córdoba, Argentina) ----
+
+const CHIA = {
+  name: "Chia Training",
+  domain: "chiatraining.com",
+  brandColor: "#A3226E",
+  themeId: "chia" as ThemeId,
+  owner: { name: "Celeste Teyssedou", email: "celeste@chiatraining.com" },
+  coaches: [
+    { key: "lucas", name: "Lucas", email: "lucas@chiatraining.com" },
+    { key: "ana", name: "Ana", email: "ana@chiatraining.com" },
+    { key: "paula", name: "Paula", email: "paula@chiatraining.com" },
+  ],
+};
+
+/**
+ * Planes en pesos argentinos. Precios orientativos para un box de Córdoba a fines de 2026,
+ * estimados a partir de cuotas publicadas en 2025 y ajustados por inflación.
+ * `priceMonthly` es el precio de cada período (6 meses en el semestral, 12 en el anual).
+ */
+const CHIA_PLANS: Array<{ key: string; name: string; price: number; type: "credits" | "unlimited"; credits?: number; months?: number; perWeek: number }> = [
+  { key: "8", name: "8 clases · 2 por semana", price: 30000, type: "credits", credits: 8, perWeek: 2 },
+  { key: "12", name: "12 clases · 3 por semana", price: 36000, type: "credits", credits: 12, perWeek: 3 },
+  { key: "16", name: "16 clases · 4 por semana", price: 41000, type: "credits", credits: 16, perWeek: 4 },
+  { key: "libre", name: "Pase libre", price: 46000, type: "unlimited", perWeek: 5 },
+  { key: "semestral", name: "Pase libre semestral (-10%)", price: 248400, type: "unlimited", months: 6, perWeek: 5 },
+  { key: "anual", name: "Pase libre anual (-15%)", price: 469200, type: "unlimited", months: 12, perWeek: 5 },
+];
+
+/** Socios de la demo: plan, horario preferido y hace cuánto renovaron. */
+interface ChiaMemberDef {
+  name: string;
+  email: string;
+  plan: string;
+  times: string[];
+  startedDaysAgo: number;
+  method: PaymentMethod;
+  /** Hace cuántos días se hizo socio (para "altas del mes"). */
+  joinedDaysAgo?: number;
+}
+
+const CHIA_MEMBERS: ChiaMemberDef[] = [
+  { name: "Sofía Martínez", email: "sofia@chiatraining.com", plan: "12", times: ["19:00", "18:00"], startedDaysAgo: 24, method: "transferencia" },
+  { name: "Martín Gómez", email: "martin@chiatraining.com", plan: "libre", times: ["07:00", "06:00"], startedDaysAgo: 10, method: "transferencia" },
+  { name: "Valentina López", email: "valentina@chiatraining.com", plan: "8", times: ["08:00", "17:00"], startedDaysAgo: 27, method: "efectivo" },
+  { name: "Juan Pablo Ríos", email: "juanpablo@chiatraining.com", plan: "semestral", times: ["18:00", "20:00"], startedDaysAgo: 60, method: "transferencia" },
+  { name: "Camila Fernández", email: "camila@chiatraining.com", plan: "16", times: ["09:00", "10:00"], startedDaysAgo: 14, method: "tarjeta" },
+  { name: "Tomás Herrera", email: "tomas@chiatraining.com", plan: "anual", times: ["06:00", "12:00"], startedDaysAgo: 120, method: "transferencia" },
+  { name: "Lucía Benítez", email: "lucia@chiatraining.com", plan: "12", times: ["17:00", "19:00"], startedDaysAgo: 5, method: "efectivo" },
+  { name: "Nicolás Sosa", email: "nicolas@chiatraining.com", plan: "libre", times: ["19:00", "20:00"], startedDaysAgo: 18, method: "tarjeta" },
+  { name: "Florencia Acosta", email: "florencia@chiatraining.com", plan: "8", times: ["10:00", "09:00"], startedDaysAgo: 2, method: "transferencia" },
+  { name: "Agustín Molina", email: "agustin@chiatraining.com", plan: "16", times: ["07:00", "18:00"], startedDaysAgo: 21, method: "transferencia" },
+  { name: "Micaela Castro", email: "micaela@chiatraining.com", plan: "12", times: ["08:00", "17:00"], startedDaysAgo: 29, method: "efectivo" },
+  { name: "Federico Ruiz", email: "federico@chiatraining.com", plan: "libre", times: ["12:00", "18:00"], startedDaysAgo: 8, method: "tarjeta" },
+];
+
+const FIRST_NAMES = ["Juli", "Mateo", "Carolina", "Santiago", "Rocío", "Facundo", "Paz", "Ignacio", "Milagros", "Gonzalo", "Antonella", "Joaquín", "Brenda", "Matías", "Victoria", "Lautaro", "Daniela", "Franco", "Josefina", "Ezequiel", "Carla", "Emiliano", "Belén", "Ramiro", "Aldana", "Bruno", "Celina", "Maximiliano", "Lourdes", "Diego"];
+const LAST_NAMES = ["Pereyra", "Quiroga", "Vega", "Romero", "Suárez", "Aguirre", "Medina", "Navarro", "Paz", "Ojeda", "Cabrera", "Domínguez", "Giménez", "Luna", "Ibarra", "Correa", "Ledesma", "Villalba", "Godoy", "Bustos"];
+const CLASS_TIMES = ["06:00", "07:00", "08:00", "09:00", "10:00", "12:00", "17:00", "18:00", "18:00", "19:00", "19:00", "20:00"];
+const PLAN_MIX = ["8", "8", "12", "12", "12", "16", "16", "libre", "libre", "semestral", "anual", "12"];
+const METHODS: PaymentMethod[] = ["transferencia", "transferencia", "efectivo", "tarjeta"];
+const EXTRA_MEMBERS = 58;
+
+/** Socios de la demo: los 12 con nombre propio más ~60 generados, para que el box se vea con vida. */
+function chiaMemberDefs(): ChiaMemberDef[] {
+  const rnd = seededRandom(1987);
+  const pick = <T,>(list: T[]) => list[Math.floor(rnd() * list.length)];
+  const extra: ChiaMemberDef[] = [];
+  for (let i = 0; i < EXTRA_MEMBERS; i++) {
+    const first = FIRST_NAMES[i % FIRST_NAMES.length];
+    const last = LAST_NAMES[(i * 7 + 3) % LAST_NAMES.length];
+    const plan = pick(PLAN_MIX);
+    const months = CHIA_PLANS.find((p) => p.key === plan)?.months ?? 1;
+    const t1 = pick(CLASS_TIMES);
+    let t2 = pick(CLASS_TIMES);
+    if (t2 === t1) t2 = CLASS_TIMES[(CLASS_TIMES.indexOf(t1) + 1) % CLASS_TIMES.length];
+    extra.push({
+      name: `${first} ${last}`,
+      email: `${slugify(first)}.${slugify(last)}${i}@ejemplo.com`,
+      plan,
+      times: [t1, t2],
+      startedDaysAgo: Math.floor(rnd() * 28 * months),
+      method: pick(METHODS),
+      joinedDaysAgo: rnd() < 0.08 ? Math.floor(rnd() * 20) : 30 + Math.floor(rnd() * 700),
+    });
+  }
+  return [...CHIA_MEMBERS.map((m, i) => ({ ...m, joinedDaysAgo: m.joinedDaysAgo ?? 40 + i * 37 })), ...extra];
+}
+
+function createChiaTenant(): SeedResult {
+  const tenant = tenantsRepo.create({
+    name: CHIA.name,
+    slug: slugify(CHIA.name),
+    brandColor: CHIA.brandColor,
+    themeId: CHIA.themeId,
+    status: "active",
+    settings: { cancellationWindowHours: 2, enabledModules: DEFAULT_MODULES, currency: "ARS" },
+  });
+  const owner = createUserInTenant(tenant.id, { ...CHIA.owner, role: "admin" });
+  const coaches = CHIA.coaches.map((c) => createUserInTenant(tenant.id, { name: c.name, email: c.email, role: "coach" }));
+  const defs = chiaMemberDefs();
+  const members = defs.map((m) => createUserInTenant(tenant.id, { name: m.name, email: m.email, role: "member" }));
+  // Fecha de alta realista: la mayoría son socios de hace meses.
+  const usersRepo = usersRepoFor(tenant.id);
+  const joined = new Map(members.map((u, i) => [u.id, addDays(new Date(), -(defs[i].joinedDaysAgo ?? 60)).toISOString()]));
+  usersRepo.replaceAll(usersRepo.list().map((u) => (joined.has(u.id) ? { ...u, createdAt: joined.get(u.id)! } : u)));
+
+  const exercisesRepo = exercisesRepoFor(tenant.id);
+  DEFAULT_EXERCISES.forEach((d) => exercisesRepo.create({ tenantId: tenant.id, isCustom: false, ...d }));
+
+  return { tenant, owner, coaches, members, users: [owner, ...coaches, ...members] };
+}
+
+/** Auto-seed: super admin de Kinflow + gimnasio de demo Chia Training. Idempotente. */
 export function bootstrapDemoIfNeeded(): void {
-  if (get<boolean>(SEEDED_KEY, false)) return;
   if (get<boolean>(DEMO_CLEARED_KEY, false)) return;
+  const seeded = get<boolean>(SEEDED_KEY, false);
+  const version = get<number>(DEMO_VERSION_KEY, seeded ? 1 : 0);
+  if (seeded && version >= DEMO_VERSION) return;
+  if (seeded) removeOldDemo();
 
   // Ejecuta el trabajo asíncrono (hash de passwords). No bloquea la UI:
   // los datos aparecen tras el primer tick y las páginas usan useDataVersion.
   void seedAsync();
 }
 
+/** Borra los boxes de la demo anterior sin tocar boxes creados por la persona. */
+function removeOldDemo(): void {
+  const old = tenantsRepo.list().filter((t) => OLD_DEMO_SLUGS.includes(t.slug));
+  if (isBrowser()) {
+    const keys: string[] = [];
+    for (let i = 0; i < window.localStorage.length; i++) {
+      const k = window.localStorage.key(i);
+      if (k && old.some((t) => k.startsWith(buildKey(t.id, "")))) keys.push(k);
+    }
+    keys.forEach((k) => remove(k));
+  }
+  old.forEach((t) => tenantsRepo.remove(t.id));
+
+  const session = sessionStore.read();
+  if (session && old.some((t) => t.id === session.tenantId)) sessionStore.clear();
+
+  const admins = superAdminsStore.list();
+  const keptAdmins = admins.filter((a) => !OLD_SUPERADMIN_EMAILS.includes(a.email));
+  if (keptAdmins.length !== admins.length) {
+    set(buildKey(null, "superadmins"), keptAdmins);
+    const superSession = superSessionStore.read();
+    if (superSession && !keptAdmins.some((a) => a.id === superSession.superAdminId)) superSessionStore.clear();
+  }
+}
+
 async function seedAsync(): Promise<void> {
   const demoHash = await hashPassword("demo1234");
 
-  // Super admin demo con password
-  if (superAdminsStore.list().length === 0) {
+  // Super admin de la plataforma (vos, como dueña de Kinflow)
+  if (!superAdminsStore.list().some((a) => a.email === "admin@kinflow.app")) {
     superAdminsStore.create({
-      name: "Isaac Plataforma",
-      email: "isaac@fitbox.io",
+      name: "Celeste · Kinflow",
+      email: "admin@kinflow.app",
       passwordHash: demoHash,
     });
   }
 
-  // Box principal
-  const norte = createTenantWithSeed({
-    name: "CrossFit Norte",
-    ownerName: "Sergio Torres",
-    ownerEmail: "sergio@crossfitnorte.com",
-    brandColor: "#14B8A6",
-    themeId: "dark-carbon",
-  });
-  applyPasswordToUsers(norte.tenant.id, demoHash);
-  seedClassesFor(norte);
-  seedPRsFor(norte);
-  seedFeedFor(norte);
-  seedWodsFor(norte);
-  seedNotificationsFor(norte);
-  seedChallengesFor(norte);
-  seedProgramsFor(norte);
-  seedShopFor(norte);
-  seedHealthFor(norte);
-  // Invitación demo pendiente
-  createInvitation({
-    tenantId: norte.tenant.id,
-    invitedBy: norte.owner.id,
-    role: "member",
-    email: "invitado@ejemplo.com",
-  });
-
-  // Box secundario
-  const sur = createTenantWithSeed({
-    name: "Box Sur",
-    ownerName: "Marta Ríos",
-    ownerEmail: "marta@boxsur.com",
-    brandColor: "#0EA5E9",
-    themeId: "light-clean",
-    extras: false,
-  });
-  createUserInTenant(sur.tenant.id, { name: "Carla Coach", email: "carla@boxsur.com", role: "coach" });
-  createUserInTenant(sur.tenant.id, { name: "Nico Socio", email: "nico@boxsur.com", role: "member" });
-  applyPasswordToUsers(sur.tenant.id, demoHash);
-  seedFeedFor(sur, 2);
+  if (!tenantsRepo.list().some((t) => t.slug === slugify(CHIA.name))) {
+    const chia = createChiaTenant();
+    applyPasswordToUsers(chia.tenant.id, demoHash);
+    seedClassesFor(chia);
+    seedPRsFor(chia);
+    seedFeedFor(chia);
+    seedWodsFor(chia);
+    seedNotificationsFor(chia);
+    seedChallengesFor(chia);
+    seedProgramsFor(chia);
+    seedShopFor(chia);
+    seedHealthFor(chia);
+    // Invitación de demo pendiente
+    createInvitation({
+      tenantId: chia.tenant.id,
+      invitedBy: chia.owner.id,
+      role: "member",
+      email: "invitado@ejemplo.com",
+    });
+  }
 
   set(SEEDED_KEY, true);
+  set(DEMO_VERSION_KEY, DEMO_VERSION);
+  notifyDataChanged();
 }
 
 /** Rellena passwordHash y status para todos los usuarios de un tenant. */
@@ -175,63 +265,54 @@ function applyPasswordToUsers(tenantId: string, hash: string): void {
   );
 }
 
-/** Legado: se mantiene el helper aunque ya no se llame desde UI. */
-export function loadDemoData(): SeedResult {
-  const base = createTenantWithSeed({
-    name: "CrossFit Norte",
-    ownerName: "Sergio Torres",
-    ownerEmail: "sergio@crossfitnorte.com",
-    brandColor: "#14B8A6",
-  });
-  seedClassesFor(base);
-  seedPRsFor(base);
-  seedFeedFor(base);
-  return base;
-}
-
 interface PRSeed {
   name: string;
   values: Array<{ daysAgo: number; value: number; rx?: boolean }>;
 }
 
-function seedPRsFor({ tenant, users }: SeedResult) {
+function seedPRsFor({ tenant, members, coaches }: SeedResult) {
   const exercisesRepo = exercisesRepoFor(tenant.id);
   const prsRepo = personalRecordsRepoFor(tenant.id);
   const allExercises: Exercise[] = exercisesRepo.list();
   const byName = new Map(allExercises.map((e) => [e.name, e]));
-
-  const ana = users.find((u) => u.name === "Ana Socia");
-  const diego = users.find((u) => u.name === "Diego Socio");
-  const laura = users.find((u) => u.name === "Laura Coach");
   const today = new Date();
 
-  const anaSets: PRSeed[] = [
-    { name: "Back Squat", values: [{ daysAgo: 180, value: 70 }, { daysAgo: 120, value: 75 }, { daysAgo: 60, value: 82 }, { daysAgo: 15, value: 85 }] },
-    { name: "Deadlift", values: [{ daysAgo: 200, value: 90 }, { daysAgo: 90, value: 100 }, { daysAgo: 20, value: 110 }] },
-    { name: "Snatch", values: [{ daysAgo: 150, value: 35 }, { daysAgo: 60, value: 42 }, { daysAgo: 10, value: 45 }] },
-    { name: "Fran", values: [{ daysAgo: 120, value: 8 * 60 + 30 }, { daysAgo: 40, value: 6 * 60 + 55, rx: false }] },
-    { name: "Pull-ups max", values: [{ daysAgo: 90, value: 5 }, { daysAgo: 30, value: 8, rx: false }] },
-    { name: "Run 5K", values: [{ daysAgo: 150, value: 30 * 60 + 20 }, { daysAgo: 30, value: 27 * 60 + 45 }] },
-  ];
-  const diegoSets: PRSeed[] = [
-    { name: "Back Squat", values: [{ daysAgo: 240, value: 100 }, { daysAgo: 150, value: 120 }, { daysAgo: 60, value: 135 }, { daysAgo: 5, value: 140 }] },
-    { name: "Clean & Jerk", values: [{ daysAgo: 200, value: 80 }, { daysAgo: 90, value: 92 }, { daysAgo: 20, value: 100 }] },
-    { name: "Fran", values: [{ daysAgo: 150, value: 5 * 60 + 20 }, { daysAgo: 60, value: 4 * 60 + 40 }, { daysAgo: 20, value: 4 * 60 + 12 }] },
-    { name: "Murph", values: [{ daysAgo: 200, value: 55 * 60 }, { daysAgo: 30, value: 48 * 60 + 30 }] },
-  ];
-  const lauraSets: PRSeed[] = [
-    { name: "Back Squat", values: [{ daysAgo: 120, value: 95 }, { daysAgo: 20, value: 105 }] },
-    { name: "Snatch", values: [{ daysAgo: 100, value: 55 }, { daysAgo: 30, value: 60 }] },
+  const sets: Array<[User | undefined, PRSeed[]]> = [
+    [members[0], [
+      { name: "Back Squat", values: [{ daysAgo: 180, value: 60 }, { daysAgo: 120, value: 67.5 }, { daysAgo: 60, value: 72.5 }, { daysAgo: 15, value: 77.5 }] },
+      { name: "Deadlift", values: [{ daysAgo: 200, value: 80 }, { daysAgo: 90, value: 92.5 }, { daysAgo: 20, value: 100 }] },
+      { name: "Fran", values: [{ daysAgo: 120, value: 9 * 60 + 10 }, { daysAgo: 40, value: 7 * 60 + 25, rx: false }] },
+      { name: "Run 5K", values: [{ daysAgo: 150, value: 29 * 60 + 40 }, { daysAgo: 30, value: 26 * 60 + 55 }] },
+    ]],
+    [members[1], [
+      { name: "Back Squat", values: [{ daysAgo: 240, value: 100 }, { daysAgo: 150, value: 115 }, { daysAgo: 60, value: 127.5 }, { daysAgo: 5, value: 135 }] },
+      { name: "Clean & Jerk", values: [{ daysAgo: 200, value: 75 }, { daysAgo: 90, value: 87.5 }, { daysAgo: 20, value: 95 }] },
+      { name: "Fran", values: [{ daysAgo: 150, value: 5 * 60 + 40 }, { daysAgo: 60, value: 4 * 60 + 50 }, { daysAgo: 20, value: 4 * 60 + 22 }] },
+      { name: "Murph", values: [{ daysAgo: 200, value: 56 * 60 }, { daysAgo: 30, value: 49 * 60 + 15 }] },
+    ]],
+    [members[4], [
+      { name: "Snatch", values: [{ daysAgo: 150, value: 32.5 }, { daysAgo: 60, value: 40 }, { daysAgo: 10, value: 42.5 }] },
+      { name: "Pull-ups max", values: [{ daysAgo: 90, value: 4 }, { daysAgo: 30, value: 9 }] },
+    ]],
+    [members[3], [
+      { name: "Deadlift", values: [{ daysAgo: 120, value: 140 }, { daysAgo: 25, value: 152.5 }] },
+      { name: "Back Squat", values: [{ daysAgo: 100, value: 110 }, { daysAgo: 12, value: 120 }] },
+    ]],
+    [coaches[0], [
+      { name: "Snatch", values: [{ daysAgo: 100, value: 85 }, { daysAgo: 30, value: 90 }] },
+      { name: "Back Squat", values: [{ daysAgo: 120, value: 150 }, { daysAgo: 20, value: 160 }] },
+    ]],
   ];
 
-  const insertFor = (userId: string, sets: PRSeed[]) => {
-    for (const s of sets) {
+  for (const [user, prs] of sets) {
+    if (!user) continue;
+    for (const s of prs) {
       const ex = byName.get(s.name);
       if (!ex) continue;
       for (const v of s.values) {
         prsRepo.create({
           tenantId: tenant.id,
-          userId,
+          userId: user.id,
           exerciseId: ex.id,
           value: v.value,
           rx: v.rx ?? true,
@@ -239,53 +320,37 @@ function seedPRsFor({ tenant, users }: SeedResult) {
         });
       }
     }
-  };
-  if (ana) insertFor(ana.id, anaSets);
-  if (diego) insertFor(diego.id, diegoSets);
-  if (laura) insertFor(laura.id, lauraSets);
+  }
 }
 
-function seedFeedFor({ tenant, users }: SeedResult, count = 6) {
+function seedFeedFor({ tenant, owner }: SeedResult) {
   const postsRepo = postsRepoFor(tenant.id);
-  const author = users[0]?.id ?? "";
   const today = new Date();
 
   const items: Array<{ type: PostType; title: string; content: string; pinned?: boolean; daysAgo: number }> = [
-    { type: "wod", title: "WOD del día — Fran", content: "21-15-9 de Thrusters (43/30 kg) y Pull-ups. RX si vas al peso. Escalado sale con anillas o goma.", pinned: true, daysAgo: 0 },
-    { type: "aviso", title: "Clase de las 19:00 cancelada mañana", content: "Mañana la sesión de las 19:00 no se impartirá por formación. Podéis reubicaros en la de las 17:30.", daysAgo: 1 },
-    { type: "consejo", title: "Cómo mejorar tu Snatch en 4 semanas", content: "1) Movilidad de tobillo y hombro diaria. 2) Overhead squat con PVC 3x/semana. 3) Snatch pull técnico ligero. 4) Foto en vídeo lateral cada semana.", daysAgo: 3 },
-    { type: "receta", title: "Batido post-entreno alto en proteína", content: "300 ml de leche, 1 plátano, 30 g de proteína de suero, 1 cucharada de mantequilla de cacahuete, canela. Triturar y beber en los 30 min post-WOD.", daysAgo: 5 },
-    { type: "wod", title: "Benchmark del mes — Cindy", content: "AMRAP 20 min: 5 pull-ups, 10 push-ups, 15 air squats. Apunta tu marca para el ranking del mes.", daysAgo: 8 },
-    { type: "aviso", title: "Cerrado el 15 por festivo local", content: "El box permanecerá cerrado el 15. Ese día no habrá clases; el 16 volvemos con horario normal.", daysAgo: 12 },
+    { type: "wod", title: "WOD del día: Fran", content: "21-15-9 de Thrusters (43/30 kg) y Pull-ups. RX si vas al peso; si no, escalamos con banda o anillas. ¡A romperla!", pinned: true, daysAgo: 0 },
+    { type: "aviso", title: "Feriado del lunes: horario especial", content: "El lunes abrimos de 9 a 13 con CrossFit a las 9, Funcional a las 10 y Open Box de 11 a 13. El martes volvemos al horario de siempre.", daysAgo: 1 },
+    { type: "aviso", title: "Nuevo Open Box de mediodía", content: "Sumamos Open Box de 12 a 14 de lunes a viernes para que entrenes a tu ritmo. Reservá tu lugar desde la app.", daysAgo: 3 },
+    { type: "consejo", title: "Movilidad: 10 minutos que cambian tu sentadilla", content: "1) 2 min de tobillo contra la pared. 2) 2 min de 90/90 de cadera. 3) 2 min de sentadilla profunda con apoyo. 4) 2 min de apertura torácica. 5) 2 min de hombros con banda. Hacelo antes de cada clase de Halterofilia.", daysAgo: 5 },
+    { type: "receta", title: "Licuado post entreno", content: "300 ml de leche, 1 banana, 2 cucharadas de avena, 1 cucharada de mantequilla de maní y canela. Licuá y tomalo dentro de la media hora después del WOD.", daysAgo: 8 },
+    { type: "wod", title: "Benchmark del mes: Cindy", content: "AMRAP 20 min: 5 pull-ups, 10 push-ups, 15 air squats. Anotá tus rondas en la app para el ranking del mes.", daysAgo: 12 },
   ];
 
-  items.slice(0, count).forEach((it) => {
-    postsRepo.create({
+  items.forEach((it) => {
+    const post = postsRepo.create({
       tenantId: tenant.id,
-      authorId: author,
+      authorId: owner.id,
       type: it.type,
       title: it.title,
       content: it.content,
       pinned: it.pinned ?? false,
-      // Fake createdAt override para orden: usamos update tras crear.
     });
-    // Ajustar createdAt manualmente
-    const list = postsRepo.list();
-    const last = list[list.length - 1];
-    if (last) {
-      postsRepo.update(last.id, {});
-      const target = new Date(today);
-      target.setDate(target.getDate() - it.daysAgo);
-      // Sobreescribir createdAt directamente vía replaceAll
-      const updated = postsRepo.list().map((p) =>
-        p.id === last.id ? { ...p, createdAt: target.toISOString() } : p,
-      );
-      postsRepo.replaceAll(updated);
-    }
+    const target = addDays(today, -it.daysAgo);
+    postsRepo.replaceAll(postsRepo.list().map((p) => (p.id === post.id ? { ...p, createdAt: target.toISOString() } : p)));
   });
 }
 
-function seedClassesFor({ tenant, users }: SeedResult) {
+function seedClassesFor({ tenant, coaches, members }: SeedResult) {
   const templatesRepo = classTemplatesRepoFor(tenant.id);
   const sessionsRepo = classSessionsRepoFor(tenant.id);
   const bookingsRepo = bookingsRepoFor(tenant.id);
@@ -293,130 +358,144 @@ function seedClassesFor({ tenant, users }: SeedResult) {
   const plansRepo = membershipPlansRepoFor(tenant.id);
   const membershipsRepo = membershipsRepoFor(tenant.id);
   const paymentsRepo = paymentsRepoFor(tenant.id);
-
-  const laura = users.find((u) => u.name === "Laura Coach");
-  const marcos = users.find((u) => u.name === "Marcos Coach");
-  const ana = users.find((u) => u.name === "Ana Socia");
-  const diego = users.find((u) => u.name === "Diego Socio");
-
-  const planDefs: Array<Omit<MembershipPlan, keyof import("@/types").BaseEntity>> = [
-    { tenantId: tenant.id, name: "Ilimitado", priceMonthly: 89, type: "unlimited", active: true },
-    { tenantId: tenant.id, name: "12 clases", priceMonthly: 69, type: "credits", creditsPerMonth: 12, active: true },
-    { tenantId: tenant.id, name: "8 clases", priceMonthly: 55, type: "credits", creditsPerMonth: 8, active: true },
-  ];
-  const [planUnlimited, plan12] = planDefs.map((p) => plansRepo.create(p));
-
+  const [lucas, ana, paula] = coaches;
   const today = new Date();
-  if (ana) {
-    const startAna = addDays(today, -26);
-    const endAna = addMonths(startAna, 1);
-    const membershipAna = membershipsRepo.create({
-      tenantId: tenant.id,
-      userId: ana.id,
-      planId: plan12.id,
-      startDate: toDateKey(startAna),
-      endDate: toDateKey(endAna),
-      status: "active",
-      creditsRemaining: 5,
-    });
-    paymentsRepo.create({
-      tenantId: tenant.id, userId: ana.id, membershipId: membershipAna.id,
-      amount: plan12.priceMonthly, method: "tarjeta",
-      date: toDateKey(addDays(today, -56)), notes: "Alta 12 clases",
-    });
-    paymentsRepo.create({
-      tenantId: tenant.id, userId: ana.id, membershipId: membershipAna.id,
-      amount: plan12.priceMonthly, method: "domiciliacion",
-      date: toDateKey(startAna), notes: "Renovación mensual",
-    });
+  const rnd = seededRandom(2026);
+
+  // Planes
+  const plans = new Map<string, MembershipPlan>();
+  for (const p of CHIA_PLANS) {
+    plans.set(
+      p.key,
+      plansRepo.create({
+        tenantId: tenant.id,
+        name: p.name,
+        priceMonthly: p.price,
+        type: p.type,
+        creditsPerMonth: p.credits,
+        durationMonths: p.months ?? 1,
+        active: true,
+      }),
+    );
   }
-  if (diego) {
-    const startDiego = addDays(today, -10);
-    const endDiego = addMonths(startDiego, 1);
-    const membershipDiego = membershipsRepo.create({
+
+  const defs = chiaMemberDefs();
+
+  // Membresías y pagos
+  defs.forEach((def, i) => {
+    const user = members[i];
+    const planDef = CHIA_PLANS.find((p) => p.key === def.plan);
+    const plan = plans.get(def.plan);
+    if (!user || !plan || !planDef) return;
+    const months = planDef.months ?? 1;
+    const start = addDays(today, -def.startedDaysAgo);
+    const membership = membershipsRepo.create({
       tenantId: tenant.id,
-      userId: diego.id,
-      planId: planUnlimited.id,
-      startDate: toDateKey(startDiego),
-      endDate: toDateKey(endDiego),
+      userId: user.id,
+      planId: plan.id,
+      startDate: toDateKey(start),
+      endDate: toDateKey(addMonths(start, months)),
       status: "active",
+      creditsRemaining: plan.type === "credits" ? Math.max(1, Math.round((plan.creditsPerMonth ?? 0) * (1 - def.startedDaysAgo / 30))) : undefined,
     });
-    for (let i = 0; i < 3; i++) {
+    // Pago del período actual y, en los mensuales, los anteriores desde que se hizo socio (hasta 6)
+    const periods = months === 1 ? Math.max(1, Math.min(6, Math.ceil((def.joinedDaysAgo ?? 30) / 30))) : 1;
+    for (let k = 0; k < periods; k++) {
       paymentsRepo.create({
-        tenantId: tenant.id, userId: diego.id, membershipId: membershipDiego.id,
-        amount: planUnlimited.priceMonthly, method: "tarjeta",
-        date: toDateKey(addDays(today, -70 + i * 30)), notes: "Renovación mensual",
+        tenantId: tenant.id,
+        userId: user.id,
+        membershipId: membership.id,
+        amount: plan.priceMonthly,
+        method: def.method,
+        date: toDateKey(addMonths(start, -k)),
+        notes: k === 0 ? (months === 1 ? "Cuota del mes" : `Pago ${planDef.name}`) : "Cuota del mes",
       });
     }
-  }
+  });
 
-  // Plantillas
-  const templateDefs: Array<Parameters<typeof templatesRepo.create>[0]> = [
-    { tenantId: tenant.id, name: "WOD Mañana", type: "wod", durationMinutes: 60, defaultCapacity: 12, defaultCoachId: laura?.id, color: "#14B8A6" },
-    { tenantId: tenant.id, name: "WOD Tarde", type: "wod", durationMinutes: 60, defaultCapacity: 14, defaultCoachId: marcos?.id, color: "#EAB308" },
-    { tenantId: tenant.id, name: "Halterofilia", type: "halterofilia", durationMinutes: 75, defaultCapacity: 8, defaultCoachId: laura?.id, color: "#22C55E" },
-    { tenantId: tenant.id, name: "Open Box", type: "open_box", durationMinutes: 60, defaultCapacity: 10, color: "#0EA5E9" },
-  ];
-  const templates = templateDefs.map((t) => templatesRepo.create(t));
-  const [tplWodM, tplWodT, tplHalter, tplOpen] = templates;
-
-  // Sesiones ±3 semanas, L-V 7:00/9:30/13:30/17:30/19:00 + sábado 10:00
-  const times = ["07:00", "09:30", "13:30", "17:30", "19:00"];
-  const weekStart = startOfWeek(today);
-  const range: number[] = [];
-  for (let w = -3; w <= 2; w++) range.push(w);
-  const pickTpl = (h: string) => {
-    if (h === "07:00" || h === "09:30") return tplWodM;
-    if (h === "13:30") return tplOpen;
-    if (h === "17:30") return tplHalter;
-    return tplWodT;
+  // Plantillas de clase
+  const tpl = {
+    crossfit: templatesRepo.create({ tenantId: tenant.id, name: "CrossFit", type: "wod", durationMinutes: 60, defaultCapacity: 14, defaultCoachId: lucas?.id, color: "#A3226E" }),
+    funcional: templatesRepo.create({ tenantId: tenant.id, name: "Funcional", type: "funcional", durationMinutes: 60, defaultCapacity: 16, defaultCoachId: paula?.id, color: "#F2D04A" }),
+    halterofilia: templatesRepo.create({ tenantId: tenant.id, name: "Halterofilia", type: "halterofilia", durationMinutes: 60, defaultCapacity: 8, defaultCoachId: ana?.id, color: "#14B8A6" }),
+    openBox: templatesRepo.create({ tenantId: tenant.id, name: "Open Box", type: "open_box", durationMinutes: 120, defaultCapacity: 10, color: "#64748B" }),
+    movilidad: templatesRepo.create({ tenantId: tenant.id, name: "Movilidad", type: "movilidad", durationMinutes: 60, defaultCapacity: 12, defaultCoachId: paula?.id, color: "#22C55E" }),
   };
-  for (const w of range) {
+
+  // Horario: lunes a viernes de 6 a 21, sábados de 9 a 13.
+  type Slot = { time: string; t: ClassTemplate; coach?: User; minutes?: number };
+  const weekday = (d: number): Slot[] => {
+    const monWedFri = d === 0 || d === 2 || d === 4;
+    const slots: Slot[] = [
+      { time: "06:00", t: tpl.crossfit, coach: lucas },
+      { time: "07:00", t: tpl.crossfit, coach: lucas },
+      { time: "08:00", t: tpl.funcional, coach: paula },
+      { time: "09:00", t: tpl.crossfit, coach: ana },
+      monWedFri ? { time: "10:00", t: tpl.movilidad, coach: paula } : { time: "10:00", t: tpl.halterofilia, coach: ana },
+      { time: "12:00", t: tpl.openBox },
+      { time: "17:00", t: tpl.funcional, coach: paula },
+      { time: "18:00", t: tpl.crossfit, coach: lucas },
+      { time: "19:00", t: tpl.crossfit, coach: ana },
+    ];
+    if (d === 0 || d === 2) slots.push({ time: "20:00", t: tpl.halterofilia, coach: lucas });
+    else if (d === 1 || d === 3) slots.push({ time: "20:00", t: tpl.movilidad, coach: paula });
+    else slots.push({ time: "20:00", t: tpl.openBox, minutes: 60 });
+    return slots;
+  };
+  const saturday: Slot[] = [
+    { time: "09:00", t: tpl.crossfit, coach: lucas },
+    { time: "10:00", t: tpl.funcional, coach: paula },
+    { time: "11:00", t: tpl.openBox },
+  ];
+
+  const weekStart = startOfWeek(today);
+  for (let w = -3; w <= 2; w++) {
     for (let d = 0; d < 6; d++) {
       const day = addDays(weekStart, w * 7 + d);
-      if (d === 5) {
-        // sábado
-        const tpl = tplWodM;
+      for (const slot of d === 5 ? saturday : weekday(d)) {
         sessionsRepo.create({
-          tenantId: tenant.id, templateId: tpl.id, date: toDateKey(day),
-          startTime: "10:00", durationMinutes: tpl.durationMinutes, capacity: tpl.defaultCapacity,
-          coachId: tpl.defaultCoachId, status: "scheduled",
+          tenantId: tenant.id,
+          templateId: slot.t.id,
+          date: toDateKey(day),
+          startTime: slot.time,
+          durationMinutes: slot.minutes ?? slot.t.durationMinutes,
+          capacity: slot.t.defaultCapacity,
+          coachId: slot.coach?.id ?? slot.t.defaultCoachId,
+          status: "scheduled",
         });
-      } else {
-        for (const h of times) {
-          const tpl = pickTpl(h);
-          sessionsRepo.create({
-            tenantId: tenant.id, templateId: tpl.id, date: toDateKey(day),
-            startTime: h, durationMinutes: tpl.durationMinutes, capacity: tpl.defaultCapacity,
-            coachId: tpl.defaultCoachId, status: "scheduled",
-          });
-        }
       }
     }
   }
 
-  // Reservas y check-ins de muestra
-  const allSessions = sessionsRepo.list();
-  const bookFor = (userId: string, count: number) => {
-    let done = 0;
-    for (const s of allSessions) {
-      if (done >= count) break;
-      const sessionDate = new Date(s.date + "T" + s.startTime + ":00");
-      if (sessionDate < addDays(today, -21)) continue;
-      const bk = bookingsRepo.create({
-        tenantId: tenant.id, sessionId: s.id, userId, status: "confirmed",
-      });
-      if (sessionDate < today) {
-        checkinsRepo.create({
-          tenantId: tenant.id, bookingId: bk.id, sessionId: s.id, userId,
-          checkedInAt: sessionDate.toISOString(),
-        });
+  // Reservas: cada socio va según su plan, en sus horarios preferidos.
+  const sessions = sessionsRepo.list();
+  const booked = new Map<string, number>();
+  const from = addDays(today, -21);
+  const until = addDays(today, 6);
+  defs.forEach((def, i) => {
+    const user = members[i];
+    const perWeek = CHIA_PLANS.find((p) => p.key === def.plan)?.perWeek ?? 2;
+    if (!user) return;
+    const byWeek = new Map<string, number>();
+    // Orden mezclado para repartir las reservas en toda la semana, no solo al principio
+    const order = sessions.map((s) => ({ s, k: rnd() })).sort((a, b) => a.k - b.k).map((x) => x.s);
+    for (const s of order) {
+      const when = new Date(s.date + "T" + s.startTime + ":00");
+      if (when < from || when > until) continue;
+      if (!def.times.includes(s.startTime)) continue;
+      const wk = toDateKey(startOfWeek(when));
+      if ((byWeek.get(wk) ?? 0) >= perWeek) continue;
+      if (rnd() < 0.35) continue;
+      const count = booked.get(s.id) ?? 0;
+      if (count >= s.capacity) continue;
+      const bk = bookingsRepo.create({ tenantId: tenant.id, sessionId: s.id, userId: user.id, status: "confirmed" });
+      booked.set(s.id, count + 1);
+      byWeek.set(wk, (byWeek.get(wk) ?? 0) + 1);
+      if (when < today) {
+        checkinsRepo.create({ tenantId: tenant.id, bookingId: bk.id, sessionId: s.id, userId: user.id, checkedInAt: when.toISOString() });
       }
-      done++;
     }
-  };
-  if (ana) bookFor(ana.id, 6);
-  if (diego) bookFor(diego.id, 10);
+  });
 }
 
 // ---- WODs ----
@@ -554,10 +633,9 @@ function seedWodsFor({ tenant, users }: SeedResult) {
   }
 }
 
-function seedNotificationsFor({ tenant, users }: SeedResult) {
+function seedNotificationsFor({ tenant, members }: SeedResult) {
   const repo = notificationsRepoFor(tenant.id);
-  const ana = users.find((u) => u.name === "Ana Socia");
-  const diego = users.find((u) => u.name === "Diego Socio");
+  const [ana, diego] = members;
   const now = Date.now();
   const mk = (
     userId: string,
@@ -574,12 +652,12 @@ function seedNotificationsFor({ tenant, users }: SeedResult) {
   };
   if (ana) {
     mk(ana.id, "new_post", "Nuevo WOD publicado", "Fran · WOD del día", "/feed", 45);
-    mk(ana.id, "membership_expiring", "Tu plan expira pronto", "Tu bono de 12 clases caduca en 5 días.", "/dashboard", 60 * 6);
-    mk(ana.id, "waitlist_promoted", "¡Has pasado de lista de espera!", "WOD Tarde · mañana a las 19:00", "/reservas", 60 * 26, true);
+    mk(ana.id, "membership_expiring", "Tu plan vence pronto", "Tu plan de 12 clases vence en 6 días.", "/dashboard", 60 * 6);
+    mk(ana.id, "waitlist_promoted", "¡Saliste de la lista de espera!", "CrossFit · mañana a las 19:00", "/reservas", 60 * 26, true);
   }
   if (diego) {
     mk(diego.id, "new_post", "Nuevo WOD publicado", "Fran · WOD del día", "/feed", 30);
-    mk(diego.id, "session_cancelled", "Sesión cancelada", "WOD Tarde del jueves a las 19:00 ha sido cancelada.", "/reservas", 60 * 12);
+    mk(diego.id, "session_cancelled", "Clase cancelada", "Se canceló el CrossFit del jueves a las 07:00.", "/reservas", 60 * 12);
   }
 }
 
@@ -596,12 +674,11 @@ import { productsRepoFor } from "./storage/repositories/products.repo";
 import { ordersRepoFor } from "./storage/repositories/orders.repo";
 import { bodyMetricsRepoFor } from "./storage/repositories/bodyMetrics.repo";
 
-function seedChallengesFor({ tenant, users }: SeedResult) {
+function seedChallengesFor({ tenant, members }: SeedResult) {
   const chRepo = challengesRepoFor(tenant.id);
   const partsRepo = challengeParticipantsRepoFor(tenant.id);
   const exRepo = exercisesRepoFor(tenant.id);
-  const ana = users.find((u) => u.name === "Ana Socia");
-  const diego = users.find((u) => u.name === "Diego Socio");
+  const [ana, diego] = members;
   const today = new Date();
   const start = toDateKey(addDays(today, -10));
   const end = toDateKey(addDays(today, 20));
@@ -609,7 +686,7 @@ function seedChallengesFor({ tenant, users }: SeedResult) {
   const c1 = chRepo.create({
     tenantId: tenant.id,
     title: "12 clases este mes",
-    description: "Ven al box 12 veces en el periodo del reto y llévate la insignia.",
+    description: "Vení al box 12 veces durante el reto y llevate la insignia.",
     type: "attendance",
     goal: 12,
     startDate: start,
@@ -622,7 +699,7 @@ function seedChallengesFor({ tenant, users }: SeedResult) {
     const c2 = chRepo.create({
       tenantId: tenant.id,
       title: "Baja tu Fran",
-      description: "Registra tu mejor Fran RX o escalado en el periodo del reto.",
+      description: "Registrá tu mejor Fran, RX o escalado, durante el reto.",
       type: "benchmark",
       goal: fran.id,
       startDate: start,
@@ -675,7 +752,7 @@ function seedProgramsFor({ tenant, users }: SeedResult) {
       ],
     });
   }
-  const ana = users.find((u) => u.name === "Ana Socia");
+  const ana = users.find((u) => u.role === "member");
   if (ana) {
     const assignment = programAssignmentsRepoFor(tenant.id).create({
       tenantId: tenant.id, programId: prog.id, userId: ana.id, assignedBy: owner.id,
@@ -697,19 +774,18 @@ function sessionsRepoFor_seed_helper(tenantId: string, programId: string) {
     .sort((a, b) => a.weekNumber - b.weekNumber || a.dayNumber - b.dayNumber);
 }
 
-function seedShopFor({ tenant, users }: SeedResult) {
+function seedShopFor({ tenant, members }: SeedResult) {
   const pRepo = productsRepoFor(tenant.id);
   const items = [
-    { name: "Camiseta del box", description: "Camiseta técnica con logo, tallas S–XL.", price: 25, category: "ropa" as const, stock: 30 },
-    { name: "Muñequeras", description: "Par de muñequeras negras.", price: 15, category: "accesorios" as const, stock: 20 },
-    { name: "Magnesio líquido", description: "Bote 250 ml.", price: 12, category: "accesorios" as const, stock: 15 },
-    { name: "Proteína whey 1 kg", description: "Sabor chocolate.", price: 32, category: "suplementacion" as const, stock: 10 },
-    { name: "Botella 750 ml", description: "Botella de acero inoxidable.", price: 18, category: "accesorios" as const, stock: 8 },
-    { name: "Sudadera del box", description: "Sudadera negra con logo bordado.", price: 45, category: "ropa" as const, stock: 12 },
+    { name: "Remera Chia", description: "Remera técnica con logo, talles S a XL.", price: 25000, category: "ropa" as const, stock: 30 },
+    { name: "Muñequeras", description: "Par de muñequeras negras.", price: 12000, category: "accesorios" as const, stock: 20 },
+    { name: "Magnesio líquido", description: "Frasco de 250 ml.", price: 9000, category: "accesorios" as const, stock: 15 },
+    { name: "Proteína whey 1 kg", description: "Sabor chocolate.", price: 45000, category: "suplementacion" as const, stock: 10 },
+    { name: "Botella 750 ml", description: "Botella de acero inoxidable.", price: 15000, category: "accesorios" as const, stock: 8 },
+    { name: "Buzo Chia", description: "Buzo negro con logo bordado.", price: 55000, category: "ropa" as const, stock: 12 },
   ];
   const created = items.map((it) => pRepo.create({ tenantId: tenant.id, ...it, imageUrl: undefined, active: true }));
-  const ana = users.find((u) => u.name === "Ana Socia");
-  const diego = users.find((u) => u.name === "Diego Socio");
+  const [ana, diego] = members;
   const oRepo = ordersRepoFor(tenant.id);
   if (ana) {
     const p = created[0];
@@ -732,8 +808,8 @@ function seedShopFor({ tenant, users }: SeedResult) {
   }
 }
 
-function seedHealthFor({ tenant, users }: SeedResult) {
-  const ana = users.find((u) => u.name === "Ana Socia");
+function seedHealthFor({ tenant, members }: SeedResult) {
+  const ana = members[0];
   if (!ana) return;
   const bm = bodyMetricsRepoFor(tenant.id);
   const today = new Date();

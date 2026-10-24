@@ -46,9 +46,19 @@ export const DEFAULT_MODULES: TenantModules = {
   health: true,
 };
 
+export type CurrencyCode = "EUR" | "ARS" | "USD";
+
+export const CURRENCY_LABEL: Record<CurrencyCode, string> = {
+  EUR: "Euro (€)",
+  ARS: "Peso argentino ($)",
+  USD: "Dólar (US$)",
+};
+
 export interface TenantSettings {
   cancellationWindowHours: number;
   enabledModules?: TenantModules;
+  /** Moneda en la que el box cobra. Por defecto, euros. */
+  currency?: CurrencyCode;
 }
 
 export type TenantStatus = "active" | "suspended";
@@ -147,6 +157,7 @@ export interface SuperSession {
 
 export type ClassType =
   | "wod"
+  | "funcional"
   | "halterofilia"
   | "gimnasticos"
   | "movilidad"
@@ -195,7 +206,8 @@ export interface CheckIn extends BaseEntity {
 }
 
 export const CLASS_TYPE_LABEL: Record<ClassType, string> = {
-  wod: "WOD",
+  wod: "CrossFit",
+  funcional: "Funcional",
   halterofilia: "Halterofilia",
   gimnasticos: "Gimnásticos",
   movilidad: "Movilidad",
@@ -210,11 +222,21 @@ export type PlanType = "unlimited" | "credits";
 export interface MembershipPlan extends BaseEntity {
   tenantId: string;
   name: string;
+  /** Precio que se cobra por cada período del plan (un mes, salvo que durationMonths diga otra cosa). */
   priceMonthly: number;
   type: PlanType;
   creditsPerMonth?: number;
+  /** Duración del plan en meses: 1 mensual, 3 trimestral, 6 semestral, 12 anual. Por defecto 1. */
+  durationMonths?: number;
   active: boolean;
 }
+
+export const PLAN_DURATION_LABEL: Record<number, string> = {
+  1: "Mensual",
+  3: "Trimestral",
+  6: "Semestral",
+  12: "Anual",
+};
 
 export type MembershipStatus = "active" | "expired" | "cancelled";
 
@@ -234,7 +256,7 @@ export type MembershipUiStatus =
   | "expired"
   | "none";
 
-export type PaymentMethod = "efectivo" | "tarjeta" | "domiciliacion" | "otro";
+export type PaymentMethod = "efectivo" | "tarjeta" | "transferencia" | "domiciliacion" | "otro";
 
 export interface Payment extends BaseEntity {
   tenantId: string;
@@ -249,6 +271,7 @@ export interface Payment extends BaseEntity {
 export const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
   efectivo: "Efectivo",
   tarjeta: "Tarjeta",
+  transferencia: "Transferencia",
   domiciliacion: "Domiciliación",
   otro: "Otro",
 };

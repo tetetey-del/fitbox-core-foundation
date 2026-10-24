@@ -159,7 +159,7 @@ function AdminPanel() {
                       </div>
                       <p className="text-xs text-muted-foreground mt-0.5">
                         {s.users} usuarios · {s.activeMembers} socios activos ·{" "}
-                        {formatMoney(s.monthRevenue)} este mes · creado{" "}
+                        {formatMoney(s.monthRevenue, s.tenant.settings?.currency ?? "EUR")} este mes · creado{" "}
                         {formatDate(s.tenant.createdAt.slice(0, 10))}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">

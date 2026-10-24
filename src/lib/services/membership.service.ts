@@ -64,7 +64,7 @@ export function assignMembership(
     membershipsRepo.update(m.id, { status: "expired", endDate: toDateKey(new Date()) }),
   );
 
-  const endDate = addMonths(startDate, 1);
+  const endDate = addMonths(startDate, plan.durationMonths ?? 1);
   const membership = membershipsRepo.create({
     tenantId,
     userId,
@@ -97,7 +97,7 @@ export function renewMembership(
   if (!plan) return { ok: false, reason: "Plan no encontrado" };
 
   const base = parseDateKey(m.endDate) > new Date() ? parseDateKey(m.endDate) : new Date();
-  const newEnd = addMonths(base, 1);
+  const newEnd = addMonths(base, plan.durationMonths ?? 1);
   const updated = membershipsRepo.update(m.id, {
     status: "active",
     endDate: toDateKey(newEnd),

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { paymentsOf } from "@/lib/services/membership.service";
 import { PAYMENT_METHOD_LABEL } from "@/types";
 import { formatDate } from "@/lib/date";
+import { formatMoney } from "@/lib/format";
 
 interface Props {
   userId: string;
@@ -31,7 +32,7 @@ export function MemberPaymentsTab({ userId, onNewPayment }: Props) {
               className="flex items-center justify-between rounded-md border border-border bg-card px-3 py-2 text-sm"
             >
               <div>
-                <div className="font-medium">{p.amount.toFixed(2)} €</div>
+                <div className="font-medium">{formatMoney(p.amount)}</div>
                 <div className="text-xs text-muted-foreground">
                   {formatDate(p.date)} · {PAYMENT_METHOD_LABEL[p.method]}
                   {p.notes ? ` · ${p.notes}` : ""}

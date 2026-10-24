@@ -45,7 +45,9 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { clearAll } from "@/lib/storage/db";
-import type { MembershipPlan, PlanType } from "@/types";
+import type { CurrencyCode, MembershipPlan, PlanType } from "@/types";
+import { CURRENCY_LABEL, PLAN_DURATION_LABEL } from "@/types";
+import { currencySymbol, formatMoney } from "@/lib/format";
 import { notifyDataChanged, useDataVersion } from "@/lib/data-bus";
 import { DataSection } from "@/components/config/DataSection";
 import { AppearanceSection } from "@/components/config/AppearanceSection";
@@ -61,6 +63,7 @@ function ConfigPage() {
   const [cancellationWindow, setCancellationWindow] = useState(
     currentTenant?.settings?.cancellationWindowHours ?? 2,
   );
+  const [currency, setCurrency] = useState<CurrencyCode>(currentTenant?.settings?.currency ?? "EUR");
 
   const save = () => {
     if (!currentTenant) return;
@@ -69,6 +72,7 @@ function ConfigPage() {
       settings: {
         ...currentTenant.settings,
         cancellationWindowHours: cancellationWindow,
+        currency,
       },
     });
     toast.success("Configuración guardada");
@@ -113,6 +117,17 @@ function ConfigPage() {
                   value={cancellationWindow}
                   onChange={(e) => setCancellationWindow(Number(e.target.value))}
                 />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Moneda</Label>
+                <Select value={currency} onValueChange={(v) => setCurrency(v as CurrencyCode)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {(Object.keys(CURRENCY_LABEL) as CurrencyCode[]).map((c) => (
+                      <SelectItem key={c} value={c}>{CURRENCY_LABEL[c]}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <Button onClick={save}>Guardar cambios</Button>
@@ -188,6 +203,7 @@ function PlansSection() {
               <TableHead>Nombre</TableHead>
               <TableHead>Tipo</TableHead>
               <TableHead>Créditos/mes</TableHead>
+              <TableHead>Duración</TableHead>
               <TableHead>Precio</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead className="w-[100px] text-right">Acciones</TableHead>
@@ -196,7 +212,7 @@ function PlansSection() {
           <TableBody>
             {plans.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-sm text-muted-foreground py-8">
+                <TableCell colSpan={7} className="text-center text-sm text-muted-foreground py-8">
                   Todavía no hay planes definidos.
                 </TableCell>
               </TableRow>
@@ -210,7 +226,10 @@ function PlansSection() {
                 <TableCell className="text-muted-foreground">
                   {p.type === "credits" ? p.creditsPerMonth : "—"}
                 </TableCell>
-                <TableCell>{p.priceMonthly.toFixed(2)} €</TableCell>
+                <TableCell className="text-muted-foreground">
+                  {PLAN_DURATION_LABEL[p.durationMonths ?? 1] ?? `${p.durationMonths} meses`}
+                </TableCell>
+                <TableCell>{formatMoney(p.priceMonthly)}</TableCell>
                 <TableCell>
                   {p.active ? (
                     <span className="text-xs text-emerald-400 font-medium">Activo</span>
@@ -270,6 +289,7 @@ function PlanDialog({
   const [type, setType] = useState<PlanType>("unlimited");
   const [price, setPrice] = useState<number>(0);
   const [credits, setCredits] = useState<number>(8);
+  const [duration, setDuration] = useState<number>(1);
   const [active, setActive] = useState(true);
 
   useEffect(() => {
@@ -278,6 +298,7 @@ function PlanDialog({
       setType(initial?.type ?? "unlimited");
       setPrice(initial?.priceMonthly ?? 0);
       setCredits(initial?.creditsPerMonth ?? 8);
+      setDuration(initial?.durationMonths ?? 1);
       setActive(initial?.active ?? true);
     }
   }, [open, initial]);
@@ -294,6 +315,8 @@ function PlanDialog({
       priceMonthly: Number(price),
       type,
       creditsPerMonth: type === "credits" ? Number(credits) : undefined,
+      // Los planes por créditos son mensuales; los ilimitados pueden durar más.
+      durationMonths: type === "credits" ? 1 : duration,
       active,
     };
 
@@ -331,7 +354,9 @@ function PlanDialog({
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Precio mensual (€)</Label>
+              <Label className="text-xs text-muted-foreground">
+                Precio por período ({currencySymbol()})
+              </Label>
               <Input
                 type="number"
                 min={0}
@@ -341,6 +366,19 @@ function PlanDialog({
               />
             </div>
           </div>
+          {type === "unlimited" && (
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Duración</Label>
+              <Select value={String(duration)} onValueChange={(v) => setDuration(Number(v))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {Object.entries(PLAN_DURATION_LABEL).map(([m, label]) => (
+                    <SelectItem key={m} value={m}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           {type === "credits" && (
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Créditos por mes</Label>
