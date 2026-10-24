@@ -1,5 +1,6 @@
 /**
- * Logo de Kinflow: una K cuyas patas forman una curva, como un movimiento que fluye.
+ * Logo de Kinflow: "la K en movimiento". La K es una persona saltando: el punto lima es la cabeza,
+ * el palo es el cuerpo, arriba un brazo estirado y abajo una pierna.
  * `KinflowMark` es solo el símbolo; `KinflowLogo` es símbolo + nombre.
  */
 
@@ -7,15 +8,12 @@ export function KinflowMark({ className = "h-6 w-6" }: { className?: string }) {
   return (
     <svg viewBox="0 0 64 64" className={className} role="img" aria-label="Kinflow">
       <rect x="2" y="2" width="60" height="60" rx="16" fill="#14B8A6" />
-      <path d="M22 16v32" stroke="#0E2A3A" strokeWidth="7" strokeLinecap="round" fill="none" />
-      <path
-        d="M44 16C35 21 28 27 28 32s7 11 16 16"
-        stroke="#0E2A3A"
-        strokeWidth="7"
-        strokeLinecap="round"
-        fill="none"
-      />
-      <circle cx="47" cy="32" r="3.5" fill="#A3E635" />
+      <g transform="rotate(12 32 34)">
+        <circle cx="23" cy="14" r="5.5" fill="#A3E635" />
+        <path d="M23 24v26" stroke="#0E2A3A" strokeWidth="6.5" strokeLinecap="round" fill="none" />
+        <path d="M23 31C31 28 38 22 45 15" stroke="#0E2A3A" strokeWidth="6.5" strokeLinecap="round" fill="none" />
+        <path d="M23 35C31 38 39 44 46 50" stroke="#0E2A3A" strokeWidth="6.5" strokeLinecap="round" fill="none" />
+      </g>
     </svg>
   );
 }
