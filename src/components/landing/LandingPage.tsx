@@ -6,10 +6,11 @@ import { FeaturesSection } from "./sections/FeaturesSection";
 import { HowItWorksSection } from "./sections/HowItWorksSection";
 import { PwaSection } from "./sections/PwaSection";
 import { PricingSection } from "./sections/PricingSection";
-import { TestimonialsSection } from "./sections/TestimonialsSection";
 import { FaqSection } from "./sections/FaqSection";
 import { FinalCtaSection } from "./sections/FinalCtaSection";
 import { LandingFooter } from "./sections/LandingFooter";
+import { FounderSection } from "./sections/FounderSection";
+import { LangProvider } from "./i18n";
 
 /**
  * Landing pública. Composición de secciones independientes; toda la lógica
@@ -22,6 +23,7 @@ export function LandingPage() {
   const goLogin = () => navigate({ to: "/login" });
 
   return (
+    <LangProvider>
     <div className="min-h-dvh bg-background text-foreground flex flex-col overflow-x-hidden">
       <TopNav onEnter={goLogin} onCreate={goRegister} />
       <main className="flex-1">
@@ -31,11 +33,12 @@ export function LandingPage() {
         <HowItWorksSection />
         <PwaSection onCreate={goRegister} />
         <PricingSection onCreate={goRegister} />
-        <TestimonialsSection />
+        <FounderSection />
         <FaqSection />
         <FinalCtaSection onCreate={goRegister} />
       </main>
       <LandingFooter />
     </div>
+    </LangProvider>
   );
 }

@@ -1,17 +1,13 @@
 import { CalendarDays, LayoutGrid, Newspaper, Palette, Trophy, Users } from "lucide-react";
 import { Reveal } from "../animations";
+import { useT } from "../i18n";
 
-const FEATURES = [
-  { icon: CalendarDays, title: "Reservas con waitlist", desc: "Calendario semanal, lista de espera automática, check-ins y ventana de cancelación configurable." },
-  { icon: Users, title: "Socios y créditos", desc: "Planes ilimitados o por créditos, renovaciones, historial de pagos y estado a un vistazo." },
-  { icon: Trophy, title: "PRs y leaderboard", desc: "Registra marcas, revisa la evolución con gráficas y saca ránkings del box por ejercicio." },
-  { icon: Newspaper, title: "Feed del box", desc: "Publica avisos, WODs, consejos y recetas. Notifica a tus socios sin depender de WhatsApp." },
-  { icon: Palette, title: "Temas y branding", desc: "Cinco temas listos, tu color de marca y tu logo. Que la app sea tu box, no un genérico más." },
-  { icon: LayoutGrid, title: "Panel multi-box", desc: "Gestiona varios boxes desde un único panel. Métricas globales, impersonación y control total." },
-];
+const ICONS = [CalendarDays, Users, Trophy, Newspaper, Palette, LayoutGrid];
 
 /** Grid de 6 features principales del producto. */
 export function FeaturesSection() {
+  const t = useT().features;
+  const features = t.items.map((f, i) => ({ ...f, icon: ICONS[i] }));
   return (
     <section id="features" className="relative mx-auto max-w-6xl px-4 sm:px-6 py-20 sm:py-24">
       <div
@@ -22,18 +18,17 @@ export function FeaturesSection() {
       <div className="max-w-2xl">
         <Reveal>
           <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">
-            Todo lo que tu box necesita, sin lo que sobra.
+            {t.title}
           </h2>
         </Reveal>
         <Reveal delay={80}>
           <p className="mt-3 text-sm sm:text-base text-muted-foreground">
-            FitBox reúne lo esencial de un CRM, un reservador y una comunidad en una
-            sola herramienta pensada para dueños de box.
+            {t.subtitle}
           </p>
         </Reveal>
       </div>
       <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {FEATURES.map(({ icon: Icon, title, desc }, i) => (
+        {features.map(({ icon: Icon, title, desc }, i) => (
           <Reveal key={title} delay={i * 80}>
             <div className="group relative rounded-xl border border-border bg-card p-6 h-full transition-all duration-300 hover:-translate-y-0.5 hover:border-[#14B8A6]/40">
               <div

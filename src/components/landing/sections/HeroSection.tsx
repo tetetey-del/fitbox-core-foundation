@@ -2,9 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "../animations";
+import { useT } from "../i18n";
 
 /** Sección hero con headline, CTA y mockup animado. */
 export function HeroSection({ onCreate, onEnter }: { onCreate: () => void; onEnter: () => void }) {
+  const t = useT().hero;
   return (
     <section className="relative overflow-hidden border-b border-border/60">
       <div
@@ -19,39 +21,37 @@ export function HeroSection({ onCreate, onEnter }: { onCreate: () => void; onEnt
         <div>
           <Reveal>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-[#14B8A6]/30 bg-[#14B8A6]/10 px-3 py-1 text-xs text-[#14B8A6] font-medium">
-              Software para boxes y gimnasios boutique
+              {t.badge}
             </span>
           </Reveal>
           <Reveal delay={80}>
             <h1 className="mt-6 text-4xl sm:text-6xl font-semibold tracking-tighter leading-[1.05]">
-              Gestiona tu box
+              {t.titleA}
               <br />
               <span className="bg-gradient-to-r from-[#14B8A6] via-[#2DD4BF] to-[#A3E635] bg-clip-text text-transparent">
-                como un atleta entrena.
+                {t.titleB}
               </span>
             </h1>
           </Reveal>
           <Reveal delay={160}>
             <p className="mt-5 max-w-xl text-sm sm:text-base text-muted-foreground">
-              Reservas con lista de espera, socios y cuotas, PRs y leaderboard, feed
-              del box y temas personalizables. Todo en una herramienta rápida y
-              sobria, sin plugins ni fricción.
+              {t.subtitle}
             </p>
           </Reveal>
           <Reveal delay={220}>
             <div className="mt-8 flex flex-wrap items-center gap-2">
               <Button className="h-11 px-6" onClick={onCreate}>
-                Crear mi box
+                {t.create}
                 <ArrowRight className="h-4 w-4 ml-1" strokeWidth={1.5} />
               </Button>
               <Button variant="outline" className="h-11 px-6" onClick={onEnter}>
-                Ya tengo cuenta
+                {t.login}
               </Button>
             </div>
           </Reveal>
           <Reveal delay={280}>
             <div className="mt-6 text-xs text-muted-foreground">
-              Sin tarjeta · 14 días de prueba · Cancela cuando quieras
+              {t.small}
             </div>
           </Reveal>
         </div>
@@ -65,6 +65,7 @@ export function HeroSection({ onCreate, onEnter }: { onCreate: () => void; onEnt
 
 /** Mockup interactivo con leve parallax que ilustra la agenda del box. */
 function MockupPreview() {
+  const t = useT().hero;
   const ref = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState(0);
   useEffect(() => {
@@ -107,13 +108,13 @@ function MockupPreview() {
           <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/30" />
           <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/30" />
           <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/30" />
-          <span className="ml-3 text-[11px] text-muted-foreground">CrossFit Norte · Reservas</span>
+          <span className="ml-3 text-[11px] text-muted-foreground">{t.mockTitle}</span>
         </div>
         <div className="grid grid-cols-3 gap-2 mt-3">
           {[
-            { day: "Lun 08", items: 3 },
-            { day: "Mar 09", items: 4, active: true },
-            { day: "Mié 10", items: 3 },
+            { day: t.days[0], items: 3 },
+            { day: t.days[1], items: 4, active: true },
+            { day: t.days[2], items: 3 },
           ].map((c) => (
             <div
               key={c.day}
@@ -128,7 +129,7 @@ function MockupPreview() {
                   className="rounded border border-border/70 bg-background/60 px-1.5 py-1"
                 >
                   <div className="text-[10px] font-medium">
-                    {["07:00 WOD", "09:30 WOD", "17:30 Halter", "19:00 WOD"][i]}
+                    {t.classes[i]}
                   </div>
                   <div className="mt-1 h-1 w-full rounded bg-muted overflow-hidden">
                     <div
@@ -137,7 +138,7 @@ function MockupPreview() {
                     />
                   </div>
                   <div className="mt-1 text-[9px] text-muted-foreground">
-                    {6 + i}/{12} · {i === 2 ? "2 en espera" : "libre"}
+                    {6 + i}/{12} · {i === 2 ? t.waiting : t.free}
                   </div>
                 </div>
               ))}
@@ -146,7 +147,7 @@ function MockupPreview() {
         </div>
         <div className="mt-3 rounded-md border border-[#14B8A6]/30 bg-[#14B8A6]/5 p-2">
           <div className="text-[10px] font-medium uppercase text-[#14B8A6]">
-            WOD del día · Fran
+            {t.wodLabel}
           </div>
           <div className="text-[11px] mt-1">
             21-15-9 Thrusters 43/30 + Pull-ups. Cap 10'.

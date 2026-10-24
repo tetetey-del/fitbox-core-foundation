@@ -1,9 +1,11 @@
 import { ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "../animations";
+import { useT } from "../i18n";
 
-/** CTA final grande con gradiente naranja de fondo. */
+/** CTA final grande con gradiente turquesa de fondo. */
 export function FinalCtaSection({ onCreate }: { onCreate: () => void }) {
+  const t = useT().finalCta;
   return (
     <section className="relative overflow-hidden">
       <div
@@ -17,17 +19,17 @@ export function FinalCtaSection({ onCreate }: { onCreate: () => void }) {
       <div className="mx-auto max-w-3xl px-4 sm:px-6 py-24 text-center">
         <Reveal>
           <h2 className="text-3xl sm:text-5xl font-semibold tracking-tighter">
-            Empieza hoy. Sin tarjeta.
+            {t.title}
           </h2>
         </Reveal>
         <Reveal delay={80}>
           <p className="mt-4 text-sm sm:text-base text-muted-foreground max-w-md mx-auto">
-            Crea tu box en menos de un minuto y prueba FitBox con datos demo.
+            {t.subtitle}
           </p>
         </Reveal>
         <Reveal delay={140}>
           <Button className="mt-8 h-12 px-8 text-base" onClick={onCreate}>
-            Crear mi box
+            {t.button}
             <ChevronRight className="h-5 w-5 ml-1" strokeWidth={1.5} />
           </Button>
         </Reveal>
