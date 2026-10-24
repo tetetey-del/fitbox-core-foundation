@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Dumbbell } from "lucide-react";
+import { KinflowMark } from "@/components/brand/KinflowLogo";
 import { credits } from "@/config/company";
 import { useT } from "../i18n";
 
@@ -13,7 +13,7 @@ export function LandingFooter() {
       <div className="mx-auto max-w-6xl px-4 sm:px-6 py-10 grid gap-8 sm:grid-cols-4 text-sm">
         <div>
           <div className="flex items-center gap-2">
-            <Dumbbell className="h-4 w-4 text-[#14B8A6]" strokeWidth={1.5} />
+            <KinflowMark className="h-6 w-6" />
             <span className="font-semibold tracking-tight">Kinflow</span>
           </div>
           <p className="mt-2 text-xs text-muted-foreground">

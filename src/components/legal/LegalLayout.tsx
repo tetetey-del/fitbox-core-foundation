@@ -1,5 +1,5 @@
+import { KinflowMark } from "@/components/brand/KinflowLogo";
 import { Link } from "@tanstack/react-router";
-import { Dumbbell } from "lucide-react";
 import type { ReactNode } from "react";
 
 export interface LegalSection {
@@ -29,7 +29,7 @@ export function LegalLayout({
     <div className="min-h-dvh bg-background text-foreground">
       <header className="h-14 flex items-center justify-between px-4 sm:px-6 border-b border-border/60">
         <Link to="/" className="flex items-center gap-2">
-          <Dumbbell className="h-5 w-5 text-[#14B8A6]" strokeWidth={1.5} />
+          <KinflowMark className="h-7 w-7" />
           <span className="font-semibold tracking-tight">Kinflow</span>
         </Link>
         <nav className="hidden md:flex items-center gap-4 text-xs text-muted-foreground">

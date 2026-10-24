@@ -1,6 +1,7 @@
+import { KinflowMark } from "@/components/brand/KinflowLogo";
 import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { AlertCircle, Dumbbell, Loader2 } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -155,7 +156,7 @@ export function AuthShell({
     <div className="min-h-dvh bg-background text-foreground flex flex-col">
       <header className="h-14 flex items-center px-4 sm:px-6 border-b border-border/60">
         <Link to="/" className="flex items-center gap-2">
-          <Dumbbell className="h-5 w-5 text-[#14B8A6]" strokeWidth={1.5} />
+          <KinflowMark className="h-7 w-7" />
           <span className="font-semibold tracking-tight">Kinflow</span>
         </Link>
       </header>
