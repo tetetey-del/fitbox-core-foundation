@@ -17,8 +17,8 @@ interface LoginSearch { redirect?: string }
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
-      { title: "Iniciar sesión — FitBox" },
-      { name: "description", content: "Accede a tu box en FitBox con tu email y contraseña." },
+      { title: "Iniciar sesión — Kinflow" },
+      { name: "description", content: "Accede a tu box en Kinflow con tu email y contraseña." },
     ],
   }),
   validateSearch: (s: Record<string, unknown>): LoginSearch => ({
@@ -156,7 +156,7 @@ export function AuthShell({
       <header className="h-14 flex items-center px-4 sm:px-6 border-b border-border/60">
         <Link to="/" className="flex items-center gap-2">
           <Dumbbell className="h-5 w-5 text-[#F97316]" strokeWidth={1.5} />
-          <span className="font-semibold tracking-tight">FitBox</span>
+          <span className="font-semibold tracking-tight">Kinflow</span>
         </Link>
       </header>
       <main className="flex-1 flex items-center justify-center px-4 py-10">

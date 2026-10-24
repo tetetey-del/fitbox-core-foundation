@@ -67,7 +67,7 @@ export function Sidebar() {
           <img src={currentTenant.logo} alt="" className="h-6 w-6 rounded object-cover" />
         ) : null}
         <span className="font-semibold tracking-tight text-foreground truncate">
-          {currentTenant?.name ?? "FitBox"}
+          {currentTenant?.name ?? "Kinflow"}
         </span>
       </div>
       <nav className="flex-1 p-3 space-y-0.5">
@@ -92,7 +92,7 @@ export function Sidebar() {
         })}
       </nav>
       <div className="p-4 text-xs text-muted-foreground border-t border-border">
-        FitBox · v0.9
+        Kinflow · v0.9
       </div>
     </aside>
   );
