@@ -17,6 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useDataVersion, notifyDataChanged } from "@/lib/data-bus";
 import { useModules } from "@/hooks/useModules";
 import { postsRepo } from "@/lib/storage/repositories/posts.repo";
+import { hideWodPostsForCurrentUser } from "@/lib/services/wods.service";
 import { PostFormDialog } from "@/components/feed/PostFormDialog";
 import { PostCard } from "@/components/feed/PostCard";
 import type { Post } from "@/types";
@@ -63,7 +64,8 @@ function FeedPage() {
     }
   }, [modules.feed, navigate]);
 
-  const posts = postsRepo.list().sort((a, b) => {
+  const hideWods = hideWodPostsForCurrentUser();
+  const posts = postsRepo.list().filter((p) => !(hideWods && p.type === "wod")).sort((a, b) => {
     if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
     return b.createdAt.localeCompare(a.createdAt);
   });

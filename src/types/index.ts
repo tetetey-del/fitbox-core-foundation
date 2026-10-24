@@ -59,7 +59,23 @@ export interface TenantSettings {
   enabledModules?: TenantModules;
   /** Moneda en la que el box cobra. Por defecto, euros. */
   currency?: CurrencyCode;
+  /** Si los socios ven el WOD del día. Por defecto, visible. */
+  wodVisibility?: WodVisibility;
 }
+
+/**
+ * Visibilidad del WOD para los socios:
+ * - visible: lo ven desde que se publica.
+ * - after_day: lo ven recién al día siguiente (para registrar marcas sin saber antes qué toca).
+ * - staff_only: solo lo ven el admin y los coaches.
+ */
+export type WodVisibility = "visible" | "after_day" | "staff_only";
+
+export const WOD_VISIBILITY_LABEL: Record<WodVisibility, string> = {
+  visible: "Visible para los socios desde que se publica",
+  after_day: "Los socios lo ven recién al día siguiente",
+  staff_only: "Solo lo ven el admin y los coaches",
+};
 
 export type TenantStatus = "active" | "suspended";
 

@@ -45,8 +45,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { clearAll } from "@/lib/storage/db";
-import type { CurrencyCode, MembershipPlan, PlanType } from "@/types";
-import { CURRENCY_LABEL, PLAN_DURATION_LABEL } from "@/types";
+import type { CurrencyCode, MembershipPlan, PlanType, WodVisibility } from "@/types";
+import { CURRENCY_LABEL, PLAN_DURATION_LABEL, WOD_VISIBILITY_LABEL } from "@/types";
 import { currencySymbol, formatMoney } from "@/lib/format";
 import { notifyDataChanged, useDataVersion } from "@/lib/data-bus";
 import { DataSection } from "@/components/config/DataSection";
@@ -64,6 +64,19 @@ function ConfigPage() {
     currentTenant?.settings?.cancellationWindowHours ?? 2,
   );
   const [currency, setCurrency] = useState<CurrencyCode>(currentTenant?.settings?.currency ?? "EUR");
+  const [wodVisibility, setWodVisibility] = useState<WodVisibility>(
+    currentTenant?.settings?.wodVisibility ?? "visible",
+  );
+
+  // El box se carga después del primer render: sincroniza el formulario cuando llega
+  // (si no, el nombre aparecía vacío y al guardar se pisaban los datos).
+  useEffect(() => {
+    if (!currentTenant) return;
+    setName(currentTenant.name);
+    setCancellationWindow(currentTenant.settings?.cancellationWindowHours ?? 2);
+    setCurrency(currentTenant.settings?.currency ?? "EUR");
+    setWodVisibility(currentTenant.settings?.wodVisibility ?? "visible");
+  }, [currentTenant]);
 
   const save = () => {
     if (!currentTenant) return;
@@ -73,6 +86,7 @@ function ConfigPage() {
         ...currentTenant.settings,
         cancellationWindowHours: cancellationWindow,
         currency,
+        wodVisibility,
       },
     });
     toast.success("Configuración guardada");
@@ -128,6 +142,20 @@ function ConfigPage() {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">WOD del día</Label>
+                <Select value={wodVisibility} onValueChange={(v) => setWodVisibility(v as WodVisibility)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {(Object.keys(WOD_VISIBILITY_LABEL) as WodVisibility[]).map((v) => (
+                      <SelectItem key={v} value={v}>{WOD_VISIBILITY_LABEL[v]}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Algunos boxes prefieren no mostrar el WOD antes para que nadie falte por el ejercicio que toca.
+                </p>
               </div>
             </div>
             <Button onClick={save}>Guardar cambios</Button>

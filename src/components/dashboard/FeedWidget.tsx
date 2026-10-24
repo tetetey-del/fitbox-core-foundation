@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Pin } from "lucide-react";
 import { postsRepo } from "@/lib/storage/repositories/posts.repo";
+import { hideWodPostsForCurrentUser } from "@/lib/services/wods.service";
 import { POST_TYPE_LABEL } from "@/types";
 import { POST_ICONS, POST_COLORS } from "@/routes/feed";
 import { useDataVersion } from "@/lib/data-bus";
@@ -8,8 +9,10 @@ import { cn } from "@/lib/utils";
 
 export function FeedWidget() {
   useDataVersion();
+  const hideWods = hideWodPostsForCurrentUser();
   const posts = postsRepo
     .list()
+    .filter((p) => !(hideWods && p.type === "wod"))
     .sort((a, b) => {
       if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
       return b.createdAt.localeCompare(a.createdAt);

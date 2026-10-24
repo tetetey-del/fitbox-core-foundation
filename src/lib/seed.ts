@@ -328,7 +328,7 @@ function seedFeedFor({ tenant, owner }: SeedResult) {
   const today = new Date();
 
   const items: Array<{ type: PostType; title: string; content: string; pinned?: boolean; daysAgo: number }> = [
-    { type: "wod", title: "WOD del día: Fran", content: "21-15-9 de Thrusters (43/30 kg) y Pull-ups. RX si vas al peso; si no, escalamos con banda o anillas. ¡A romperla!", pinned: true, daysAgo: 0 },
+    { type: "aviso", title: "¡Bienvenidos a la app de Chia!", content: "Desde ahora reservás tus clases, ves tus marcas y te enterás de todo desde acá. Instalala en el celu: menú del navegador → Agregar a pantalla de inicio. ¡Nos vemos en el box!", pinned: true, daysAgo: 0 },
     { type: "aviso", title: "Feriado del lunes: horario especial", content: "El lunes abrimos de 9 a 13 con CrossFit a las 9, Funcional a las 10 y Open Box de 11 a 13. El martes volvemos al horario de siempre.", daysAgo: 1 },
     { type: "aviso", title: "Nuevo Open Box de mediodía", content: "Sumamos Open Box de 12 a 14 de lunes a viernes para que entrenes a tu ritmo. Reservá tu lugar desde la app.", daysAgo: 3 },
     { type: "consejo", title: "Movilidad: 10 minutos que cambian tu sentadilla", content: "1) 2 min de tobillo contra la pared. 2) 2 min de 90/90 de cadera. 3) 2 min de sentadilla profunda con apoyo. 4) 2 min de apertura torácica. 5) 2 min de hombros con banda. Hacelo antes de cada clase de Halterofilia.", daysAgo: 5 },
