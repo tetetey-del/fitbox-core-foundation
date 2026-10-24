@@ -11,13 +11,13 @@ export function FounderSection() {
     .join("");
   return (
     <section className="border-y border-border/60 bg-muted/20">
-      <div className="mx-auto max-w-3xl px-4 sm:px-6 py-20 sm:py-24">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 py-14 sm:py-24">
         <Reveal>
           <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-center">{t.title}</h2>
         </Reveal>
         <Reveal delay={80}>
-          <figure className="mt-10 rounded-xl border border-border bg-background p-6 sm:p-8">
-            <blockquote className="text-base sm:text-lg text-foreground/90 leading-relaxed">
+          <figure className="mt-8 rounded-xl border border-border bg-background p-5 sm:p-8">
+            <blockquote className="text-[15px] sm:text-lg text-foreground/90 leading-relaxed">
               “{t.quote}”
             </blockquote>
             <figcaption className="mt-6 pt-4 border-t border-border/60 flex items-center gap-3">

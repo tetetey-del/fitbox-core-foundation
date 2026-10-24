@@ -17,7 +17,7 @@ export function HeroSection({ onCreate, onEnter }: { onCreate: () => void; onEnt
             "radial-gradient(65% 55% at 20% 0%, rgba(20,184,166,0.32) 0%, transparent 60%), radial-gradient(50% 50% at 85% 15%, rgba(45,212,191,0.22) 0%, transparent 65%), radial-gradient(60% 55% at 55% 100%, rgba(15,118,110,0.18) 0%, transparent 70%)",
         }}
       />
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-24 grid gap-12 lg:grid-cols-2 items-center">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-10 sm:py-24 grid gap-10 sm:gap-12 lg:grid-cols-2 items-center">
         <div>
           <Reveal>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-[#14B8A6]/30 bg-[#14B8A6]/10 px-3 py-1 text-xs text-[#14B8A6] font-medium">
@@ -25,7 +25,7 @@ export function HeroSection({ onCreate, onEnter }: { onCreate: () => void; onEnt
             </span>
           </Reveal>
           <Reveal delay={80}>
-            <h1 className="mt-6 text-4xl sm:text-6xl font-semibold tracking-tighter leading-[1.05]">
+            <h1 className="mt-5 text-[40px] sm:text-6xl font-semibold tracking-tighter leading-[1.05]">
               {t.titleA}
               <br />
               <span className="bg-gradient-to-r from-[#14B8A6] via-[#2DD4BF] to-[#A3E635] bg-clip-text text-transparent">

@@ -20,7 +20,7 @@ export function PwaSection({ onCreate }: { onCreate: () => void }) {
             "radial-gradient(50% 60% at 20% 30%, rgba(20,184,166,0.14) 0%, transparent 70%), radial-gradient(45% 55% at 80% 70%, rgba(45,212,191,0.12) 0%, transparent 70%)",
         }}
       />
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-20 sm:py-24 grid gap-12 lg:grid-cols-2 items-center">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-14 sm:py-24 grid gap-10 sm:gap-12 lg:grid-cols-2 items-center">
         <div>
           <Reveal>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-[#14B8A6]/30 bg-[#14B8A6]/10 px-3 py-1 text-xs text-[#14B8A6] font-medium">
@@ -64,7 +64,7 @@ export function PwaSection({ onCreate }: { onCreate: () => void }) {
           </Reveal>
         </div>
         <Reveal delay={200}>
-          <div className="relative mx-auto w-64 sm:w-72">
+          <div className="relative mx-auto w-48 sm:w-72">
             <div
               aria-hidden
               className="absolute -inset-8 rounded-[3rem] blur-2xl opacity-60"

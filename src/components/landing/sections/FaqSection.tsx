@@ -12,7 +12,7 @@ import { useT } from "../i18n";
 export function FaqSection() {
   const t = useT().faq;
   return (
-    <section id="faq" className="mx-auto max-w-3xl px-4 sm:px-6 py-20 sm:py-24">
+    <section id="faq" className="mx-auto max-w-3xl px-4 sm:px-6 py-14 sm:py-24">
       <div className="text-center max-w-2xl mx-auto mb-10">
         <Reveal>
           <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">{t.title}</h2>

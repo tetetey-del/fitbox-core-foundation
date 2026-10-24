@@ -10,11 +10,11 @@ export default function MetricChart({ data, label }: { data: SeriesPoint[]; labe
     <div className="h-56 mt-3">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
           <XAxis dataKey="date" tick={{ fontSize: 11 }} />
           <YAxis tick={{ fontSize: 11 }} />
           <Tooltip
-            contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}
+            contentStyle={{ background: "var(--card)", border: "1px solid var(--border)" }}
             labelFormatter={(l) => String(l)}
             formatter={(v: number) => [v, label]}
           />
