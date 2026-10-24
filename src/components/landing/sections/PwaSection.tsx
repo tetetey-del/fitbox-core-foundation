@@ -1,4 +1,5 @@
-import { ArrowRight, Download, Dumbbell, Smartphone, WifiOff, Zap } from "lucide-react";
+import { ArrowRight, Download, Smartphone, WifiOff, Zap } from "lucide-react";
+import { KinflowMark } from "@/components/brand/KinflowLogo";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "../animations";
 import { useT } from "../i18n";
@@ -76,9 +77,7 @@ export function PwaSection({ onCreate }: { onCreate: () => void }) {
                 </div>
                 <div className="flex-1 p-4 space-y-3">
                   <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-lg bg-[#14B8A6] flex items-center justify-center">
-                      <Dumbbell className="h-4 w-4 text-white" strokeWidth={2} />
-                    </div>
+                    <KinflowMark className="h-8 w-8" />
                     <div>
                       <div className="text-[11px] font-semibold">Kinflow</div>
                       <div className="text-[9px] text-muted-foreground">{t.phoneBox}</div>
