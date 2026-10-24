@@ -34,7 +34,7 @@ export function PricingSection({ onCreate }: { onCreate: () => void }) {
   const [annual, setAnnual] = useState(false);
   const price = (m: number) => (annual ? Math.round(m * 12 * 0.8) : m);
   return (
-    <section id="pricing" className="relative mx-auto max-w-6xl px-4 sm:px-6 py-20 sm:py-24 overflow-hidden">
+    <section id="pricing" className="relative mx-auto max-w-6xl px-4 sm:px-6 py-14 sm:py-24 overflow-hidden">
       <div
         aria-hidden
         className="absolute inset-x-0 top-0 -z-10 h-full fb-gradient-anim"
@@ -78,12 +78,12 @@ export function PricingSection({ onCreate }: { onCreate: () => void }) {
           </div>
         </Reveal>
       </div>
-      <div className="mt-12 grid gap-5 lg:grid-cols-3">
+      <div className="mt-8 sm:mt-12 grid gap-4 sm:gap-5 lg:grid-cols-3">
         {PLANS.map((p, i) => (
           <Reveal key={p.name} delay={i * 80}>
             {p.featured ? (
               <div className="relative h-full rounded-xl p-[1.5px] bg-gradient-to-br from-[#14B8A6] via-[#2DD4BF] to-[#A3E635]">
-                <div className="relative rounded-[10px] bg-card p-6 h-full flex flex-col">
+                <div className="relative rounded-[10px] bg-card p-5 sm:p-6 h-full flex flex-col">
                   <span className="absolute -top-3 left-6 rounded-full bg-gradient-to-r from-[#14B8A6] to-[#2DD4BF] text-white text-[10px] font-semibold px-2.5 py-1 uppercase tracking-wide shadow-lg">
                     {t.popular}
                   </span>
@@ -91,7 +91,7 @@ export function PricingSection({ onCreate }: { onCreate: () => void }) {
                 </div>
               </div>
             ) : (
-              <div className="relative rounded-xl border border-border bg-card p-6 h-full flex flex-col transition-colors hover:border-[#14B8A6]/40">
+              <div className="relative rounded-xl border border-border bg-card p-5 sm:p-6 h-full flex flex-col transition-colors hover:border-[#14B8A6]/40">
                 <PlanBody plan={p} price={price(p.monthly)} annual={annual} onCreate={onCreate} />
               </div>
             )}
@@ -119,8 +119,8 @@ function PlanBody({
     <>
       <h3 className="text-lg font-semibold tracking-tight">{plan.name}</h3>
       <p className="mt-1 text-xs text-muted-foreground">{info.desc}</p>
-      <div className="mt-5 flex items-baseline gap-1.5">
-        <span className="text-4xl font-semibold tracking-tight">{price} €</span>
+      <div className="mt-3 sm:mt-5 flex items-baseline gap-1.5">
+        <span className="text-3xl sm:text-4xl font-semibold tracking-tight">{price} €</span>
         <span className="text-xs text-muted-foreground">/ {annual ? t.perYear : t.perMonth}</span>
       </div>
       {annual && (
@@ -128,7 +128,7 @@ function PlanBody({
           {t.equals(Math.round(plan.monthly * 0.8))}
         </div>
       )}
-      <ul className="mt-6 space-y-2.5 flex-1">
+      <ul className="mt-4 sm:mt-6 space-y-2 sm:space-y-2.5 flex-1">
         {info.features.map((f) => (
           <li key={f} className="flex items-start gap-2 text-sm">
             <Check className="h-4 w-4 mt-0.5 shrink-0 text-[#14B8A6]" strokeWidth={1.5} />
@@ -136,7 +136,7 @@ function PlanBody({
           </li>
         ))}
       </ul>
-      <Button className="mt-6 h-10" variant={plan.featured ? "default" : "outline"} onClick={onCreate}>
+      <Button className="mt-5 sm:mt-6 h-10" variant={plan.featured ? "default" : "outline"} onClick={onCreate}>
         {t.start(plan.name)}
       </Button>
     </>

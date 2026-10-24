@@ -34,15 +34,15 @@ export function PRHistoryChart({ exercise, history }: PRHistoryChartProps) {
     <div className="h-56 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
           <XAxis
             dataKey="date"
-            stroke="hsl(var(--muted-foreground))"
+            stroke="var(--muted-foreground)"
             fontSize={11}
             tickFormatter={(v) => formatDate(v).replace(/ \d{4}$/, "")}
           />
           <YAxis
-            stroke="hsl(var(--muted-foreground))"
+            stroke="var(--muted-foreground)"
             fontSize={11}
             tickFormatter={(v) =>
               exercise.unit === "tiempo" ? formatSeconds(Number(v)) : String(v)
@@ -51,8 +51,8 @@ export function PRHistoryChart({ exercise, history }: PRHistoryChartProps) {
           />
           <Tooltip
             contentStyle={{
-              background: "hsl(var(--card))",
-              border: "1px solid hsl(var(--border))",
+              background: "var(--card)",
+              border: "1px solid var(--border)",
               borderRadius: 8,
               fontSize: 12,
             }}
@@ -62,7 +62,7 @@ export function PRHistoryChart({ exercise, history }: PRHistoryChartProps) {
           <Line
             type="monotone"
             dataKey="value"
-            stroke="hsl(var(--primary))"
+            stroke="var(--primary)"
             strokeWidth={2}
             dot={{ r: 3 }}
           />

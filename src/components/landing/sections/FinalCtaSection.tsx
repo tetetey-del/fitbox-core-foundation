@@ -16,7 +16,7 @@ export function FinalCtaSection({ onCreate }: { onCreate: () => void }) {
             "radial-gradient(50% 60% at 50% 50%, rgba(20,184,166,0.20) 0%, transparent 70%)",
         }}
       />
-      <div className="mx-auto max-w-3xl px-4 sm:px-6 py-24 text-center">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 py-16 sm:py-24 text-center">
         <Reveal>
           <h2 className="text-3xl sm:text-5xl font-semibold tracking-tighter">
             {t.title}
