@@ -24,18 +24,19 @@ export const Route = createFileRoute("/legal/aviso-legal")({
 
 function AvisoLegalPage() {
   return (
-    <LegalLayout title="Aviso legal" sections={SECTIONS} updatedAt="4 de julio de 2026">
+    <LegalLayout title="Aviso legal" sections={SECTIONS} updatedAt="27 de octubre de 2026">
       <LegalSectionBlock id="titular" title={SECTIONS[0].title}>
         <p>
           En cumplimiento del artículo 10 de la Ley 34/2002 de servicios de la sociedad de la información y de
           comercio electrónico (LSSICE), se informa que el titular de este sitio web es:
         </p>
         <ul className="list-disc pl-5 space-y-1">
-          <li><strong>Denominación:</strong> {company.legalName}</li>
-          <li><strong>CIF:</strong> {company.taxId}</li>
+          <li><strong>Titular:</strong> {company.legalName}</li>
+          <li><strong>Nombre comercial:</strong> {company.tradeName}</li>
+          <li><strong>NIF:</strong> {company.taxId}</li>
           <li><strong>Domicilio:</strong> {company.address}</li>
           <li><strong>Correo electrónico:</strong> {company.emails.contact}</li>
-          <li><strong>Datos registrales:</strong> {company.registryData}</li>
+          {company.registryData && <li><strong>Datos registrales:</strong> {company.registryData}</li>}
         </ul>
       </LegalSectionBlock>
 

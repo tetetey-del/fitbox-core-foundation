@@ -11,38 +11,29 @@
  */
 
 export const company = {
-  /** Denominación social completa de la empresa titular. */
-  legalName: "Chia Training",
-  /** Identificador fiscal (CIF/NIF/VAT) de la empresa titular. */
-  taxId: "[CIF/NIF]",
-  /** Dirección postal completa. */
-  address: "[Dirección postal de la empresa]",
+  /** Nombre comercial que ve el público. */
+  tradeName: "Kinflow",
+  /** Titular legal: persona física (autónoma) o razón social si se crea una empresa. */
+  legalName: "Celeste Teyssedou",
+  /** NIF del titular. Completar al darse de alta como autónoma. */
+  taxId: "pendiente de alta",
+  /** Domicilio. Por ahora solo la ciudad; completar al darse de alta. */
+  address: "Palma de Mallorca, Illes Balears (España)",
   /** Ciudad utilizada en cláusulas de jurisdicción. */
   jurisdiction: "Palma de Mallorca",
-  /** Datos registrales (registro mercantil, tomo, folio, hoja). */
-  registryData: "[Registro Mercantil, tomo, folio, hoja]",
+  /** Datos del Registro Mercantil. Vacío para una autónoma (no se inscribe); completar solo si es una empresa. */
+  registryData: "",
   /** Correos electrónicos de contacto por área. */
   emails: {
-    contact: "chiatraining.cba@gmail.com",
-    privacy: "chiatraining.cba@gmail.com",
-    support: "chiatraining.cba@gmail.com",
+    contact: "hola.kinflow@gmail.com",
+    privacy: "hola.kinflow@gmail.com",
+    support: "hola.kinflow@gmail.com",
   },
   /** Horario de atención al cliente. */
-  businessHours: "Lunes a viernes, 9:00 a 18:00 (hora local)",
+  businessHours: "Lunes a viernes, 9:00 a 18:00 (hora de España)",
 } as const;
 
-/**
- * Créditos del producto: quién lo desarrolla y quién lo mantiene.
- * No es un dato editable por el operador de la instancia salvo que remixee
- * el proyecto para hacerlo propio.
- */
+/** Créditos que se muestran al pie de la landing. */
 export const credits = {
-  productOf: {
-    name: "Vivir de IA",
-    url: "https://vivirdeia.com",
-  },
-  createdBy: {
-    name: "Isaac Wesley",
-    url: "https://www.linkedin.com/in/isaacwesleey/",
-  },
+  madeBy: "Kinflow",
 } as const;
