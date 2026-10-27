@@ -44,27 +44,35 @@ function LoginPage() {
 
   useEffect(() => {
     if (!ready) return;
+    if (confirmado && cloudEnabled()) return; // primero entrar con la cuenta recién confirmada
     if (session) navigate({ to: redirect ?? defaultRouteFor(session.role) });
     else if (superAdmin) navigate({ to: "/admin" });
-  }, [ready, session, superAdmin, navigate, redirect]);
+  }, [ready, session, superAdmin, navigate, redirect, confirmado]);
 
   // Volviendo del enlace de confirmación del email: entrar directo al box.
   useEffect(() => {
-    if (!ready || session || !confirmado || !cloudEnabled()) return;
+    if (!ready || !confirmado || !cloudEnabled()) return;
     let cancelled = false;
     setLoading(true);
     cloudEnterIfSignedIn()
       .then((s) => {
-        if (cancelled || !s) return;
+        if (cancelled) return;
+        if (!s) {
+          // Sin sesión nueva: seguir como siempre (ir al panel si ya había sesión).
+          if (session) navigate({ to: defaultRouteFor(session.role) });
+          return;
+        }
         sessionStore.write(s);
         _setSession(s);
+        navigate({ to: s.role === "member" ? "/onboarding/member" : defaultRouteFor(s.role) });
       })
       .catch((err) => setError(err instanceof AuthError ? err.message : null))
       .finally(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;
     };
-  }, [ready, session, confirmado, _setSession]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, confirmado]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();

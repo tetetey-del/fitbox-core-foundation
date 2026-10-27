@@ -10,7 +10,8 @@ import {
 import type { Session, SuperAdmin, Tenant, User } from "@/types";
 import { toast } from "sonner";
 import { sessionStore } from "@/lib/storage/session";
-import { cloudAttach, cloudChangePassword, cloudLogout, cloudResume } from "@/lib/cloud/auth";
+import { cloudAttach, cloudAuthUserId, cloudChangePassword, cloudEnterIfSignedIn, cloudLogout, cloudResume } from "@/lib/cloud/auth";
+import { cloudEnabled, sb } from "@/lib/cloud/client";
 import { onCloudSync } from "@/lib/cloud/sync";
 import { tenantsRepo } from "@/lib/storage/repositories/tenants.repo";
 import { setActiveCurrency } from "@/lib/format";
@@ -73,18 +74,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (stored?.cloud) {
       cloudAttach(stored);
       void cloudResume(stored).then((s) => {
-        if (!s) {
-          sessionStore.clear();
-          setSession(null);
-        }
+        if (!s) sessionStore.clear();
+        else sessionStore.write(s);
+        setSession(s);
         refresh();
       });
+    }
+    // Si en este navegador se entra con otra cuenta de Supabase (por ejemplo, al tocar el
+    // enlace de confirmación de un socio nuevo), la app pasa a esa cuenta.
+    let authSub: { unsubscribe: () => void } | null = null;
+    if (cloudEnabled()) {
+      authSub = sb().auth.onAuthStateChange((event, s) => {
+        const current = sessionStore.read();
+        if (event === "SIGNED_OUT" && current?.cloud) {
+          sessionStore.clear();
+          setSession(null);
+          return;
+        }
+        if (event !== "SIGNED_IN" || !s?.user) return;
+        const known = cloudAuthUserId();
+        if (current?.cloud && known && known !== s.user.id) {
+          // Fuera del callback de Supabase (no se puede llamar a la API desde adentro).
+          setTimeout(() => {
+            void cloudEnterIfSignedIn()
+              .then((next) => {
+                if (next) {
+                  sessionStore.write(next);
+                  setSession(next);
+                  refresh();
+                }
+              })
+              .catch(() => {});
+          }, 0);
+        }
+      }).data.subscription;
     }
     const off = onCloudSync((e) => {
       if (e.type === "pulled") refresh();
       else toast.error(e.message);
     });
-    return off;
+    return () => {
+      off();
+      authSub?.unsubscribe();
+    };
   }, [refresh]);
 
   const superAdmin = useMemo<SuperAdmin | null>(() => {
