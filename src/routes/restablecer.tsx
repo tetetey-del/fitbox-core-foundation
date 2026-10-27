@@ -27,6 +27,7 @@ function ResetPage() {
   const [checking, setChecking] = useState(true);
   const [valid, setValid] = useState(false);
   const [password, setPassword] = useState("");
+  const [password2, setPassword2] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,6 +50,10 @@ function ResetPage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (password !== password2) {
+      setError("Las contraseñas no coinciden.");
+      return;
+    }
     setLoading(true);
     try {
       await cloudSetNewPassword(password);
@@ -97,6 +102,15 @@ function ResetPage() {
             autoFocus
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            autoComplete="new-password"
+          />
+        </Field>
+        <Field label="Repetir contraseña">
+          <Input
+            type="password"
+            required
+            value={password2}
+            onChange={(e) => setPassword2(e.target.value)}
             autoComplete="new-password"
           />
         </Field>
