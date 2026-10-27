@@ -160,6 +160,17 @@ function ReservasPage() {
     setPending({ session: s, action: existing ? "cancel" : "book" });
   };
 
+  /** "CrossFit · 29/10 · 19:00 h" */
+  const shortClassLabel = (s: ClassSession) => {
+    const [, m, d] = s.date.split("-");
+    return `${templateById.get(s.templateId)?.name ?? "Clase"} · ${d}/${m} · ${s.startTime} h`;
+  };
+  /** Recordatorio de la ventana de cancelación del box. */
+  const cancelReminder = (s: ClassSession) => {
+    const h = isLateCancellation(s).windowHours;
+    return `Recuerda que puedes cancelar sin penalización hasta ${h === 1 ? "1 hora" : `${h} horas`} antes.`;
+  };
+
   const confirmPending = () => {
     if (!pending || !currentUser) return;
     const s = pending.session;
@@ -169,11 +180,7 @@ function ReservasPage() {
       const res = cancelBooking(existing.id, currentUser.role);
       if (!res.ok) toast.error(res.reason ?? "No se pudo cancelar");
       else {
-        if (res.charged)
-          toast.warning("Reserva cancelada", {
-            description: "Cancelaste con poca antelación: la clase se descontó igual.",
-          });
-        else toast.success("Reserva cancelada");
+        toast.success("Reserva cancelada");
         if (res.promoted)
           toast.info("Alguien de la lista de espera ha pasado a confirmado");
       }
@@ -184,7 +191,10 @@ function ReservasPage() {
         toast("Añadido a lista de espera", {
           description: `Posición #${res.booking.position}`,
         });
-      else toast.success("Reserva confirmada");
+      else
+        toast.success(`Reserva confirmada: ${shortClassLabel(s)}`, {
+          description: cancelReminder(s),
+        });
     }
     notifyDataChanged();
   };
@@ -334,29 +344,33 @@ function ReservasPage() {
             const when = `${formatLongDay(pending.session.date)} a las ${pending.session.startTime}`;
             const occ = occByS.get(pending.session.id);
             const full = pending.action === "book" && !!occ && occ.free <= 0;
-            const myBk = currentUser ? getUserBooking(pending.session.id, currentUser.id) : null;
-            const lateInfo = isLateCancellation(pending.session);
-            const lateCharge = pending.action === "cancel" && myBk?.status === "confirmed" && lateInfo.late;
             return (
               <>
                 <AlertDialogHeader>
                   <AlertDialogTitle>
                     {pending.action === "book" ? (full ? "Lista de espera" : "Confirmar reserva") : "Cancelar reserva"}
                   </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {pending.action === "book"
-                      ? full
-                        ? `La clase de ${name} del ${when} está completa. ¿Quieres entrar en la lista de espera?`
-                        : `Te estás inscribiendo a ${name}, ${when}. ¿Confirmas?`
-                      : lateCharge
-                        ? `Faltan menos de ${lateInfo.windowHours === 1 ? "1 hora" : `${lateInfo.windowHours} horas`} para ${name} (${when}). Si cancelas ahora, la clase se te descuenta igual.`
-                        : `¿Quieres cancelar tu reserva de ${name}, ${when}? Se te devuelve la clase.`}
+                  <AlertDialogDescription asChild>
+                    <div className="space-y-2">
+                      {pending.action === "book" && full && (
+                        <p>{`La clase de ${name} del ${when} está completa. ¿Quieres entrar en la lista de espera?`}</p>
+                      )}
+                      {pending.action === "book" && !full && (
+                        <>
+                          <p className="text-base font-semibold text-foreground">{shortClassLabel(pending.session)}</p>
+                          <p className="text-xs">{cancelReminder(pending.session)}</p>
+                        </>
+                      )}
+                      {pending.action === "cancel" && (
+                        <p>{`¿Cancelar tu reserva de ${shortClassLabel(pending.session)}?`}</p>
+                      )}
+                    </div>
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>{pending.action === "book" ? "Cancelar" : "Volver"}</AlertDialogCancel>
                   <AlertDialogAction onClick={confirmPending}>
-                    {pending.action === "book" ? (full ? "Entrar en espera" : "Confirmar") : lateCharge ? "Cancelar igual" : "Sí, cancelar"}
+                    {pending.action === "book" ? (full ? "Entrar en espera" : "Confirmar") : "Sí, cancelar"}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </>
