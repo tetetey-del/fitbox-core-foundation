@@ -89,6 +89,9 @@ function mapAuthError(message: string | undefined): never {
   if (m.includes("invalid login credentials")) fail("wrong_credentials");
   if (m.includes("already registered") || m.includes("already been registered")) fail("email_already_used");
   if (m.includes("password") && m.includes("at least")) fail("weak_password");
+  if (m.includes("rate limit") || m.includes("too many")) {
+    fail("network", "Se enviaron demasiados emails en poco tiempo. Espera un rato (hasta una hora) e inténtalo de nuevo.");
+  }
   if (m.includes("fetch") || m.includes("network")) fail("network");
   fail("network", message || MESSAGES.network);
 }

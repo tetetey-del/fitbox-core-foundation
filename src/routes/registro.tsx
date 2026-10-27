@@ -25,6 +25,7 @@ function RegisterPage() {
   const [ownerName, setOwnerName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [password2, setPassword2] = useState("");
   const [accepted, setAccepted] = useState(false);
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -33,6 +34,10 @@ function RegisterPage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (password !== password2) {
+      setError("Las contraseñas no coinciden.");
+      return;
+    }
     if (password.length < 8) {
       setError("La contraseña debe tener al menos 8 caracteres.");
       return;
@@ -92,6 +97,9 @@ function RegisterPage() {
         </Field>
         <Field label="Contraseña" hint="Mínimo 8 caracteres.">
           <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="new-password" placeholder="••••••••" />
+        </Field>
+        <Field label="Repetir contraseña">
+          <Input type="password" value={password2} onChange={(e) => setPassword2(e.target.value)} required autoComplete="new-password" placeholder="••••••••" />
         </Field>
         <label className="flex items-start gap-3 rounded-md border border-border p-3 text-xs leading-relaxed text-muted-foreground cursor-pointer">
           <Checkbox

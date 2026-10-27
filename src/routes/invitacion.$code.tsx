@@ -85,6 +85,7 @@ function InvitationPage() {
   }, [code]);
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [password2, setPassword2] = useState("");
   const [accepted, setAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -141,6 +142,10 @@ function InvitationPage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (password !== password2) {
+      setError("Las contraseñas no coinciden.");
+      return;
+    }
     if (password.length < 8) {
       setError("La contraseña debe tener al menos 8 caracteres.");
       return;
@@ -206,7 +211,10 @@ function InvitationPage() {
           </Field>
         )}
         <Field label="Contraseña" hint="Mínimo 8 caracteres.">
-          <Input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+          <Input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" />
+        </Field>
+        <Field label="Repetir contraseña">
+          <Input type="password" required value={password2} onChange={(e) => setPassword2(e.target.value)} autoComplete="new-password" />
         </Field>
         <label className="flex items-start gap-3 rounded-md border border-border p-3 text-xs leading-relaxed text-muted-foreground cursor-pointer">
           <Checkbox
