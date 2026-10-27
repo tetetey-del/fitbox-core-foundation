@@ -39,6 +39,8 @@ interface MyTenant {
 /** Después de tener sesión en Supabase: elige el box, baja los datos y arma la sesión de la app. */
 async function enterTenant(): Promise<Session> {
   const client = sb();
+  const { data: who } = await client.auth.getUser();
+  const authUserId = who.user?.id;
   const { data, error } = await client.rpc("kf_my_tenants");
   if (error) fail("network");
   const mine = (data ?? []) as MyTenant[];
@@ -51,7 +53,10 @@ async function enterTenant(): Promise<Session> {
     await client.auth.signOut();
     fail("suspended");
   }
-  setCloudContext({ tenantId: t.tenant_id, role: t.role, appUserId: t.app_user_id });
+  // Si había otro box de la nube abierto en este navegador, se borra su copia local.
+  const prev = getCloudContext();
+  if (prev && prev.tenantId !== t.tenant_id) clearLocalTenant(prev.tenantId);
+  setCloudContext({ tenantId: t.tenant_id, role: t.role, appUserId: t.app_user_id, authUserId });
   try {
     await pullTenant();
   } catch {
@@ -94,11 +99,27 @@ export async function cloudLogin(email: string, password: string): Promise<Sessi
   return enterTenant();
 }
 
-/** Al abrir la app con una sesión de la nube guardada: reconecta y refresca los datos. */
+/**
+ * Al abrir la app con una sesión de la nube guardada: reconecta y refresca los datos.
+ * Si la cuenta de Supabase ya no es la misma (por ejemplo, se confirmó otra cuenta en
+ * este navegador), entra con la cuenta nueva y devuelve su sesión.
+ */
 export async function cloudResume(session: Session): Promise<Session | null> {
   const { data } = await sb().auth.getSession();
   if (!data.session) return null;
-  setCloudContext({ tenantId: session.tenantId, role: session.role, appUserId: session.userId });
+  const { data: mine } = await sb().rpc("kf_my_tenants");
+  const match = ((mine ?? []) as MyTenant[]).some(
+    (x) => x.tenant_id === session.tenantId && x.app_user_id === session.userId && x.status !== "suspended",
+  );
+  if (!match) {
+    clearLocalTenant(session.tenantId);
+    try {
+      return await enterTenant();
+    } catch {
+      return null;
+    }
+  }
+  setCloudContext({ tenantId: session.tenantId, role: session.role, appUserId: session.userId, authUserId: data.session.user.id });
   startCloudRefresh();
   try {
     await pullTenant();
@@ -229,6 +250,11 @@ export async function cloudChangePassword(currentPassword: string, newPassword: 
   if (e1) fail("wrong_password");
   const { error } = await sb().auth.updateUser({ password: newPassword });
   if (error) mapAuthError(error.message);
+}
+
+/** Cuenta de Supabase con la que está abierta la app ahora (si es un box de la nube). */
+export function cloudAuthUserId(): string | undefined {
+  return getCloudContext()?.authUserId;
 }
 
 /** Si ya hay sesión de Supabase (por ejemplo, al volver del enlace de confirmación), entra al box. */
