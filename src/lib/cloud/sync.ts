@@ -18,6 +18,8 @@ interface CloudContext {
   tenantId: string;
   role: UserRole;
   appUserId: string;
+  /** Cuenta de Supabase Auth con la que se entró (para detectar cambios de cuenta). */
+  authUserId?: string;
 }
 
 let ctx: CloudContext | null = null;
