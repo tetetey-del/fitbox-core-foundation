@@ -10,10 +10,13 @@ import { AuthError } from "@/lib/services/auth.service";
 import { tenantsRepo } from "@/lib/storage/repositories/tenants.repo";
 import { listUsersOfTenant } from "@/lib/storage/repositories/users.repo";
 import { buildKey, get } from "@/lib/storage/db";
+import { sessionStore } from "@/lib/storage/session";
+import { cloudEnabled } from "@/lib/cloud/client";
+import { cloudEnterIfSignedIn } from "@/lib/cloud/auth";
 
 const SEEDED_KEY = buildKey(null, "seeded");
 
-interface LoginSearch { redirect?: string }
+interface LoginSearch { redirect?: string; confirmado?: boolean }
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -24,14 +27,15 @@ export const Route = createFileRoute("/login")({
   }),
   validateSearch: (s: Record<string, unknown>): LoginSearch => ({
     redirect: typeof s.redirect === "string" ? s.redirect : undefined,
+    confirmado: s.confirmado === 1 || s.confirmado === "1" || s.confirmado === true ? true : undefined,
   }),
   component: LoginPage,
 });
 
 function LoginPage() {
-  const { loginWithPassword, ready, session, superAdmin } = useAuth();
+  const { loginWithPassword, ready, session, superAdmin, _setSession } = useAuth();
   const navigate = useNavigate();
-  const { redirect } = useSearch({ from: "/login" });
+  const { redirect, confirmado } = useSearch({ from: "/login" });
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -43,6 +47,24 @@ function LoginPage() {
     if (session) navigate({ to: redirect ?? defaultRouteFor(session.role) });
     else if (superAdmin) navigate({ to: "/admin" });
   }, [ready, session, superAdmin, navigate, redirect]);
+
+  // Volviendo del enlace de confirmación del email: entrar directo al box.
+  useEffect(() => {
+    if (!ready || session || !confirmado || !cloudEnabled()) return;
+    let cancelled = false;
+    setLoading(true);
+    cloudEnterIfSignedIn()
+      .then((s) => {
+        if (cancelled || !s) return;
+        sessionStore.write(s);
+        _setSession(s);
+      })
+      .catch((err) => setError(err instanceof AuthError ? err.message : null))
+      .finally(() => !cancelled && setLoading(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [ready, session, confirmado, _setSession]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,6 +86,11 @@ function LoginPage() {
 
   return (
     <AuthShell title="Iniciar sesión" subtitle="Accede a tu box con tu email y contraseña.">
+      {confirmado && !error && (
+        <div className="mb-4 rounded-md border border-[#14B8A6]/40 bg-[#14B8A6]/10 px-3 py-2 text-sm">
+          ¡Email confirmado! {loading ? "Entrando a tu box…" : "Ya puedes iniciar sesión."}
+        </div>
+      )}
       <form onSubmit={submit} className="space-y-4">
         <Field label="Email">
           <Input

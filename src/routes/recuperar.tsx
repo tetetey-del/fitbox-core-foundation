@@ -24,6 +24,7 @@ function RecoverPage() {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [issuedCode, setIssuedCode] = useState<string | null>(null);
+  const [emailSent, setEmailSent] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,6 +35,10 @@ function RecoverPage() {
     setLoading(true);
     try {
       const res = await requestPasswordReset(email);
+      if (res.cloud) {
+        setEmailSent(true);
+        return;
+      }
       setIssuedCode(res.code);
       setStep(2);
     } catch (err) {
@@ -60,9 +65,22 @@ function RecoverPage() {
   return (
     <AuthShell
       title="Recuperar contraseña"
-      subtitle="Recibirás un código de 6 dígitos para restablecer tu contraseña."
+      subtitle="Te ayudamos a elegir una contraseña nueva."
     >
-      {step === 1 && (
+      {emailSent && (
+        <div className="space-y-4 text-sm">
+          <p>
+            Si hay una cuenta con <strong>{email}</strong>, te llegará un email con un enlace para elegir una contraseña
+            nueva.
+          </p>
+          <p className="text-xs text-muted-foreground">Si no lo ves en unos minutos, revisa la carpeta de spam.</p>
+          <Button className="w-full h-10" variant="outline" onClick={() => navigate({ to: "/login" })}>
+            Volver a iniciar sesión
+          </Button>
+        </div>
+      )}
+
+      {step === 1 && !emailSent && (
         <form onSubmit={requestCode} className="space-y-4">
           <Field label="Email">
             <Input type="email" required autoFocus value={email} onChange={(e) => setEmail(e.target.value)} />
