@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { todayKey } from "@/lib/memberData";
 import { useRequireModule } from "@/hooks/useRequireModule";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -197,25 +198,35 @@ function NewMemberDialog({
 }) {
   const { currentTenant } = useAuth();
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [birthDate, setBirthDate] = useState("");
 
   useEffect(() => {
     if (open) {
       setName("");
+      setPhone("");
       setEmail("");
+      setBirthDate("");
     }
   }, [open]);
 
   const submit = () => {
     if (!currentTenant) return;
-    if (!name.trim() || !email.trim()) return toast.error("Nombre y email son obligatorios");
+    if (!name.trim() || !phone.trim() || !email.trim()) {
+      return toast.error("Nombre, teléfono y email son obligatorios");
+    }
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) return toast.error("Revisa el email");
     usersRepo.create({
       tenantId: currentTenant.id,
       name: name.trim(),
       email: email.trim(),
       role: "member",
+      profile: { phone: phone.trim(), birthDate: birthDate || undefined },
     });
-    toast.success("Socio creado");
+    toast.success("Socio creado", {
+      description: "El resto de sus datos (DNI, dirección, contacto de emergencia) los completa el socio desde su cuenta.",
+    });
     notifyDataChanged();
     onOpenChange(false);
   };
@@ -226,15 +237,26 @@ function NewMemberDialog({
         <DialogHeader>
           <DialogTitle>Nuevo socio</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-3">
-          <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Nombre</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label className="text-xs text-muted-foreground">Nombre y apellido *</Label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} autoComplete="off" />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Email</Label>
-            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Label className="text-xs text-muted-foreground">Teléfono *</Label>
+            <Input type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+34 600 000 000" />
           </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Email *</Label>
+            <Input type="email" inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Fecha de nacimiento</Label>
+            <Input type="date" value={birthDate} max={todayKey()} onChange={(e) => setBirthDate(e.target.value)} />
+          </div>
+          <p className="text-xs text-muted-foreground sm:col-span-2">
+            Si no sabes la fecha de nacimiento, déjala vacía: al entrar, la app le pide al socio que la complete junto con su DNI, dirección y contacto de emergencia.
+          </p>
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancelar</Button>

@@ -12,6 +12,7 @@ import {
 import { membershipPlansRepoFor } from "@/lib/storage/repositories/membershipPlans.repo";
 import { membershipsRepoFor } from "@/lib/storage/repositories/memberships.repo";
 import { tenantsRepo } from "@/lib/storage/repositories/tenants.repo";
+import { usersRepoFor } from "@/lib/storage/repositories/users.repo";
 import { generateReadableCode } from "@/lib/crypto";
 import { addDays, toDateKey, addMonths } from "@/lib/date";
 import { createUserFromInvitation } from "./auth.service";
@@ -95,6 +96,7 @@ export interface AcceptInvitationInput {
   name: string;
   email: string;
   password: string;
+  phone?: string;
 }
 
 export async function acceptInvitation(input: AcceptInvitationInput) {
@@ -118,6 +120,10 @@ export async function acceptInvitation(input: AcceptInvitationInput) {
     email: input.email,
     password: input.password,
   });
+
+  if (input.phone?.trim()) {
+    usersRepoFor(inv.tenantId).update(user.id, { profile: { ...user.profile, phone: input.phone.trim() } });
+  }
 
   // Asignar plan si venía preasignado
   if (inv.planId && inv.role === "member") {
