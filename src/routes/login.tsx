@@ -133,7 +133,9 @@ function DemoAccountsPanel() {
       <ul className="space-y-1 max-h-40 overflow-y-auto">
         {demoUsers.map((u) => (
           <li key={u.id} className="flex justify-between gap-2 truncate">
-            <span className="text-muted-foreground truncate">{u.tenantName} · {u.role}</span>
+            <span className="text-muted-foreground truncate">
+              {u.tenantName} · {u.role === "admin" ? "dueño/a" : u.role === "coach" ? "coach" : "socio/a"}
+            </span>
             <span className="font-mono text-foreground truncate">{u.email}</span>
           </li>
         ))}

@@ -29,8 +29,8 @@ const SEEDED_KEY = buildKey(null, "seeded");
 const DEMO_CLEARED_KEY = buildKey(null, "demo_cleared");
 /** Versión del gimnasio de demo. Si cambia, los navegadores con la demo vieja se vuelven a sembrar. */
 const DEMO_VERSION_KEY = buildKey(null, "demo_version");
-const DEMO_VERSION = 6;
-/** Boxes de demos anteriores que se borran al actualizar: FitBox (v1) y versiones previas de Chia (v2 a v5). */
+const DEMO_VERSION = 7;
+/** Boxes de demos anteriores que se borran al actualizar: FitBox (v1) y versiones previas de Chia (v2 a v6). */
 const OLD_DEMO_SLUGS = ["crossfit-norte", "box-sur", "chia-training"];
 const OLD_SUPERADMIN_EMAILS = ["isaac@fitbox.io"];
 
@@ -67,15 +67,15 @@ function seededRandom(seed: number): () => number {
 
 const CHIA = {
   name: "Chia Training",
-  domain: "chiatraining.com",
+  domain: "kinflow.app",
   // La demo usa los colores de Kinflow; cada box elige los suyos en Configuración → Apariencia.
   brandColor: "#14B8A6",
   themeId: "flow" as ThemeId,
-  owner: { name: "Celeste Teyssedou", email: "celeste@chiatraining.com" },
+  owner: { name: "Celeste Teyssedou", email: "celeste@kinflow.app" },
   coaches: [
-    { key: "lucas", name: "Lucas", email: "lucas@chiatraining.com" },
-    { key: "ana", name: "Ana", email: "ana@chiatraining.com" },
-    { key: "paula", name: "Paula", email: "paula@chiatraining.com" },
+    { key: "lucas", name: "Lucas", email: "lucas@kinflow.app" },
+    { key: "ana", name: "Ana", email: "ana@kinflow.app" },
+    { key: "paula", name: "Paula", email: "paula@kinflow.app" },
   ],
 };
 
@@ -108,20 +108,20 @@ interface ChiaMemberDef {
 }
 
 const CHIA_MEMBERS: ChiaMemberDef[] = [
-  { name: "Sofía Martínez", email: "sofia@chiatraining.com", plan: "12", times: ["19:00", "18:00"], startedDaysAgo: 24, method: "transferencia" },
-  { name: "Martín Gómez", email: "martin@chiatraining.com", plan: "libre", times: ["07:00", "06:00"], startedDaysAgo: 10, method: "transferencia" },
-  { name: "Valentina López", email: "valentina@chiatraining.com", plan: "8", times: ["08:00", "17:00"], startedDaysAgo: 27, method: "efectivo" },
-  { name: "Juan Pablo Ríos", email: "juanpablo@chiatraining.com", plan: "semestral", times: ["18:00", "20:00"], startedDaysAgo: 60, method: "transferencia" },
-  { name: "Camila Fernández", email: "camila@chiatraining.com", plan: "16", times: ["09:00", "10:00"], startedDaysAgo: 14, method: "tarjeta" },
-  { name: "Tomás Herrera", email: "tomas@chiatraining.com", plan: "anual", times: ["06:00", "12:00"], startedDaysAgo: 120, method: "transferencia" },
-  { name: "Lucía Benítez", email: "lucia@chiatraining.com", plan: "12", times: ["17:00", "19:00"], startedDaysAgo: 5, method: "efectivo" },
-  { name: "Nicolás Sosa", email: "nicolas@chiatraining.com", plan: "libre", times: ["19:00", "20:00"], startedDaysAgo: 18, method: "tarjeta" },
-  { name: "Florencia Acosta", email: "florencia@chiatraining.com", plan: "8", times: ["10:00", "09:00"], startedDaysAgo: 2, method: "transferencia" },
-  { name: "Agustín Molina", email: "agustin@chiatraining.com", plan: "16", times: ["07:00", "18:00"], startedDaysAgo: 21, method: "transferencia" },
-  { name: "Micaela Castro", email: "micaela@chiatraining.com", plan: "12", times: ["08:00", "17:00"], startedDaysAgo: 29, method: "efectivo" },
-  { name: "Federico Ruiz", email: "federico@chiatraining.com", plan: "libre", times: ["12:00", "18:00"], startedDaysAgo: 8, method: "tarjeta" },
-  { name: "Rocío Paz", email: "rocio@chiatraining.com", plan: "prueba", times: ["19:00"], startedDaysAgo: 1, method: "efectivo", joinedDaysAgo: 1 },
-  { name: "Gastón Vera", email: "gaston@chiatraining.com", plan: "suelta", times: ["12:00"], startedDaysAgo: 3, method: "efectivo", joinedDaysAgo: 3 },
+  { name: "Sofía Martínez", email: "sofia@kinflow.app", plan: "12", times: ["19:00", "18:00"], startedDaysAgo: 24, method: "transferencia" },
+  { name: "Martín Gómez", email: "martin@kinflow.app", plan: "libre", times: ["07:00", "06:00"], startedDaysAgo: 10, method: "transferencia" },
+  { name: "Valentina López", email: "valentina@kinflow.app", plan: "8", times: ["08:00", "17:00"], startedDaysAgo: 27, method: "efectivo" },
+  { name: "Juan Pablo Ríos", email: "juanpablo@kinflow.app", plan: "semestral", times: ["18:00", "20:00"], startedDaysAgo: 60, method: "transferencia" },
+  { name: "Camila Fernández", email: "camila@kinflow.app", plan: "16", times: ["09:00", "10:00"], startedDaysAgo: 14, method: "tarjeta" },
+  { name: "Tomás Herrera", email: "tomas@kinflow.app", plan: "anual", times: ["06:00", "12:00"], startedDaysAgo: 120, method: "transferencia" },
+  { name: "Lucía Benítez", email: "lucia@kinflow.app", plan: "12", times: ["17:00", "19:00"], startedDaysAgo: 5, method: "efectivo" },
+  { name: "Nicolás Sosa", email: "nicolas@kinflow.app", plan: "libre", times: ["19:00", "20:00"], startedDaysAgo: 18, method: "tarjeta" },
+  { name: "Florencia Acosta", email: "florencia@kinflow.app", plan: "8", times: ["10:00", "09:00"], startedDaysAgo: 2, method: "transferencia" },
+  { name: "Agustín Molina", email: "agustin@kinflow.app", plan: "16", times: ["07:00", "18:00"], startedDaysAgo: 21, method: "transferencia" },
+  { name: "Micaela Castro", email: "micaela@kinflow.app", plan: "12", times: ["08:00", "17:00"], startedDaysAgo: 29, method: "efectivo" },
+  { name: "Federico Ruiz", email: "federico@kinflow.app", plan: "libre", times: ["12:00", "18:00"], startedDaysAgo: 8, method: "tarjeta" },
+  { name: "Rocío Paz", email: "rocio@kinflow.app", plan: "prueba", times: ["19:00"], startedDaysAgo: 1, method: "efectivo", joinedDaysAgo: 1 },
+  { name: "Gastón Vera", email: "gaston@kinflow.app", plan: "suelta", times: ["12:00"], startedDaysAgo: 3, method: "efectivo", joinedDaysAgo: 3 },
 ];
 
 const FIRST_NAMES = ["Juli", "Mateo", "Carolina", "Santiago", "Rocío", "Facundo", "Paz", "Ignacio", "Milagros", "Gonzalo", "Antonella", "Joaquín", "Brenda", "Matías", "Victoria", "Lautaro", "Daniela", "Franco", "Josefina", "Ezequiel", "Carla", "Emiliano", "Belén", "Ramiro", "Aldana", "Bruno", "Celina", "Maximiliano", "Lourdes", "Diego"];
