@@ -196,9 +196,9 @@ function ProductCard({
   return (
     <div className="rounded-lg border border-border bg-card overflow-hidden">
       {product.imageUrl ? (
-        <img src={product.imageUrl} alt={product.name} className="w-full aspect-square object-cover" />
+        <img src={product.imageUrl} alt={product.name} className="w-full aspect-[16/9] sm:aspect-square object-cover" />
       ) : (
-        <div className="w-full aspect-square bg-muted flex items-center justify-center text-muted-foreground">
+        <div className="w-full aspect-[16/9] sm:aspect-square bg-muted flex items-center justify-center text-muted-foreground">
           <ShoppingBag className="h-8 w-8" strokeWidth={1.5} />
         </div>
       )}
