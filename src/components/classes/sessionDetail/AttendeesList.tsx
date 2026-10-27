@@ -2,6 +2,7 @@ import { Check, Trash2 } from "lucide-react";
 import type { Booking, User } from "@/types";
 import { Button } from "@/components/ui/button";
 import { hasCheckIn } from "@/lib/services/booking.service";
+import { UserAvatar } from "@/components/members/UserAvatar";
 
 interface Props {
   confirmed: Booking[];
@@ -30,13 +31,16 @@ export function AttendeesList({ confirmed, userById, isStaff, onCheckIn, onRemov
                 key={b.id}
                 className="flex items-center justify-between rounded-md border border-border bg-card px-3 py-2"
               >
-                <div className="min-w-0">
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <UserAvatar name={u?.name ?? "?"} src={u?.avatar} />
+                  <div className="min-w-0">
                   <div className="text-sm font-medium truncate">{u?.name ?? "—"}</div>
                   {done && (
                     <div className="text-[11px] text-emerald-400 flex items-center gap-1">
                       <Check className="h-3 w-3" strokeWidth={2} /> Check-in hecho
                     </div>
                   )}
+                  </div>
                 </div>
                 {isStaff && (
                   <div className="flex items-center gap-1">

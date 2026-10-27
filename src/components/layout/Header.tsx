@@ -15,6 +15,7 @@ import { MembershipBadge } from "@/components/members/MembershipBadge";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { getMembershipStatus } from "@/lib/services/membership.service";
 import { useDataVersion } from "@/lib/data-bus";
+import { UserAvatar } from "@/components/members/UserAvatar";
 
 const ROLE_LABEL: Record<string, string> = {
   admin: "Admin",
@@ -66,7 +67,7 @@ export function Header() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="gap-1.5" aria-label="Menú de cuenta">
-              <UserIcon className="h-4 w-4" strokeWidth={1.5} />
+              <UserAvatar name={currentUser.name} src={currentUser.avatar} className="h-7 w-7 text-[10px]" />
               <span className="hidden sm:inline text-sm">{currentUser.name.split(" ")[0]}</span>
               <ChevronDown className="h-3 w-3 opacity-60" strokeWidth={1.5} />
             </Button>

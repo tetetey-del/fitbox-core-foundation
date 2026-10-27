@@ -51,6 +51,7 @@ import {
   InviteMemberDialog,
   PendingInvitations,
 } from "@/components/socios/InvitationsSection";
+import { UserAvatar } from "@/components/members/UserAvatar";
 
 export const Route = createFileRoute("/socios")({ component: SociosPage });
 
@@ -163,8 +164,13 @@ function SociosPage() {
                   onClick={() => setSelected(u)}
                 >
                   <TableCell>
-                    <div className="font-medium">{u.name}</div>
-                    <div className="text-xs text-muted-foreground">{u.email}</div>
+                    <div className="flex min-w-0 items-center gap-3">
+                      <UserAvatar name={u.name} src={u.avatar} className="h-9 w-9" />
+                      <div className="min-w-0">
+                        <div className="font-medium">{u.name}</div>
+                        <div className="text-xs text-muted-foreground truncate">{u.email}</div>
+                      </div>
+                    </div>
                   </TableCell>
                   <TableCell className="text-muted-foreground">{plan?.name ?? "—"}</TableCell>
                   <TableCell><CreditsBadge userId={u.id} /></TableCell>

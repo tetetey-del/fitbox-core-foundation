@@ -8,6 +8,7 @@ import { updateUserById } from "@/lib/storage/repositories/users.repo";
 import type { MemberGoal } from "@/types";
 import { MEMBER_GOAL_LABEL } from "@/types";
 import { AuthShell, Field } from "./login";
+import { AvatarPicker } from "@/components/members/AvatarPicker";
 
 export const Route = createFileRoute("/onboarding/member")({
   head: () => ({ meta: [{ title: "Bienvenido — Kinflow" }] }),
@@ -51,8 +52,8 @@ function MemberOnboarding() {
 
       {step === 1 && (
         <div className="space-y-4">
-          <Field label="Avatar (URL opcional)">
-            <Input value={avatar} onChange={(e) => setAvatar(e.target.value)} placeholder="https://…" />
+          <Field label="Tu foto (opcional)">
+            <AvatarPicker name={currentUser.name} value={avatar || undefined} onChange={(v) => setAvatar(v ?? "")} />
           </Field>
           <Field label="Tu objetivo">
             <div className="grid grid-cols-2 gap-2">
