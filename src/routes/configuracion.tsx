@@ -61,7 +61,7 @@ function ConfigPage() {
   useDataVersion();
   const [name, setName] = useState(currentTenant?.name ?? "");
   const [cancellationWindow, setCancellationWindow] = useState(
-    currentTenant?.settings?.cancellationWindowHours ?? 2,
+    currentTenant?.settings?.cancellationWindowHours ?? 1,
   );
   const [currency, setCurrency] = useState<CurrencyCode>(currentTenant?.settings?.currency ?? "EUR");
   const [wodVisibility, setWodVisibility] = useState<WodVisibility>(
@@ -73,7 +73,7 @@ function ConfigPage() {
   useEffect(() => {
     if (!currentTenant) return;
     setName(currentTenant.name);
-    setCancellationWindow(currentTenant.settings?.cancellationWindowHours ?? 2);
+    setCancellationWindow(currentTenant.settings?.cancellationWindowHours ?? 1);
     setCurrency(currentTenant.settings?.currency ?? "EUR");
     setWodVisibility(currentTenant.settings?.wodVisibility ?? "visible");
   }, [currentTenant]);
@@ -123,7 +123,7 @@ function ConfigPage() {
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">
-                  Cancelación mínima (horas)
+                  Cancelar sin cargo hasta (horas antes de la clase)
                 </Label>
                 <Input
                   type="number"
@@ -131,6 +131,9 @@ function ConfigPage() {
                   value={cancellationWindow}
                   onChange={(e) => setCancellationWindow(Number(e.target.value))}
                 />
+                <p className="text-xs text-muted-foreground">
+                  Si un socio cancela con menos antelación, la clase se le descuenta igual.
+                </p>
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">Moneda</Label>
@@ -258,6 +261,7 @@ function PlansSection() {
                       : "Ilimitado"}
                     {" · "}
                     {PLAN_DURATION_LABEL[p.durationMonths ?? 1] ?? `${p.durationMonths} meses`}
+                    {p.oncePerMember && " · 1 vez por persona"}
                     {!p.active && " · Archivado"}
                   </div>
                 </TableCell>
@@ -331,6 +335,7 @@ function PlanDialog({
   const [price, setPrice] = useState<number>(0);
   const [credits, setCredits] = useState<number>(8);
   const [duration, setDuration] = useState<number>(1);
+  const [oncePerMember, setOncePerMember] = useState(false);
   const [active, setActive] = useState(true);
 
   useEffect(() => {
@@ -340,6 +345,7 @@ function PlanDialog({
       setPrice(initial?.priceMonthly ?? 0);
       setCredits(initial?.creditsPerMonth ?? 8);
       setDuration(initial?.durationMonths ?? 1);
+      setOncePerMember(initial?.oncePerMember ?? false);
       setActive(initial?.active ?? true);
     }
   }, [open, initial]);
@@ -358,6 +364,7 @@ function PlanDialog({
       creditsPerMonth: type === "credits" ? Number(credits) : undefined,
       // Los planes por créditos son mensuales; los ilimitados pueden durar más.
       durationMonths: type === "credits" ? 1 : duration,
+      oncePerMember,
       active,
     };
 
@@ -431,6 +438,12 @@ function PlanDialog({
               />
             </div>
           )}
+          <div className="flex items-center gap-2 pt-1">
+            <Switch id="once" checked={oncePerMember} onCheckedChange={setOncePerMember} />
+            <Label htmlFor="once" className="text-sm font-normal">
+              Solo una vez por persona (por ejemplo, clase de prueba)
+            </Label>
+          </div>
           <div className="flex items-center gap-2 pt-1">
             <Switch id="active" checked={active} onCheckedChange={setActive} />
             <Label htmlFor="active" className="text-sm font-normal">Plan activo</Label>

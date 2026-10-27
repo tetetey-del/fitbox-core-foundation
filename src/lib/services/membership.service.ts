@@ -48,6 +48,11 @@ export interface AssignResult {
   reason?: string;
 }
 
+/** ¿El socio ya tuvo alguna vez este plan? (para planes de una sola vez, como la clase de prueba) */
+export function hasUsedPlan(userId: string, planId: string): boolean {
+  return membershipsRepo.query({ userId }).some((m) => m.planId === planId);
+}
+
 export function assignMembership(
   userId: string,
   planId: string,
@@ -57,6 +62,9 @@ export function assignMembership(
   if (!tenantId) return { ok: false, reason: "Sin sesión activa" };
   const plan = membershipPlansRepo.getById(planId);
   if (!plan) return { ok: false, reason: "Plan no encontrado" };
+  if (plan.oncePerMember && hasUsedPlan(userId, planId)) {
+    return { ok: false, reason: `"${plan.name}" solo se puede usar una vez por persona y este socio ya lo usó` };
+  }
 
   // Expira cualquier membresía activa previa del mismo usuario
   const previous = membershipsRepo.query({ userId, status: "active" });
@@ -167,6 +175,19 @@ export function refundCredit(userId: string): void {
   membershipsRepo.update(membership.id, {
     creditsRemaining: Math.min(cap, remaining + 1),
   });
+}
+
+/**
+ * Ajuste manual de créditos desde administración (quitar o devolver clases).
+ * Nunca deja los créditos por debajo de 0.
+ */
+export function adjustCredits(userId: string, delta: number): { ok: boolean; remaining?: number; reason?: string } {
+  const { needsCredit, membership } = inspectCredits(userId);
+  if (!membership) return { ok: false, reason: "El socio no tiene un plan activo" };
+  if (!needsCredit) return { ok: false, reason: "El plan es ilimitado: no usa créditos" };
+  const remaining = Math.max(0, (membership.creditsRemaining ?? 0) + delta);
+  membershipsRepo.update(membership.id, { creditsRemaining: remaining });
+  return { ok: true, remaining };
 }
 
 // ---- Pagos ----

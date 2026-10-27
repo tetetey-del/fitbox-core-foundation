@@ -6,7 +6,7 @@
 
 // ---- Reservas ----
 /** Ventana por defecto (horas) para que un socio pueda cancelar sin coste. */
-export const DEFAULT_CANCELLATION_HOURS = 2;
+export const DEFAULT_CANCELLATION_HOURS = 1;
 
 // ---- Auth ----
 /** Longitud mínima de contraseña. */

@@ -19,10 +19,14 @@ import {
   startOfWeek,
   toDateKey,
   weekDays,
+  formatLongDay,
 } from "@/lib/date";
-import type { Booking, ClassSession } from "@/types";
+import type { Booking, ClassSession, ClassTemplate } from "@/types";
 import {
   bookSession,
+  findSameActivityBookingOnDay,
+  hasSessionStarted,
+  isLateCancellation,
   cancelBooking,
   getUserBooking,
 } from "@/lib/services/booking.service";
@@ -30,6 +34,16 @@ import {
 
 
 import { getPublishedWodByDate } from "@/lib/services/wods.service";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { WodViewer } from "@/components/wods/WodViewer";
 
 export const Route = createFileRoute("/reservas")({ component: ReservasPage });
@@ -41,6 +55,8 @@ function ReservasPage() {
 
   const [monday, setMonday] = useState<Date>(() => startOfWeek(new Date()));
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  /** Clase que el socio está por reservar o cancelar, a la espera de que confirme. */
+  const [pending, setPending] = useState<{ session: ClassSession; action: "book" | "cancel" } | null>(null);
   const [selectedDayKey, setSelectedDayKey] = useState<string>(() => toDateKey(new Date()));
 
 
@@ -126,6 +142,39 @@ function ReservasPage() {
       toast.error("La sesión está cancelada");
       return;
     }
+    if (hasSessionStarted(s)) {
+      toast.error("Esta clase ya pasó");
+      return;
+    }
+    const existing = getUserBooking(s.id, currentUser.id);
+    if (!existing) {
+      // Aviso antes de abrir el cartel si ya tiene esta actividad ese día
+      const same = findSameActivityBookingOnDay(s.id, currentUser.id);
+      if (same) {
+        toast.error(`Ya tienes ${same.activityName} ese día a las ${same.session.startTime}`, {
+          description: "Solo puedes reservar una vez por actividad y día.",
+        });
+        return;
+      }
+    }
+    setPending({ session: s, action: existing ? "cancel" : "book" });
+  };
+
+  /** "CrossFit · 29/10 · 19:00 h" */
+  const shortClassLabel = (s: ClassSession) => {
+    const [, m, d] = s.date.split("-");
+    return `${templateById.get(s.templateId)?.name ?? "Clase"} · ${d}/${m} · ${s.startTime} h`;
+  };
+  /** Recordatorio de la ventana de cancelación del box. */
+  const cancelReminder = (s: ClassSession) => {
+    const h = isLateCancellation(s).windowHours;
+    return `Recuerda que puedes cancelar sin penalización hasta ${h === 1 ? "1 hora" : `${h} horas`} antes.`;
+  };
+
+  const confirmPending = () => {
+    if (!pending || !currentUser) return;
+    const s = pending.session;
+    setPending(null);
     const existing = getUserBooking(s.id, currentUser.id);
     if (existing) {
       const res = cancelBooking(existing.id, currentUser.role);
@@ -142,7 +191,10 @@ function ReservasPage() {
         toast("Añadido a lista de espera", {
           description: `Posición #${res.booking.position}`,
         });
-      else toast.success("Reserva confirmada");
+      else
+        toast.success(`Reserva confirmada: ${shortClassLabel(s)}`, {
+          description: cancelReminder(s),
+        });
     }
     notifyDataChanged();
   };
@@ -190,6 +242,12 @@ function ReservasPage() {
                   onClick={() => handleCardClick(s)}
                   active={selectedId === s.id}
                   occupancy={occ}
+                  past={hasSessionStarted(s)}
+                  booked={
+                    !isStaff && myBooking && myBooking.status !== "cancelled"
+                      ? (myBooking.status as "confirmed" | "waitlist")
+                      : undefined
+                  }
                 />
 
                 {!isStaff && myBooking && occ && (
@@ -215,6 +273,15 @@ function ReservasPage() {
         title="Reservas"
         description="Calendario semanal de clases. Reserva, cancela o gestiona asistentes."
       />
+
+      {!isStaff && currentUser && (
+        <MyUpcomingClasses
+          userId={currentUser.id}
+          templateById={templateById}
+          onCancel={(session) => setPending({ session, action: "cancel" })}
+          version={dataVersion}
+        />
+      )}
 
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <WeekNavigator
@@ -269,6 +336,49 @@ function ReservasPage() {
       </div>
 
 
+      <AlertDialog open={!!pending} onOpenChange={(o) => !o && setPending(null)}>
+        <AlertDialogContent>
+          {pending && (() => {
+            const tpl = templateById.get(pending.session.templateId);
+            const name = tpl?.name ?? "la clase";
+            const when = `${formatLongDay(pending.session.date)} a las ${pending.session.startTime}`;
+            const occ = occByS.get(pending.session.id);
+            const full = pending.action === "book" && !!occ && occ.free <= 0;
+            return (
+              <>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    {pending.action === "book" ? (full ? "Lista de espera" : "Confirmar reserva") : "Cancelar reserva"}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription asChild>
+                    <div className="space-y-2">
+                      {pending.action === "book" && full && (
+                        <p>{`La clase de ${name} del ${when} está completa. ¿Quieres entrar en la lista de espera?`}</p>
+                      )}
+                      {pending.action === "book" && !full && (
+                        <>
+                          <p className="text-base font-semibold text-foreground">{shortClassLabel(pending.session)}</p>
+                          <p className="text-xs">{cancelReminder(pending.session)}</p>
+                        </>
+                      )}
+                      {pending.action === "cancel" && (
+                        <p>{`¿Cancelar tu reserva de ${shortClassLabel(pending.session)}?`}</p>
+                      )}
+                    </div>
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{pending.action === "book" ? "Cancelar" : "Volver"}</AlertDialogCancel>
+                  <AlertDialogAction onClick={confirmPending}>
+                    {pending.action === "book" ? (full ? "Entrar en espera" : "Confirmar") : "Sí, cancelar"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </>
+            );
+          })()}
+        </AlertDialogContent>
+      </AlertDialog>
+
       <SessionDetailSheet
         open={!!selected}
         onOpenChange={(o) => !o && setSelectedId(null)}
@@ -307,4 +417,73 @@ function MemberBadge({
     );
   }
   return null;
+}
+
+/** Bloque visible arriba de Reservas con las próximas clases del socio. */
+function MyUpcomingClasses({
+  userId,
+  templateById,
+  onCancel,
+  version,
+}: {
+  userId: string;
+  templateById: Map<string, ClassTemplate>;
+  onCancel: (session: ClassSession) => void;
+  version: number;
+}) {
+  const items = useMemo(() => {
+    return bookingsRepo
+      .query({ userId })
+      .filter((b) => b.status === "confirmed" || b.status === "waitlist")
+      .map((b) => ({ b, s: classSessionsRepo.getById(b.sessionId) }))
+      .filter((x): x is { b: Booking; s: ClassSession } => !!x.s && x.s.status !== "cancelled" && !hasSessionStarted(x.s))
+      .sort((a, b) => (a.s.date + a.s.startTime).localeCompare(b.s.date + b.s.startTime))
+      .slice(0, 5);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, version]);
+
+  return (
+    <section className="mb-5 rounded-lg border border-[var(--brand)]/40 bg-card p-4">
+      <h2 className="text-sm font-semibold flex items-center gap-2">
+        <CalendarDays className="h-4 w-4" strokeWidth={1.5} style={{ color: "var(--brand)" }} />
+        Mis próximas clases
+      </h2>
+      {items.length === 0 ? (
+        <p className="mt-2 text-sm text-muted-foreground">
+          Todavía no tienes clases reservadas. Elige una en el calendario de abajo.
+        </p>
+      ) : (
+        <ul className="mt-3 divide-y divide-border">
+          {items.map(({ b, s }) => {
+            const tpl = templateById.get(s.templateId);
+            return (
+              <li key={b.id} className="flex items-center gap-3 py-2">
+                <span
+                  aria-hidden
+                  className="h-2.5 w-2.5 rounded-full shrink-0"
+                  style={{ backgroundColor: tpl?.color ?? "var(--brand)" }}
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium truncate">
+                    {tpl?.name ?? "Clase"} · {s.startTime}
+                  </div>
+                  <div className="text-xs text-muted-foreground first-letter:uppercase">
+                    {formatLongDay(s.date)}
+                    {b.status === "waitlist" && ` · en espera (#${b.position ?? "?"})`}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onCancel(s)}
+                  className="shrink-0 text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                >
+                  Cancelar
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </section>
+  );
 }

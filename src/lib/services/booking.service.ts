@@ -29,6 +29,21 @@ export function getCancellationWindow(tenantId: string): number {
   return t?.settings?.cancellationWindowHours ?? DEFAULT_CANCELLATION_HOURS;
 }
 
+/** ¿La clase ya empezó? (no se puede reservar ni cancelar) */
+export function hasSessionStarted(session: ClassSession): boolean {
+  return sessionStart(session.date, session.startTime) <= new Date();
+}
+
+/**
+ * ¿Cancelar esta reserva ahora sería tarde? Si faltan menos horas que la ventana de cancelación
+ * del box (1 h por defecto), el socio puede cancelar igual, pero la clase se le descuenta.
+ */
+export function isLateCancellation(session: ClassSession): { late: boolean; windowHours: number } {
+  const windowHours = getCancellationWindow(session.tenantId);
+  const remaining = hoursBetween(new Date(), sessionStart(session.date, session.startTime));
+  return { late: remaining < windowHours, windowHours };
+}
+
 export interface Occupancy {
   confirmed: Booking[];
   waitlist: Booking[];
@@ -68,6 +83,36 @@ export interface BookOptions {
   bypassCredits?: boolean;
 }
 
+/**
+ * Si el socio ya tiene una reserva (confirmada o en espera) de la misma actividad ese día,
+ * devuelve esa clase. Misma actividad = misma plantilla, o mismo tipo de clase salvo "otro".
+ * Se puede ir a actividades distintas el mismo día (CrossFit y Halterofilia, por ejemplo).
+ */
+export function findSameActivityBookingOnDay(
+  sessionId: string,
+  userId: string,
+): { session: ClassSession; activityName: string } | null {
+  const session = classSessionsRepo.getById(sessionId);
+  if (!session) return null;
+  const templates = new Map(classTemplatesRepo.list().map((t) => [t.id, t]));
+  const tpl = templates.get(session.templateId);
+  const sameDay = classSessionsRepo
+    .list()
+    .filter((s) => s.date === session.date && s.id !== session.id && s.status !== "cancelled");
+  for (const other of sameDay) {
+    const otherTpl = templates.get(other.templateId);
+    const sameActivity =
+      other.templateId === session.templateId ||
+      (!!tpl && !!otherTpl && tpl.type !== "otro" && otherTpl.type === tpl.type);
+    if (!sameActivity) continue;
+    const b = getUserBooking(other.id, userId);
+    if (b && b.status !== "cancelled") {
+      return { session: other, activityName: otherTpl?.name ?? tpl?.name ?? "esa actividad" };
+    }
+  }
+  return null;
+}
+
 export function bookSession(
   sessionId: string,
   userId: string,
@@ -82,9 +127,18 @@ export function bookSession(
     const session = classSessionsRepo.getById(sessionId);
     if (!session) return { ok: false, reason: "La sesión no existe" };
     if (session.status === "cancelled") return { ok: false, reason: "La sesión está cancelada" };
+    if (hasSessionStarted(session)) return { ok: false, reason: "Esta clase ya pasó" };
 
     const existing = getUserBooking(sessionId, userId);
     if (existing) return { ok: false, reason: "Ya tienes una reserva en esta sesión" };
+
+    const sameActivity = findSameActivityBookingOnDay(sessionId, userId);
+    if (sameActivity) {
+      return {
+        ok: false,
+        reason: `Ya tienes ${sameActivity.activityName} ese día a las ${sameActivity.session.startTime}. Solo puedes reservar una vez por actividad y día.`,
+      };
+    }
 
   // Validación de créditos/plan (solo cuando el propio socio se apunta)
   if (!opts.bypassCredits) {
@@ -132,6 +186,8 @@ export interface CancelResult {
   ok: boolean;
   promoted?: Booking;
   reason?: string;
+  /** true si se canceló tarde y la clase se descontó igual (no se devolvió el crédito). */
+  charged?: boolean;
 }
 
 export function cancelBooking(bookingId: string, actorRole: UserRole): CancelResult {
@@ -143,24 +199,18 @@ export function cancelBooking(bookingId: string, actorRole: UserRole): CancelRes
   if (!session) return { ok: false, reason: "La sesión no existe" };
 
   const isStaff = actorRole === "admin" || actorRole === "coach";
-  if (!isStaff && booking.status === "confirmed") {
-    const start = sessionStart(session.date, session.startTime);
-    const window = getCancellationWindow(session.tenantId);
-    const remaining = hoursBetween(new Date(), start);
-    if (remaining < window) {
-      return {
-        ok: false,
-        reason: `No se puede cancelar con menos de ${window}h de antelación`,
-      };
-    }
+  if (!isStaff && hasSessionStarted(session)) {
+    return { ok: false, reason: "La clase ya empezó: ya no se puede cancelar" };
   }
+  // Cancelación tarde del propio socio: se permite, pero la clase se descuenta igual
+  const charged = !isStaff && booking.status === "confirmed" && isLateCancellation(session).late;
 
   const wasConfirmed = booking.status === "confirmed";
 
   bookingsRepo.update(bookingId, { status: "cancelled", position: undefined });
 
-  // Devolver crédito si la reserva era confirmada
-  if (wasConfirmed) {
+  // Devolver crédito si la reserva era confirmada y no se canceló tarde
+  if (wasConfirmed && !charged) {
     refundCredit(booking.userId);
   }
 
@@ -177,7 +227,7 @@ export function cancelBooking(bookingId: string, actorRole: UserRole): CancelRes
     occ.waitlist.forEach((b, i) => bookingsRepo.update(b.id, { position: i + 1 }));
   }
 
-  return { ok: true, promoted };
+  return { ok: true, promoted, charged };
 }
 
 /**

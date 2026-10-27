@@ -29,8 +29,8 @@ const SEEDED_KEY = buildKey(null, "seeded");
 const DEMO_CLEARED_KEY = buildKey(null, "demo_cleared");
 /** Versión del gimnasio de demo. Si cambia, los navegadores con la demo vieja se vuelven a sembrar. */
 const DEMO_VERSION_KEY = buildKey(null, "demo_version");
-const DEMO_VERSION = 4;
-/** Boxes de demos anteriores que se borran al actualizar: FitBox (v1) y versiones previas de Chia (v2 y v3, en pesos). */
+const DEMO_VERSION = 7;
+/** Boxes de demos anteriores que se borran al actualizar: FitBox (v1) y versiones previas de Chia (v2 a v6). */
 const OLD_DEMO_SLUGS = ["crossfit-norte", "box-sur", "chia-training"];
 const OLD_SUPERADMIN_EMAILS = ["isaac@fitbox.io"];
 
@@ -67,15 +67,15 @@ function seededRandom(seed: number): () => number {
 
 const CHIA = {
   name: "Chia Training",
-  domain: "chiatraining.com",
+  domain: "kinflow.app",
   // La demo usa los colores de Kinflow; cada box elige los suyos en Configuración → Apariencia.
   brandColor: "#14B8A6",
   themeId: "flow" as ThemeId,
-  owner: { name: "Celeste Teyssedou", email: "celeste@chiatraining.com" },
+  owner: { name: "Celeste Teyssedou", email: "celeste@kinflow.app" },
   coaches: [
-    { key: "lucas", name: "Lucas", email: "lucas@chiatraining.com" },
-    { key: "ana", name: "Ana", email: "ana@chiatraining.com" },
-    { key: "paula", name: "Paula", email: "paula@chiatraining.com" },
+    { key: "lucas", name: "Lucas", email: "lucas@kinflow.app" },
+    { key: "ana", name: "Ana", email: "ana@kinflow.app" },
+    { key: "paula", name: "Paula", email: "paula@kinflow.app" },
   ],
 };
 
@@ -84,8 +84,8 @@ const CHIA = {
  * La clase individual suele cobrarse entre 15 y 20 €.
  * `priceMonthly` es el precio de cada período (6 meses en el semestral, 12 en el anual).
  */
-const CHIA_PLANS: Array<{ key: string; name: string; price: number; type: "credits" | "unlimited"; credits?: number; months?: number; perWeek: number }> = [
-  { key: "prueba", name: "Clase de prueba", price: 0, type: "credits", credits: 1, perWeek: 1 },
+const CHIA_PLANS: Array<{ key: string; name: string; price: number; type: "credits" | "unlimited"; credits?: number; months?: number; perWeek: number; once?: boolean }> = [
+  { key: "prueba", name: "Clase de prueba", price: 0, type: "credits", credits: 1, perWeek: 1, once: true },
   { key: "suelta", name: "Clase individual", price: 18, type: "credits", credits: 1, perWeek: 1 },
   { key: "8", name: "8 clases · 2 por semana", price: 69, type: "credits", credits: 8, perWeek: 2 },
   { key: "12", name: "12 clases · 3 por semana", price: 85, type: "credits", credits: 12, perWeek: 3 },
@@ -108,20 +108,20 @@ interface ChiaMemberDef {
 }
 
 const CHIA_MEMBERS: ChiaMemberDef[] = [
-  { name: "Sofía Martínez", email: "sofia@chiatraining.com", plan: "12", times: ["19:00", "18:00"], startedDaysAgo: 24, method: "transferencia" },
-  { name: "Martín Gómez", email: "martin@chiatraining.com", plan: "libre", times: ["07:00", "06:00"], startedDaysAgo: 10, method: "transferencia" },
-  { name: "Valentina López", email: "valentina@chiatraining.com", plan: "8", times: ["08:00", "17:00"], startedDaysAgo: 27, method: "efectivo" },
-  { name: "Juan Pablo Ríos", email: "juanpablo@chiatraining.com", plan: "semestral", times: ["18:00", "20:00"], startedDaysAgo: 60, method: "transferencia" },
-  { name: "Camila Fernández", email: "camila@chiatraining.com", plan: "16", times: ["09:00", "10:00"], startedDaysAgo: 14, method: "tarjeta" },
-  { name: "Tomás Herrera", email: "tomas@chiatraining.com", plan: "anual", times: ["06:00", "12:00"], startedDaysAgo: 120, method: "transferencia" },
-  { name: "Lucía Benítez", email: "lucia@chiatraining.com", plan: "12", times: ["17:00", "19:00"], startedDaysAgo: 5, method: "efectivo" },
-  { name: "Nicolás Sosa", email: "nicolas@chiatraining.com", plan: "libre", times: ["19:00", "20:00"], startedDaysAgo: 18, method: "tarjeta" },
-  { name: "Florencia Acosta", email: "florencia@chiatraining.com", plan: "8", times: ["10:00", "09:00"], startedDaysAgo: 2, method: "transferencia" },
-  { name: "Agustín Molina", email: "agustin@chiatraining.com", plan: "16", times: ["07:00", "18:00"], startedDaysAgo: 21, method: "transferencia" },
-  { name: "Micaela Castro", email: "micaela@chiatraining.com", plan: "12", times: ["08:00", "17:00"], startedDaysAgo: 29, method: "efectivo" },
-  { name: "Federico Ruiz", email: "federico@chiatraining.com", plan: "libre", times: ["12:00", "18:00"], startedDaysAgo: 8, method: "tarjeta" },
-  { name: "Rocío Paz", email: "rocio@chiatraining.com", plan: "prueba", times: ["19:00"], startedDaysAgo: 1, method: "efectivo", joinedDaysAgo: 1 },
-  { name: "Gastón Vera", email: "gaston@chiatraining.com", plan: "suelta", times: ["12:00"], startedDaysAgo: 3, method: "efectivo", joinedDaysAgo: 3 },
+  { name: "Sofía Martínez", email: "sofia@kinflow.app", plan: "12", times: ["19:00", "18:00"], startedDaysAgo: 24, method: "transferencia" },
+  { name: "Martín Gómez", email: "martin@kinflow.app", plan: "libre", times: ["07:00", "06:00"], startedDaysAgo: 10, method: "transferencia" },
+  { name: "Valentina López", email: "valentina@kinflow.app", plan: "8", times: ["08:00", "17:00"], startedDaysAgo: 27, method: "efectivo" },
+  { name: "Juan Pablo Ríos", email: "juanpablo@kinflow.app", plan: "semestral", times: ["18:00", "20:00"], startedDaysAgo: 60, method: "transferencia" },
+  { name: "Camila Fernández", email: "camila@kinflow.app", plan: "16", times: ["09:00", "10:00"], startedDaysAgo: 14, method: "tarjeta" },
+  { name: "Tomás Herrera", email: "tomas@kinflow.app", plan: "anual", times: ["06:00", "12:00"], startedDaysAgo: 120, method: "transferencia" },
+  { name: "Lucía Benítez", email: "lucia@kinflow.app", plan: "12", times: ["17:00", "19:00"], startedDaysAgo: 5, method: "efectivo" },
+  { name: "Nicolás Sosa", email: "nicolas@kinflow.app", plan: "libre", times: ["19:00", "20:00"], startedDaysAgo: 18, method: "tarjeta" },
+  { name: "Florencia Acosta", email: "florencia@kinflow.app", plan: "8", times: ["10:00", "09:00"], startedDaysAgo: 2, method: "transferencia" },
+  { name: "Agustín Molina", email: "agustin@kinflow.app", plan: "16", times: ["07:00", "18:00"], startedDaysAgo: 21, method: "transferencia" },
+  { name: "Micaela Castro", email: "micaela@kinflow.app", plan: "12", times: ["08:00", "17:00"], startedDaysAgo: 29, method: "efectivo" },
+  { name: "Federico Ruiz", email: "federico@kinflow.app", plan: "libre", times: ["12:00", "18:00"], startedDaysAgo: 8, method: "tarjeta" },
+  { name: "Rocío Paz", email: "rocio@kinflow.app", plan: "prueba", times: ["19:00"], startedDaysAgo: 1, method: "efectivo", joinedDaysAgo: 1 },
+  { name: "Gastón Vera", email: "gaston@kinflow.app", plan: "suelta", times: ["12:00"], startedDaysAgo: 3, method: "efectivo", joinedDaysAgo: 3 },
 ];
 
 const FIRST_NAMES = ["Juli", "Mateo", "Carolina", "Santiago", "Rocío", "Facundo", "Paz", "Ignacio", "Milagros", "Gonzalo", "Antonella", "Joaquín", "Brenda", "Matías", "Victoria", "Lautaro", "Daniela", "Franco", "Josefina", "Ezequiel", "Carla", "Emiliano", "Belén", "Ramiro", "Aldana", "Bruno", "Celina", "Maximiliano", "Lourdes", "Diego"];
@@ -164,7 +164,7 @@ function createChiaTenant(): SeedResult {
     brandColor: CHIA.brandColor,
     themeId: CHIA.themeId,
     status: "active",
-    settings: { cancellationWindowHours: 2, enabledModules: DEFAULT_MODULES, currency: "EUR" },
+    settings: { cancellationWindowHours: 1, enabledModules: DEFAULT_MODULES, currency: "EUR" },
   });
   const owner = createUserInTenant(tenant.id, { ...CHIA.owner, role: "admin" });
   const coaches = CHIA.coaches.map((c) => createUserInTenant(tenant.id, { name: c.name, email: c.email, role: "coach" }));
@@ -379,6 +379,7 @@ function seedClassesFor({ tenant, coaches, members }: SeedResult) {
         type: p.type,
         creditsPerMonth: p.credits,
         durationMonths: p.months ?? 1,
+        oncePerMember: p.once ?? false,
         active: true,
       }),
     );
@@ -482,6 +483,8 @@ function seedClassesFor({ tenant, coaches, members }: SeedResult) {
     const perWeek = CHIA_PLANS.find((p) => p.key === def.plan)?.perWeek ?? 2;
     if (!user) return;
     const byWeek = new Map<string, number>();
+    // Misma regla que la app: una sola reserva por actividad y por día
+    const activityDays = new Set<string>();
     // Orden mezclado para repartir las reservas en toda la semana, no solo al principio
     const order = sessions.map((s) => ({ s, k: rnd() })).sort((a, b) => a.k - b.k).map((x) => x.s);
     for (const s of order) {
@@ -490,12 +493,14 @@ function seedClassesFor({ tenant, coaches, members }: SeedResult) {
       if (!def.times.includes(s.startTime)) continue;
       const wk = toDateKey(startOfWeek(when));
       if ((byWeek.get(wk) ?? 0) >= perWeek) continue;
+      if (activityDays.has(`${s.date}|${s.templateId}`)) continue;
       if (rnd() < 0.35) continue;
       const count = booked.get(s.id) ?? 0;
       if (count >= s.capacity) continue;
       const bk = bookingsRepo.create({ tenantId: tenant.id, sessionId: s.id, userId: user.id, status: "confirmed" });
       booked.set(s.id, count + 1);
       byWeek.set(wk, (byWeek.get(wk) ?? 0) + 1);
+      activityDays.add(`${s.date}|${s.templateId}`);
       if (when < today) {
         checkinsRepo.create({ tenantId: tenant.id, bookingId: bk.id, sessionId: s.id, userId: user.id, checkedInAt: when.toISOString() });
       }

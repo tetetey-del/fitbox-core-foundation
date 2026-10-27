@@ -24,7 +24,7 @@ export function MemberProfileTab({ user }: { user: User }) {
 
   return (
     <section className="space-y-2">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-sm font-semibold">Datos personales</h3>
         {!editing ? (
           <Button

@@ -15,7 +15,7 @@ export function MemberPaymentsTab({ userId, onNewPayment }: Props) {
   const payments = paymentsOf(userId);
   return (
     <section className="space-y-2">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-sm font-semibold">Historial de pagos</h3>
         <Button variant="outline" size="sm" onClick={onNewPayment}>
           <Wallet className="h-3.5 w-3.5 mr-1" strokeWidth={1.5} />

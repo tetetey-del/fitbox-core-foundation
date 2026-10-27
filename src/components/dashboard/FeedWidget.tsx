@@ -33,11 +33,11 @@ export function FeedWidget() {
       {posts.length === 0 ? (
         <p className="text-sm text-muted-foreground">Aún no hay publicaciones.</p>
       ) : (
-        <ul className="grid gap-2">
+        <ul className="grid grid-cols-1 gap-2">
           {posts.map((p) => {
             const Icon = POST_ICONS[p.type];
             return (
-              <li key={p.id}>
+              <li key={p.id} className="min-w-0">
                 <Link
                   to="/feed"
                   className="flex items-start gap-3 rounded-md border border-transparent p-2 hover:border-border hover:bg-muted/40 transition-colors"
