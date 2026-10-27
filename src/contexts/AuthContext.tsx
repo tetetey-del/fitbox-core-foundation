@@ -8,7 +8,10 @@ import {
   type ReactNode,
 } from "react";
 import type { Session, SuperAdmin, Tenant, User } from "@/types";
+import { toast } from "sonner";
 import { sessionStore } from "@/lib/storage/session";
+import { cloudAttach, cloudChangePassword, cloudLogout, cloudResume } from "@/lib/cloud/auth";
+import { onCloudSync } from "@/lib/cloud/sync";
 import { tenantsRepo } from "@/lib/storage/repositories/tenants.repo";
 import { setActiveCurrency } from "@/lib/format";
 import { listUsersOfTenant } from "@/lib/storage/repositories/users.repo";
@@ -38,7 +41,7 @@ interface AuthContextValue {
   /** Login por email + contraseña (usuario de tenant o super admin). */
   loginWithPassword: (email: string, password: string) => Promise<LoginResult>;
   registerOwner: (input: RegisterOwnerInput) => Promise<void>;
-  requestPasswordReset: (email: string) => Promise<{ code: string; expiresAt: string }>;
+  requestPasswordReset: (email: string) => Promise<{ code: string; expiresAt: string; cloud?: boolean }>;
   resetPassword: (email: string, code: string, newPassword: string) => Promise<void>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
   logout: () => void;
@@ -59,13 +62,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [superAdminId, setSuperAdminId] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
 
+  const refresh = useCallback(() => setTick((t) => t + 1), []);
+
   useEffect(() => {
-    setSession(sessionStore.read());
+    const stored = sessionStore.read();
+    setSession(stored);
     setSuperAdminId(superSessionStore.read()?.superAdminId ?? null);
     setReady(true);
-  }, []);
-
-  const refresh = useCallback(() => setTick((t) => t + 1), []);
+    // Box real: reconectar con Supabase y traer los datos al día.
+    if (stored?.cloud) {
+      cloudAttach(stored);
+      void cloudResume(stored).then((s) => {
+        if (!s) {
+          sessionStore.clear();
+          setSession(null);
+        }
+        refresh();
+      });
+    }
+    const off = onCloudSync((e) => {
+      if (e.type === "pulled") refresh();
+      else toast.error(e.message);
+    });
+    return off;
+  }, [refresh]);
 
   const superAdmin = useMemo<SuperAdmin | null>(() => {
     if (!superAdminId) return null;
@@ -117,6 +137,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(() => {
+    if (sessionStore.read()?.cloud) void cloudLogout();
     svcLogout();
     setSession(null);
     setSuperAdminId(null);
@@ -159,6 +180,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     resetPassword: svcResetPassword,
     changePassword: (curr, next) => {
       if (!session) throw new Error("Sin sesión");
+      if (session.cloud) return cloudChangePassword(curr, next);
       return svcChangePassword(session.tenantId, session.userId, curr, next);
     },
     logout,

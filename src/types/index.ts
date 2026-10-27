@@ -173,6 +173,8 @@ export interface Session {
   role: UserRole;
   /** Presente si un super admin está impersonando este tenant. */
   impersonatedBy?: string; // superAdminId
+  /** true si el box vive en Supabase (box real); ausente en la demo, que vive en el navegador. */
+  cloud?: boolean;
 }
 
 /** Sesión activa del super admin (guardada global, aparte). */

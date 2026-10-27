@@ -26,6 +26,7 @@ function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [accepted, setAccepted] = useState(false);
+  const [sentTo, setSentTo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,11 +46,34 @@ function RegisterPage() {
       await registerOwner({ boxName, ownerName, email, password, acceptedTerms: accepted });
       navigate({ to: "/onboarding/owner" });
     } catch (err) {
+      if (err instanceof AuthError && err.code === "confirm_email") {
+        setSentTo(email.trim());
+        return;
+      }
       setError(err instanceof AuthError ? err.message : "No se pudo crear la cuenta");
     } finally {
       setLoading(false);
     }
   };
+
+  if (sentTo) {
+    return (
+      <AuthShell title="Revisa tu email" subtitle="Ya casi está.">
+        <div className="space-y-4 text-sm">
+          <p>
+            Te enviamos un enlace a <strong>{sentTo}</strong> para confirmar tu cuenta. Tócalo y después inicia
+            sesión: tu box ya va a estar creado.
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Si no lo ves en unos minutos, revisa la carpeta de spam o promociones.
+          </p>
+          <Button asChild className="w-full h-10">
+            <Link to="/login">Ir a iniciar sesión</Link>
+          </Button>
+        </div>
+      </AuthShell>
+    );
+  }
 
   return (
     <AuthShell

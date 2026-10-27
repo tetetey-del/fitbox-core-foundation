@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,19 @@ import { useAuth } from "@/contexts/AuthContext";
 import { AuthError } from "@/lib/services/auth.service";
 import { acceptInvitation, resolveInvitation } from "@/lib/services/invitations.service";
 import { AuthShell, ErrorBox, Field } from "./login";
+import { cloudEnabled } from "@/lib/cloud/client";
+import { cloudAcceptInvitation, cloudGetInvitation } from "@/lib/cloud/auth";
+import { sessionStore } from "@/lib/storage/session";
+
+interface Resolved {
+  cloud: boolean;
+  invitation: { role: "coach" | "member"; email?: string };
+  status: string;
+  tenantName: string;
+  tenantLogo?: string;
+  brandColor?: string;
+  expiresAt: string;
+}
 
 export const Route = createFileRoute("/invitacion/$code")({
   head: () => ({
@@ -23,15 +36,80 @@ function InvitationPage() {
   const { code } = useParams({ from: "/invitacion/$code" });
   const navigate = useNavigate();
   const { _setSession } = useAuth();
-  const resolved = useMemo(() => resolveInvitation(code), [code]);
+  // Primero se busca en Supabase (boxes reales); si no está, en la demo del navegador.
+  const [resolved, setResolved] = useState<Resolved | null | undefined>(undefined);
+  const [sentTo, setSentTo] = useState<string | null>(null);
 
   const [name, setName] = useState("");
-  const [email, setEmail] = useState(resolved?.invitation.email ?? "");
+  const [email, setEmail] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      let r: Resolved | null = null;
+      if (cloudEnabled()) {
+        const inv = await cloudGetInvitation(code);
+        if (inv) {
+          r = {
+            cloud: true,
+            invitation: { role: inv.role, email: inv.email },
+            status: inv.status,
+            tenantName: inv.tenantName,
+            tenantLogo: inv.tenantLogo,
+            brandColor: inv.brandColor,
+            expiresAt: inv.expiresAt,
+          };
+        }
+      }
+      if (!r) {
+        const local = resolveInvitation(code);
+        if (local) {
+          r = {
+            cloud: false,
+            invitation: { role: local.invitation.role, email: local.invitation.email },
+            status: local.status,
+            tenantName: local.tenantName,
+            tenantLogo: local.tenantLogo,
+            brandColor: local.brandColor,
+            expiresAt: local.invitation.expiresAt,
+          };
+        }
+      }
+      if (cancelled) return;
+      setResolved(r);
+      if (r?.invitation.email) setEmail(r.invitation.email);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [code]);
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [accepted, setAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  if (resolved === undefined) {
+    return (
+      <AuthShell title="Invitación" subtitle="Buscando tu invitación…">
+        <div className="flex justify-center py-6">
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        </div>
+      </AuthShell>
+    );
+  }
+
+  if (sentTo) {
+    return (
+      <AuthShell title="Revisa tu email" subtitle="Ya casi está.">
+        <p className="text-sm">
+          Te enviamos un enlace a <strong>{sentTo}</strong> para confirmar tu cuenta. Tócalo y entrarás a{" "}
+          {resolved?.tenantName}.
+        </p>
+        <p className="mt-2 text-xs text-muted-foreground">Si no lo ves en unos minutos, revisa la carpeta de spam.</p>
+      </AuthShell>
+    );
+  }
 
   if (!resolved) {
     return (
@@ -73,7 +151,21 @@ function InvitationPage() {
     }
     setLoading(true);
     try {
-      const { session } = await acceptInvitation({ code, name, email, password, phone });
+      let session;
+      if (resolved.cloud) {
+        try {
+          session = await cloudAcceptInvitation({ code, name, email, password, phone });
+        } catch (err) {
+          if (err instanceof AuthError && err.code === "confirm_email") {
+            setSentTo(email.trim());
+            return;
+          }
+          throw err;
+        }
+        sessionStore.write(session);
+      } else {
+        session = (await acceptInvitation({ code, name, email, password, phone })).session;
+      }
       _setSession(session);
       navigate({
         to: resolved.invitation.role === "member" ? "/onboarding/member" : "/dashboard",
@@ -98,7 +190,7 @@ function InvitationPage() {
         )}
         <div>
           <div className="text-sm font-medium">{resolved.tenantName}</div>
-          <div className="text-xs text-muted-foreground">Invitación válida hasta {new Date(resolved.invitation.expiresAt).toLocaleDateString("es-ES")}</div>
+          <div className="text-xs text-muted-foreground">Invitación válida hasta {new Date(resolved.expiresAt).toLocaleDateString("es-ES")}</div>
         </div>
       </div>
       <form onSubmit={submit} className="space-y-4">

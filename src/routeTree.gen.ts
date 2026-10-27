@@ -9,98 +9,34 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TiendaRouteImport } from './routes/tienda'
-import { Route as SociosRouteImport } from './routes/socios'
-import { Route as RutinasRouteImport } from './routes/rutinas'
-import { Route as RetosRouteImport } from './routes/retos'
-import { Route as ReservasRouteImport } from './routes/reservas'
-import { Route as RegistroRouteImport } from './routes/registro'
-import { Route as RecuperarRouteImport } from './routes/recuperar'
-import { Route as PrsRouteImport } from './routes/prs'
-import { Route as MiCuentaRouteImport } from './routes/mi-cuenta'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as FeedRouteImport } from './routes/feed'
-import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as ConfiguracionRouteImport } from './routes/configuracion'
-import { Route as ClasesRouteImport } from './routes/clases'
-import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as OnboardingOwnerRouteImport } from './routes/onboarding.owner'
-import { Route as OnboardingMemberRouteImport } from './routes/onboarding.member'
-import { Route as LegalTerminosRouteImport } from './routes/legal.terminos'
-import { Route as LegalPrivacidadRouteImport } from './routes/legal.privacidad'
-import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
-import { Route as LegalAvisoLegalRouteImport } from './routes/legal.aviso-legal'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as ClasesRouteImport } from './routes/clases'
+import { Route as ConfiguracionRouteImport } from './routes/configuracion'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as FeedRouteImport } from './routes/feed'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as MiCuentaRouteImport } from './routes/mi-cuenta'
+import { Route as PrsRouteImport } from './routes/prs'
+import { Route as RecuperarRouteImport } from './routes/recuperar'
+import { Route as RegistroRouteImport } from './routes/registro'
+import { Route as ReservasRouteImport } from './routes/reservas'
+import { Route as RestablecerRouteImport } from './routes/restablecer'
+import { Route as RetosRouteImport } from './routes/retos'
+import { Route as RutinasRouteImport } from './routes/rutinas'
+import { Route as SociosRouteImport } from './routes/socios'
+import { Route as TiendaRouteImport } from './routes/tienda'
 import { Route as InvitacionCodeRouteImport } from './routes/invitacion.$code'
+import { Route as LegalAvisoLegalRouteImport } from './routes/legal.aviso-legal'
+import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
+import { Route as LegalPrivacidadRouteImport } from './routes/legal.privacidad'
+import { Route as LegalTerminosRouteImport } from './routes/legal.terminos'
+import { Route as OnboardingMemberRouteImport } from './routes/onboarding.member'
+import { Route as OnboardingOwnerRouteImport } from './routes/onboarding.owner'
 
-const TiendaRoute = TiendaRouteImport.update({
-  id: '/tienda',
-  path: '/tienda',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SociosRoute = SociosRouteImport.update({
-  id: '/socios',
-  path: '/socios',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RutinasRoute = RutinasRouteImport.update({
-  id: '/rutinas',
-  path: '/rutinas',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RetosRoute = RetosRouteImport.update({
-  id: '/retos',
-  path: '/retos',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ReservasRoute = ReservasRouteImport.update({
-  id: '/reservas',
-  path: '/reservas',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RegistroRoute = RegistroRouteImport.update({
-  id: '/registro',
-  path: '/registro',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RecuperarRoute = RecuperarRouteImport.update({
-  id: '/recuperar',
-  path: '/recuperar',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PrsRoute = PrsRouteImport.update({
-  id: '/prs',
-  path: '/prs',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MiCuentaRoute = MiCuentaRouteImport.update({
-  id: '/mi-cuenta',
-  path: '/mi-cuenta',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FeedRoute = FeedRouteImport.update({
-  id: '/feed',
-  path: '/feed',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ConfiguracionRoute = ConfiguracionRouteImport.update({
-  id: '/configuracion',
-  path: '/configuracion',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ClasesRoute = ClasesRouteImport.update({
-  id: '/clases',
-  path: '/clases',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -108,34 +44,84 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const ClasesRoute = ClasesRouteImport.update({
+  id: '/clases',
+  path: '/clases',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OnboardingOwnerRoute = OnboardingOwnerRouteImport.update({
-  id: '/onboarding/owner',
-  path: '/onboarding/owner',
+const ConfiguracionRoute = ConfiguracionRouteImport.update({
+  id: '/configuracion',
+  path: '/configuracion',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OnboardingMemberRoute = OnboardingMemberRouteImport.update({
-  id: '/onboarding/member',
-  path: '/onboarding/member',
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LegalTerminosRoute = LegalTerminosRouteImport.update({
-  id: '/legal/terminos',
-  path: '/legal/terminos',
+const FeedRoute = FeedRouteImport.update({
+  id: '/feed',
+  path: '/feed',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LegalPrivacidadRoute = LegalPrivacidadRouteImport.update({
-  id: '/legal/privacidad',
-  path: '/legal/privacidad',
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LegalCookiesRoute = LegalCookiesRouteImport.update({
-  id: '/legal/cookies',
-  path: '/legal/cookies',
+const MiCuentaRoute = MiCuentaRouteImport.update({
+  id: '/mi-cuenta',
+  path: '/mi-cuenta',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrsRoute = PrsRouteImport.update({
+  id: '/prs',
+  path: '/prs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecuperarRoute = RecuperarRouteImport.update({
+  id: '/recuperar',
+  path: '/recuperar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegistroRoute = RegistroRouteImport.update({
+  id: '/registro',
+  path: '/registro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReservasRoute = ReservasRouteImport.update({
+  id: '/reservas',
+  path: '/reservas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RestablecerRoute = RestablecerRouteImport.update({
+  id: '/restablecer',
+  path: '/restablecer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RetosRoute = RetosRouteImport.update({
+  id: '/retos',
+  path: '/retos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RutinasRoute = RutinasRouteImport.update({
+  id: '/rutinas',
+  path: '/rutinas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SociosRoute = SociosRouteImport.update({
+  id: '/socios',
+  path: '/socios',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TiendaRoute = TiendaRouteImport.update({
+  id: '/tienda',
+  path: '/tienda',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InvitacionCodeRoute = InvitacionCodeRouteImport.update({
+  id: '/invitacion/$code',
+  path: '/invitacion/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LegalAvisoLegalRoute = LegalAvisoLegalRouteImport.update({
@@ -143,9 +129,29 @@ const LegalAvisoLegalRoute = LegalAvisoLegalRouteImport.update({
   path: '/legal/aviso-legal',
   getParentRoute: () => rootRouteImport,
 } as any)
-const InvitacionCodeRoute = InvitacionCodeRouteImport.update({
-  id: '/invitacion/$code',
-  path: '/invitacion/$code',
+const LegalCookiesRoute = LegalCookiesRouteImport.update({
+  id: '/legal/cookies',
+  path: '/legal/cookies',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalPrivacidadRoute = LegalPrivacidadRouteImport.update({
+  id: '/legal/privacidad',
+  path: '/legal/privacidad',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalTerminosRoute = LegalTerminosRouteImport.update({
+  id: '/legal/terminos',
+  path: '/legal/terminos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingMemberRoute = OnboardingMemberRouteImport.update({
+  id: '/onboarding/member',
+  path: '/onboarding/member',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingOwnerRoute = OnboardingOwnerRouteImport.update({
+  id: '/onboarding/owner',
+  path: '/onboarding/owner',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -162,6 +168,7 @@ export interface FileRoutesByFullPath {
   '/recuperar': typeof RecuperarRoute
   '/registro': typeof RegistroRoute
   '/reservas': typeof ReservasRoute
+  '/restablecer': typeof RestablecerRoute
   '/retos': typeof RetosRoute
   '/rutinas': typeof RutinasRoute
   '/socios': typeof SociosRoute
@@ -187,6 +194,7 @@ export interface FileRoutesByTo {
   '/recuperar': typeof RecuperarRoute
   '/registro': typeof RegistroRoute
   '/reservas': typeof ReservasRoute
+  '/restablecer': typeof RestablecerRoute
   '/retos': typeof RetosRoute
   '/rutinas': typeof RutinasRoute
   '/socios': typeof SociosRoute
@@ -213,6 +221,7 @@ export interface FileRoutesById {
   '/recuperar': typeof RecuperarRoute
   '/registro': typeof RegistroRoute
   '/reservas': typeof ReservasRoute
+  '/restablecer': typeof RestablecerRoute
   '/retos': typeof RetosRoute
   '/rutinas': typeof RutinasRoute
   '/socios': typeof SociosRoute
@@ -240,6 +249,7 @@ export interface FileRouteTypes {
     | '/recuperar'
     | '/registro'
     | '/reservas'
+    | '/restablecer'
     | '/retos'
     | '/rutinas'
     | '/socios'
@@ -265,6 +275,7 @@ export interface FileRouteTypes {
     | '/recuperar'
     | '/registro'
     | '/reservas'
+    | '/restablecer'
     | '/retos'
     | '/rutinas'
     | '/socios'
@@ -290,6 +301,7 @@ export interface FileRouteTypes {
     | '/recuperar'
     | '/registro'
     | '/reservas'
+    | '/restablecer'
     | '/retos'
     | '/rutinas'
     | '/socios'
@@ -316,6 +328,7 @@ export interface RootRouteChildren {
   RecuperarRoute: typeof RecuperarRoute
   RegistroRoute: typeof RegistroRoute
   ReservasRoute: typeof ReservasRoute
+  RestablecerRoute: typeof RestablecerRoute
   RetosRoute: typeof RetosRoute
   RutinasRoute: typeof RutinasRoute
   SociosRoute: typeof SociosRoute
@@ -331,102 +344,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/tienda': {
-      id: '/tienda'
-      path: '/tienda'
-      fullPath: '/tienda'
-      preLoaderRoute: typeof TiendaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/socios': {
-      id: '/socios'
-      path: '/socios'
-      fullPath: '/socios'
-      preLoaderRoute: typeof SociosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/rutinas': {
-      id: '/rutinas'
-      path: '/rutinas'
-      fullPath: '/rutinas'
-      preLoaderRoute: typeof RutinasRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/retos': {
-      id: '/retos'
-      path: '/retos'
-      fullPath: '/retos'
-      preLoaderRoute: typeof RetosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reservas': {
-      id: '/reservas'
-      path: '/reservas'
-      fullPath: '/reservas'
-      preLoaderRoute: typeof ReservasRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/registro': {
-      id: '/registro'
-      path: '/registro'
-      fullPath: '/registro'
-      preLoaderRoute: typeof RegistroRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/recuperar': {
-      id: '/recuperar'
-      path: '/recuperar'
-      fullPath: '/recuperar'
-      preLoaderRoute: typeof RecuperarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/prs': {
-      id: '/prs'
-      path: '/prs'
-      fullPath: '/prs'
-      preLoaderRoute: typeof PrsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mi-cuenta': {
-      id: '/mi-cuenta'
-      path: '/mi-cuenta'
-      fullPath: '/mi-cuenta'
-      preLoaderRoute: typeof MiCuentaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/feed': {
-      id: '/feed'
-      path: '/feed'
-      fullPath: '/feed'
-      preLoaderRoute: typeof FeedRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/configuracion': {
-      id: '/configuracion'
-      path: '/configuracion'
-      fullPath: '/configuracion'
-      preLoaderRoute: typeof ConfiguracionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/clases': {
-      id: '/clases'
-      path: '/clases'
-      fullPath: '/clases'
-      preLoaderRoute: typeof ClasesRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -436,46 +358,116 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/clases': {
+      id: '/clases'
+      path: '/clases'
+      fullPath: '/clases'
+      preLoaderRoute: typeof ClasesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/onboarding/owner': {
-      id: '/onboarding/owner'
-      path: '/onboarding/owner'
-      fullPath: '/onboarding/owner'
-      preLoaderRoute: typeof OnboardingOwnerRouteImport
+    '/configuracion': {
+      id: '/configuracion'
+      path: '/configuracion'
+      fullPath: '/configuracion'
+      preLoaderRoute: typeof ConfiguracionRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/onboarding/member': {
-      id: '/onboarding/member'
-      path: '/onboarding/member'
-      fullPath: '/onboarding/member'
-      preLoaderRoute: typeof OnboardingMemberRouteImport
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/legal/terminos': {
-      id: '/legal/terminos'
-      path: '/legal/terminos'
-      fullPath: '/legal/terminos'
-      preLoaderRoute: typeof LegalTerminosRouteImport
+    '/feed': {
+      id: '/feed'
+      path: '/feed'
+      fullPath: '/feed'
+      preLoaderRoute: typeof FeedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/legal/privacidad': {
-      id: '/legal/privacidad'
-      path: '/legal/privacidad'
-      fullPath: '/legal/privacidad'
-      preLoaderRoute: typeof LegalPrivacidadRouteImport
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/legal/cookies': {
-      id: '/legal/cookies'
-      path: '/legal/cookies'
-      fullPath: '/legal/cookies'
-      preLoaderRoute: typeof LegalCookiesRouteImport
+    '/mi-cuenta': {
+      id: '/mi-cuenta'
+      path: '/mi-cuenta'
+      fullPath: '/mi-cuenta'
+      preLoaderRoute: typeof MiCuentaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/prs': {
+      id: '/prs'
+      path: '/prs'
+      fullPath: '/prs'
+      preLoaderRoute: typeof PrsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recuperar': {
+      id: '/recuperar'
+      path: '/recuperar'
+      fullPath: '/recuperar'
+      preLoaderRoute: typeof RecuperarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/registro': {
+      id: '/registro'
+      path: '/registro'
+      fullPath: '/registro'
+      preLoaderRoute: typeof RegistroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reservas': {
+      id: '/reservas'
+      path: '/reservas'
+      fullPath: '/reservas'
+      preLoaderRoute: typeof ReservasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/restablecer': {
+      id: '/restablecer'
+      path: '/restablecer'
+      fullPath: '/restablecer'
+      preLoaderRoute: typeof RestablecerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/retos': {
+      id: '/retos'
+      path: '/retos'
+      fullPath: '/retos'
+      preLoaderRoute: typeof RetosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rutinas': {
+      id: '/rutinas'
+      path: '/rutinas'
+      fullPath: '/rutinas'
+      preLoaderRoute: typeof RutinasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/socios': {
+      id: '/socios'
+      path: '/socios'
+      fullPath: '/socios'
+      preLoaderRoute: typeof SociosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tienda': {
+      id: '/tienda'
+      path: '/tienda'
+      fullPath: '/tienda'
+      preLoaderRoute: typeof TiendaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invitacion/$code': {
+      id: '/invitacion/$code'
+      path: '/invitacion/$code'
+      fullPath: '/invitacion/$code'
+      preLoaderRoute: typeof InvitacionCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/legal/aviso-legal': {
@@ -485,11 +477,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LegalAvisoLegalRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/invitacion/$code': {
-      id: '/invitacion/$code'
-      path: '/invitacion/$code'
-      fullPath: '/invitacion/$code'
-      preLoaderRoute: typeof InvitacionCodeRouteImport
+    '/legal/cookies': {
+      id: '/legal/cookies'
+      path: '/legal/cookies'
+      fullPath: '/legal/cookies'
+      preLoaderRoute: typeof LegalCookiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/privacidad': {
+      id: '/legal/privacidad'
+      path: '/legal/privacidad'
+      fullPath: '/legal/privacidad'
+      preLoaderRoute: typeof LegalPrivacidadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/terminos': {
+      id: '/legal/terminos'
+      path: '/legal/terminos'
+      fullPath: '/legal/terminos'
+      preLoaderRoute: typeof LegalTerminosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/member': {
+      id: '/onboarding/member'
+      path: '/onboarding/member'
+      fullPath: '/onboarding/member'
+      preLoaderRoute: typeof OnboardingMemberRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/owner': {
+      id: '/onboarding/owner'
+      path: '/onboarding/owner'
+      fullPath: '/onboarding/owner'
+      preLoaderRoute: typeof OnboardingOwnerRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -508,6 +528,7 @@ const rootRouteChildren: RootRouteChildren = {
   RecuperarRoute: RecuperarRoute,
   RegistroRoute: RegistroRoute,
   ReservasRoute: ReservasRoute,
+  RestablecerRoute: RestablecerRoute,
   RetosRoute: RetosRoute,
   RutinasRoute: RutinasRoute,
   SociosRoute: SociosRoute,
@@ -523,3 +544,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

@@ -21,35 +21,20 @@ import { slugify } from "@/lib/seed";
 import { exercisesRepoFor } from "@/lib/storage/repositories/exercises.repo";
 import { DEFAULT_EXERCISES } from "./prs.service";
 
-export type AuthErrorCode =
-  | "email_not_found"
-  | "wrong_password"
-  | "suspended"
-  | "email_already_used"
-  | "invalid_code"
-  | "code_expired"
-  | "weak_password"
-  | "terms_required";
-
-export class AuthError extends Error {
-  constructor(public code: AuthErrorCode, message: string) {
-    super(message);
-  }
-}
-
-const MESSAGES: Record<AuthErrorCode, string> = {
-  email_not_found: "No existe ninguna cuenta con ese email.",
-  wrong_password: "Contraseña incorrecta.",
-  suspended: "Esta cuenta está suspendida. Contacta con soporte.",
-  email_already_used: "Ya existe una cuenta con ese email.",
-  invalid_code: "El código no es válido.",
-  code_expired: "El código ha caducado. Solicita uno nuevo.",
-  weak_password: "La contraseña debe tener al menos 8 caracteres.",
-  terms_required: "Debes aceptar los términos y la política de privacidad.",
-};
+export { AuthError, type AuthErrorCode } from "./auth.errors";
+import { AuthError, MESSAGES, type AuthErrorCode } from "./auth.errors";
+import { cloudEnabled } from "@/lib/cloud/client";
+import { cloudLogin, cloudRegisterOwner, cloudRequestPasswordReset } from "@/lib/cloud/auth";
 
 function fail(code: AuthErrorCode): never {
   throw new AuthError(code, MESSAGES[code]);
+}
+
+/** Busca el email solo en los boxes que viven en este navegador (demo). */
+function findLocalUserByEmail(email: string) {
+  const hit = findUserByEmailGlobal(email);
+  // Los usuarios de boxes reales (copia local de Supabase) no tienen contraseña guardada.
+  return hit && hit.user.passwordHash ? hit : null;
 }
 
 export interface LoginResult {
@@ -74,13 +59,22 @@ export async function loginWithPassword(
     return { kind: "super_admin", superAdminId: sa.id };
   }
 
-  // 2) Usuario de tenant
-  const found = findUserByEmailGlobal(cleanEmail);
+  // 2) Usuario de un box de la demo (vive en este navegador)
+  const found = findLocalUserByEmail(cleanEmail);
+  const localOk = found ? await verifyPassword(password, found.user.passwordHash) : false;
+
+  // 3) Si no es de la demo, es un box real: Supabase.
+  if (!localOk && cloudEnabled()) {
+    const session = await cloudLogin(cleanEmail, password);
+    sessionStore.write(session);
+    superSessionStore.clear();
+    return { kind: "user", session };
+  }
+
   if (!found) fail("email_not_found");
   const { user, tenantId } = found;
   if (user.status === "suspended") fail("suspended");
-  const ok = await verifyPassword(password, user.passwordHash);
-  if (!ok) fail("wrong_password");
+  if (!localOk) fail("wrong_password");
 
   const tenant = tenantsRepo.getById(tenantId);
   if (tenant?.status === "suspended" && user.role !== "admin") fail("suspended");
@@ -106,11 +100,22 @@ export interface RegisterOwnerInput {
   acceptedTerms: boolean;
 }
 
-/** Registra un nuevo OWNER + tenant vacío. Devuelve la sesión iniciada. */
+/**
+ * Registra un nuevo OWNER + box. Con Supabase configurado, el box es real (nube);
+ * si no, se crea en el navegador como antes. Devuelve la sesión iniciada.
+ */
 export async function registerOwner(input: RegisterOwnerInput): Promise<Session> {
   const email = input.email.trim().toLowerCase();
   if (input.password.length < 8) fail("weak_password");
   if (!input.acceptedTerms) fail("terms_required");
+
+  if (cloudEnabled()) {
+    if (superAdminsStore.findByEmail(email)) fail("email_already_used");
+    const session = await cloudRegisterOwner({ ...input, email });
+    sessionStore.write(session);
+    superSessionStore.clear();
+    return session;
+  }
 
   if (superAdminsStore.findByEmail(email)) fail("email_already_used");
   if (findUserByEmailGlobal(email)) fail("email_already_used");
@@ -192,6 +197,8 @@ const RESET_TTL_MIN = 15;
 export interface RequestResetResult {
   code: string; // devolvemos el código porque no hay email real (modo demo)
   expiresAt: string;
+  /** true si la cuenta es de un box real: el enlace llega por email. */
+  cloud?: boolean;
 }
 
 export async function requestPasswordReset(
@@ -199,7 +206,11 @@ export async function requestPasswordReset(
 ): Promise<RequestResetResult> {
   const cleanEmail = email.trim().toLowerCase();
   const sa = superAdminsStore.findByEmail(cleanEmail);
-  const found = findUserByEmailGlobal(cleanEmail);
+  const found = findLocalUserByEmail(cleanEmail);
+  if (!sa && !found && cloudEnabled()) {
+    await cloudRequestPasswordReset(cleanEmail);
+    return { code: "", expiresAt: "", cloud: true };
+  }
   if (!sa && !found) fail("email_not_found");
   const userId = sa ? `sa:${sa.id}` : found!.user.id;
 
