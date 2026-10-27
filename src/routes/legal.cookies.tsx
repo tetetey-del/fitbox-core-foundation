@@ -22,7 +22,7 @@ export const Route = createFileRoute("/legal/cookies")({
 
 function CookiesPage() {
   return (
-    <LegalLayout title="Política de cookies" sections={SECTIONS} updatedAt="4 de julio de 2026">
+    <LegalLayout title="Política de cookies" sections={SECTIONS} updatedAt="27 de octubre de 2026">
       <LegalSectionBlock id="que-son" title={SECTIONS[0].title}>
         <p>
           Las cookies son pequeños archivos que un sitio web almacena en tu dispositivo cuando lo visitas. Se usan

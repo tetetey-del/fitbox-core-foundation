@@ -47,26 +47,7 @@ export function LandingFooter() {
         />
       </div>
       <div className="border-t border-border/60 py-4 text-center text-[11px] text-muted-foreground space-y-1">
-        <div>
-          {t.basedOn}{" "}
-          <a
-            href={credits.productOf.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-foreground transition-colors"
-          >
-            {credits.productOf.name}
-          </a>
-          {" "}· {t.createdBy}{" "}
-          <a
-            href={credits.createdBy.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-foreground transition-colors"
-          >
-            {credits.createdBy.name}
-          </a>
-        </div>
+        <div>{t.madeBy} {credits.madeBy}</div>
         <div>© {new Date().getFullYear()} Kinflow · {t.demo}</div>
       </div>
     </footer>

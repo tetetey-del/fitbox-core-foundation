@@ -143,8 +143,7 @@ const es = {
     cookies: "Cookies",
     terms: "Términos",
     notice: "Aviso legal",
-    basedOn: "Basado en la plantilla de",
-    createdBy: "creada por",
+    madeBy: "Hecho por",
     demo: "Demo: los datos se guardan en tu navegador",
   },
 };
@@ -287,8 +286,7 @@ const en: LandingCopy = {
     cookies: "Cookies",
     terms: "Terms",
     notice: "Legal notice",
-    basedOn: "Based on the template by",
-    createdBy: "created by",
+    madeBy: "Made by",
     demo: "Demo: data is stored in your browser",
   },
 };

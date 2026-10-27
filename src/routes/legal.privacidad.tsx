@@ -28,26 +28,30 @@ export const Route = createFileRoute("/legal/privacidad")({
 
 function PrivacidadPage() {
   return (
-    <LegalLayout title="Política de privacidad" sections={SECTIONS} updatedAt="4 de julio de 2026">
+    <LegalLayout title="Política de privacidad" sections={SECTIONS} updatedAt="27 de octubre de 2026">
       <LegalSectionBlock id="responsable" title={SECTIONS[0].title}>
         <p>
-          El responsable del tratamiento de los datos personales recogidos a través de la plataforma Kinflow es
-          <strong> {company.legalName}</strong>, con CIF <strong>{company.taxId}</strong>, domicilio en <strong>{company.address}</strong>
-          y correo electrónico de contacto <strong>{company.emails.privacy}</strong>.
+          El responsable del tratamiento de los datos de los gimnasios que contratan Kinflow y de los visitantes de
+          esta web es <strong>{company.legalName}</strong> (nombre comercial {company.tradeName}), con NIF{" "}
+          <strong>{company.taxId}</strong>, domicilio en <strong>{company.address}</strong> y correo electrónico de
+          contacto <strong>{company.emails.privacy}</strong>.
         </p>
         <p>
-          Si has contratado Kinflow como titular de un gimnasio o box, actúas como responsable del tratamiento de los
-          datos de tus socios; Kinflow actúa en tal caso como encargado del tratamiento en los términos del contrato
-          suscrito.
+          <strong>Si eres socio de un gimnasio que usa Kinflow</strong>, el responsable de tus datos es tu gimnasio.
+          Kinflow los trata por su cuenta, como encargado del tratamiento (art. 28 RGPD), solo para prestarle el
+          servicio. Para ejercer tus derechos puedes dirigirte a tu gimnasio o escribirnos y se lo haremos llegar.
         </p>
       </LegalSectionBlock>
 
       <LegalSectionBlock id="datos" title={SECTIONS[1].title}>
         <p>Podemos recabar y tratar las siguientes categorías de datos:</p>
         <ul className="list-disc pl-5 space-y-1">
-          <li>Datos identificativos: nombre, apellidos, email, teléfono.</li>
+          <li>Datos identificativos y de contacto: nombre, apellidos, email, teléfono, fecha de nacimiento, DNI/NIE y dirección.</li>
+          <li>Contacto de emergencia: nombre y teléfono de la persona que el socio indique.</li>
+          <li>Fotografía de perfil, si el socio decide subirla.</li>
           <li>Datos de la cuenta: contraseña cifrada, rol, historial de accesos.</li>
-          <li>Datos de la relación: plan contratado, cuotas, historial de asistencia, PRs deportivos.</li>
+          <li>Datos de la relación: plan contratado, cuotas y pagos, reservas, historial de asistencia, marcas personales (PRs), rutinas y retos.</li>
+          <li>Mediciones de progreso (por ejemplo, peso o perímetros), solo si el socio decide registrarlas. El socio elige si las comparte con sus entrenadores.</li>
           <li>Datos técnicos: dirección IP aproximada, tipo de dispositivo y navegador.</li>
         </ul>
       </LegalSectionBlock>
@@ -56,6 +60,7 @@ function PrivacidadPage() {
         <p>Tratamos los datos con las siguientes finalidades:</p>
         <ul className="list-disc pl-5 space-y-1">
           <li>Prestación del servicio contratado (reservas, socios, cuotas, PRs, feed).</li>
+          <li>Identificar al socio en el gimnasio y poder avisar a su contacto de emergencia si ocurre un incidente durante el entrenamiento.</li>
           <li>Gestión de accesos y seguridad de la cuenta.</li>
           <li>Comunicaciones internas relativas al servicio (avisos, notificaciones).</li>
           <li>Cumplimiento de obligaciones legales, fiscales y contables.</li>
@@ -68,6 +73,15 @@ function PrivacidadPage() {
           (art. 6.1.b RGPD), así como el <strong>cumplimiento de obligaciones legales</strong> aplicables
           (art. 6.1.c RGPD) y, en su caso, el <strong>interés legítimo</strong> en garantizar la seguridad y
           continuidad del servicio (art. 6.1.f RGPD).
+        </p>
+        <p>
+          La fotografía de perfil y las mediciones de progreso se tratan con el <strong>consentimiento</strong> del
+          socio (arts. 6.1.a y 9.2.a RGPD), que puede retirarlo en cualquier momento borrando la foto o los datos,
+          o dejando de compartirlos con sus entrenadores, desde Mi cuenta.
+        </p>
+        <p>
+          Quien indica un contacto de emergencia debe informar a esa persona de que ha facilitado su nombre y
+          teléfono para ese fin.
         </p>
       </LegalSectionBlock>
 
@@ -82,15 +96,17 @@ function PrivacidadPage() {
       <LegalSectionBlock id="cesion" title={SECTIONS[5].title}>
         <p>
           No se cederán datos a terceros salvo obligación legal. Podemos utilizar proveedores tecnológicos que
-          actúan como encargados del tratamiento con garantías adecuadas, en particular servicios de hosting y
-          envío de comunicaciones. El listado actualizado puede solicitarse a <strong>{company.emails.privacy}</strong>.
+          actúan como encargados del tratamiento con garantías adecuadas: <strong>Vercel Inc.</strong> (alojamiento de
+          la web) y <strong>Google</strong> (correo electrónico de contacto). El listado actualizado puede solicitarse
+          a <strong>{company.emails.privacy}</strong>.
         </p>
       </LegalSectionBlock>
 
       <LegalSectionBlock id="internacional" title={SECTIONS[6].title}>
         <p>
           En caso de que algún proveedor implique transferencias internacionales de datos, se realizarán con las
-          garantías previstas por el RGPD, incluidas cláusulas contractuales tipo aprobadas por la Comisión Europea.
+          garantías previstas por el RGPD: el Marco de Privacidad de Datos UE-EE. UU. o cláusulas contractuales tipo
+          aprobadas por la Comisión Europea. Es el caso de Vercel y Google, con sede en Estados Unidos.
         </p>
       </LegalSectionBlock>
 
@@ -99,7 +115,9 @@ function PrivacidadPage() {
           Puedes ejercer en cualquier momento tus derechos de <strong>acceso, rectificación, supresión,
           oposición, limitación del tratamiento y portabilidad</strong>, así como retirar el consentimiento
           prestado, escribiendo a <strong>{company.emails.privacy}</strong>. También tienes derecho a presentar una reclamación
-          ante la Agencia Española de Protección de Datos (www.aepd.es).
+          ante la Agencia Española de Protección de Datos (www.aepd.es). Si estás en Argentina, también puedes
+          ejercerlos conforme a la Ley 25.326 y reclamar ante la Agencia de Acceso a la Información Pública
+          (www.argentina.gob.ar/aaip).
         </p>
       </LegalSectionBlock>
 
@@ -113,9 +131,9 @@ function PrivacidadPage() {
 
       <LegalSectionBlock id="menores" title={SECTIONS[9].title}>
         <p>
-          El servicio no está dirigido a menores de 14 años. En caso de que un box gestione socios menores de
-          edad, será responsabilidad del titular del box recabar el consentimiento paterno/tutor conforme a la
-          normativa vigente.
+          Los menores de 14 años no pueden crear su propia cuenta. Si un gimnasio gestiona socios menores de edad,
+          es responsabilidad del gimnasio recabar el consentimiento de sus padres o tutores conforme a la normativa
+          vigente (art. 7 LOPDGDD).
         </p>
       </LegalSectionBlock>
 

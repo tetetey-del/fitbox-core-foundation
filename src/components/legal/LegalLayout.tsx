@@ -46,11 +46,6 @@ export function LegalLayout({
           <p className="text-xs text-muted-foreground uppercase tracking-wide">Legal</p>
           <h1 className="text-3xl font-semibold tracking-tight mt-2">{title}</h1>
           <p className="mt-2 text-xs text-muted-foreground">Última actualización: {updatedAt}</p>
-          <div className="mt-4 rounded-md border border-[#14B8A6]/30 bg-[#14B8A6]/10 px-4 py-3 text-xs">
-            Estos textos son una <strong>plantilla base</strong>. Antes de operar en producción,
-            revísalos con un profesional jurídico y confirma que los datos del titular
-            configurados en <code>src/config/company.ts</code> son los correctos.
-          </div>
         </header>
 
         <div className="grid gap-10 md:grid-cols-[220px_1fr]">
