@@ -177,6 +177,19 @@ export function refundCredit(userId: string): void {
   });
 }
 
+/**
+ * Ajuste manual de créditos desde administración (quitar o devolver clases).
+ * Nunca deja los créditos por debajo de 0.
+ */
+export function adjustCredits(userId: string, delta: number): { ok: boolean; remaining?: number; reason?: string } {
+  const { needsCredit, membership } = inspectCredits(userId);
+  if (!membership) return { ok: false, reason: "El socio no tiene un plan activo" };
+  if (!needsCredit) return { ok: false, reason: "El plan es ilimitado: no usa créditos" };
+  const remaining = Math.max(0, (membership.creditsRemaining ?? 0) + delta);
+  membershipsRepo.update(membership.id, { creditsRemaining: remaining });
+  return { ok: true, remaining };
+}
+
 // ---- Pagos ----
 
 export function registerPayment(input: {

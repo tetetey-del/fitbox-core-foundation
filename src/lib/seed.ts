@@ -29,8 +29,8 @@ const SEEDED_KEY = buildKey(null, "seeded");
 const DEMO_CLEARED_KEY = buildKey(null, "demo_cleared");
 /** Versión del gimnasio de demo. Si cambia, los navegadores con la demo vieja se vuelven a sembrar. */
 const DEMO_VERSION_KEY = buildKey(null, "demo_version");
-const DEMO_VERSION = 5;
-/** Boxes de demos anteriores que se borran al actualizar: FitBox (v1) y versiones previas de Chia (v2 a v4). */
+const DEMO_VERSION = 6;
+/** Boxes de demos anteriores que se borran al actualizar: FitBox (v1) y versiones previas de Chia (v2 a v5). */
 const OLD_DEMO_SLUGS = ["crossfit-norte", "box-sur", "chia-training"];
 const OLD_SUPERADMIN_EMAILS = ["isaac@fitbox.io"];
 
@@ -164,7 +164,7 @@ function createChiaTenant(): SeedResult {
     brandColor: CHIA.brandColor,
     themeId: CHIA.themeId,
     status: "active",
-    settings: { cancellationWindowHours: 2, enabledModules: DEFAULT_MODULES, currency: "EUR" },
+    settings: { cancellationWindowHours: 1, enabledModules: DEFAULT_MODULES, currency: "EUR" },
   });
   const owner = createUserInTenant(tenant.id, { ...CHIA.owner, role: "admin" });
   const coaches = CHIA.coaches.map((c) => createUserInTenant(tenant.id, { name: c.name, email: c.email, role: "coach" }));

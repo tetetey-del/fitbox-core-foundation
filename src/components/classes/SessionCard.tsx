@@ -11,11 +11,15 @@ interface Props {
   onClick?: () => void;
   active?: boolean;
   compact?: boolean;
+  /** La clase ya empezó o terminó. */
+  past?: boolean;
+  /** Estado de la reserva del socio que mira (para resaltarla). */
+  booked?: "confirmed" | "waitlist";
   /** Ocupación precalculada por el contenedor (evita recalcular en cada card). */
   occupancy?: { confirmed: Booking[]; waitlist: Booking[]; capacity: number };
 }
 
-export function SessionCard({ session, template, coach, onClick, active, compact, occupancy }: Props) {
+export function SessionCard({ session, template, coach, onClick, active, compact, occupancy, past, booked }: Props) {
   const occ = occupancy ?? getSessionOccupancy(session.id);
   const cancelled = session.status === "cancelled";
 
@@ -28,7 +32,8 @@ export function SessionCard({ session, template, coach, onClick, active, compact
         "w-full text-left rounded-md border border-border bg-card p-3 transition-colors",
         "hover:border-border/80 hover:bg-muted/40",
         active && "ring-2 ring-brand",
-        cancelled && "opacity-60",
+        booked && "border-[var(--brand)] ring-1 ring-[var(--brand)]",
+        (cancelled || past) && "opacity-50",
       )}
     >
       <div className="flex items-center gap-2">
@@ -41,11 +46,22 @@ export function SessionCard({ session, template, coach, onClick, active, compact
         <span className="text-sm font-semibold text-foreground truncate">
           {template?.name ?? "Clase"}
         </span>
-        {cancelled && (
+        {cancelled ? (
           <span className="ml-auto text-[10px] uppercase tracking-wide text-red-400 font-medium">
             Cancelada
           </span>
-        )}
+        ) : booked ? (
+          <span
+            className="ml-auto shrink-0 rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wide font-semibold"
+            style={{ backgroundColor: "var(--brand)", color: "var(--primary-foreground)" }}
+          >
+            {booked === "confirmed" ? "Reservada" : "En espera"}
+          </span>
+        ) : past ? (
+          <span className="ml-auto text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
+            Finalizada
+          </span>
+        ) : null}
       </div>
 
       <div className="mt-1.5 flex items-center gap-3 text-xs text-muted-foreground">

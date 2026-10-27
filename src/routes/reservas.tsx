@@ -21,10 +21,12 @@ import {
   weekDays,
   formatLongDay,
 } from "@/lib/date";
-import type { Booking, ClassSession } from "@/types";
+import type { Booking, ClassSession, ClassTemplate } from "@/types";
 import {
   bookSession,
   findSameActivityBookingOnDay,
+  hasSessionStarted,
+  isLateCancellation,
   cancelBooking,
   getUserBooking,
 } from "@/lib/services/booking.service";
@@ -140,6 +142,10 @@ function ReservasPage() {
       toast.error("La sesión está cancelada");
       return;
     }
+    if (hasSessionStarted(s)) {
+      toast.error("Esta clase ya pasó");
+      return;
+    }
     const existing = getUserBooking(s.id, currentUser.id);
     if (!existing) {
       // Aviso antes de abrir el cartel si ya tiene esta actividad ese día
@@ -163,7 +169,11 @@ function ReservasPage() {
       const res = cancelBooking(existing.id, currentUser.role);
       if (!res.ok) toast.error(res.reason ?? "No se pudo cancelar");
       else {
-        toast.success("Reserva cancelada");
+        if (res.charged)
+          toast.warning("Reserva cancelada", {
+            description: "Cancelaste con poca antelación: la clase se descontó igual.",
+          });
+        else toast.success("Reserva cancelada");
         if (res.promoted)
           toast.info("Alguien de la lista de espera ha pasado a confirmado");
       }
@@ -222,6 +232,12 @@ function ReservasPage() {
                   onClick={() => handleCardClick(s)}
                   active={selectedId === s.id}
                   occupancy={occ}
+                  past={hasSessionStarted(s)}
+                  booked={
+                    !isStaff && myBooking && myBooking.status !== "cancelled"
+                      ? (myBooking.status as "confirmed" | "waitlist")
+                      : undefined
+                  }
                 />
 
                 {!isStaff && myBooking && occ && (
@@ -247,6 +263,15 @@ function ReservasPage() {
         title="Reservas"
         description="Calendario semanal de clases. Reserva, cancela o gestiona asistentes."
       />
+
+      {!isStaff && currentUser && (
+        <MyUpcomingClasses
+          userId={currentUser.id}
+          templateById={templateById}
+          onCancel={(session) => setPending({ session, action: "cancel" })}
+          version={dataVersion}
+        />
+      )}
 
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <WeekNavigator
@@ -309,6 +334,9 @@ function ReservasPage() {
             const when = `${formatLongDay(pending.session.date)} a las ${pending.session.startTime}`;
             const occ = occByS.get(pending.session.id);
             const full = pending.action === "book" && !!occ && occ.free <= 0;
+            const myBk = currentUser ? getUserBooking(pending.session.id, currentUser.id) : null;
+            const lateInfo = isLateCancellation(pending.session);
+            const lateCharge = pending.action === "cancel" && myBk?.status === "confirmed" && lateInfo.late;
             return (
               <>
                 <AlertDialogHeader>
@@ -320,13 +348,15 @@ function ReservasPage() {
                       ? full
                         ? `La clase de ${name} del ${when} está completa. ¿Quieres entrar en la lista de espera?`
                         : `Te estás inscribiendo a ${name}, ${when}. ¿Confirmas?`
-                      : `¿Quieres cancelar tu reserva de ${name}, ${when}?`}
+                      : lateCharge
+                        ? `Faltan menos de ${lateInfo.windowHours === 1 ? "1 hora" : `${lateInfo.windowHours} horas`} para ${name} (${when}). Si cancelas ahora, la clase se te descuenta igual.`
+                        : `¿Quieres cancelar tu reserva de ${name}, ${when}? Se te devuelve la clase.`}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>{pending.action === "book" ? "Cancelar" : "Volver"}</AlertDialogCancel>
                   <AlertDialogAction onClick={confirmPending}>
-                    {pending.action === "book" ? (full ? "Entrar en espera" : "Confirmar") : "Sí, cancelar"}
+                    {pending.action === "book" ? (full ? "Entrar en espera" : "Confirmar") : lateCharge ? "Cancelar igual" : "Sí, cancelar"}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </>
@@ -373,4 +403,73 @@ function MemberBadge({
     );
   }
   return null;
+}
+
+/** Bloque visible arriba de Reservas con las próximas clases del socio. */
+function MyUpcomingClasses({
+  userId,
+  templateById,
+  onCancel,
+  version,
+}: {
+  userId: string;
+  templateById: Map<string, ClassTemplate>;
+  onCancel: (session: ClassSession) => void;
+  version: number;
+}) {
+  const items = useMemo(() => {
+    return bookingsRepo
+      .query({ userId })
+      .filter((b) => b.status === "confirmed" || b.status === "waitlist")
+      .map((b) => ({ b, s: classSessionsRepo.getById(b.sessionId) }))
+      .filter((x): x is { b: Booking; s: ClassSession } => !!x.s && x.s.status !== "cancelled" && !hasSessionStarted(x.s))
+      .sort((a, b) => (a.s.date + a.s.startTime).localeCompare(b.s.date + b.s.startTime))
+      .slice(0, 5);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, version]);
+
+  return (
+    <section className="mb-5 rounded-lg border border-[var(--brand)]/40 bg-card p-4">
+      <h2 className="text-sm font-semibold flex items-center gap-2">
+        <CalendarDays className="h-4 w-4" strokeWidth={1.5} style={{ color: "var(--brand)" }} />
+        Mis próximas clases
+      </h2>
+      {items.length === 0 ? (
+        <p className="mt-2 text-sm text-muted-foreground">
+          Todavía no tienes clases reservadas. Elige una en el calendario de abajo.
+        </p>
+      ) : (
+        <ul className="mt-3 divide-y divide-border">
+          {items.map(({ b, s }) => {
+            const tpl = templateById.get(s.templateId);
+            return (
+              <li key={b.id} className="flex items-center gap-3 py-2">
+                <span
+                  aria-hidden
+                  className="h-2.5 w-2.5 rounded-full shrink-0"
+                  style={{ backgroundColor: tpl?.color ?? "var(--brand)" }}
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium truncate">
+                    {tpl?.name ?? "Clase"} · {s.startTime}
+                  </div>
+                  <div className="text-xs text-muted-foreground first-letter:uppercase">
+                    {formatLongDay(s.date)}
+                    {b.status === "waitlist" && ` · en espera (#${b.position ?? "?"})`}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onCancel(s)}
+                  className="shrink-0 text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                >
+                  Cancelar
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </section>
+  );
 }

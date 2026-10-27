@@ -61,7 +61,7 @@ function ConfigPage() {
   useDataVersion();
   const [name, setName] = useState(currentTenant?.name ?? "");
   const [cancellationWindow, setCancellationWindow] = useState(
-    currentTenant?.settings?.cancellationWindowHours ?? 2,
+    currentTenant?.settings?.cancellationWindowHours ?? 1,
   );
   const [currency, setCurrency] = useState<CurrencyCode>(currentTenant?.settings?.currency ?? "EUR");
   const [wodVisibility, setWodVisibility] = useState<WodVisibility>(
@@ -73,7 +73,7 @@ function ConfigPage() {
   useEffect(() => {
     if (!currentTenant) return;
     setName(currentTenant.name);
-    setCancellationWindow(currentTenant.settings?.cancellationWindowHours ?? 2);
+    setCancellationWindow(currentTenant.settings?.cancellationWindowHours ?? 1);
     setCurrency(currentTenant.settings?.currency ?? "EUR");
     setWodVisibility(currentTenant.settings?.wodVisibility ?? "visible");
   }, [currentTenant]);
@@ -123,7 +123,7 @@ function ConfigPage() {
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">
-                  Cancelación mínima (horas)
+                  Cancelar sin cargo hasta (horas antes de la clase)
                 </Label>
                 <Input
                   type="number"
@@ -131,6 +131,9 @@ function ConfigPage() {
                   value={cancellationWindow}
                   onChange={(e) => setCancellationWindow(Number(e.target.value))}
                 />
+                <p className="text-xs text-muted-foreground">
+                  Si un socio cancela con menos antelación, la clase se le descuenta igual.
+                </p>
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">Moneda</Label>
