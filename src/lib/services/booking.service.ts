@@ -68,6 +68,36 @@ export interface BookOptions {
   bypassCredits?: boolean;
 }
 
+/**
+ * Si el socio ya tiene una reserva (confirmada o en espera) de la misma actividad ese día,
+ * devuelve esa clase. Misma actividad = misma plantilla, o mismo tipo de clase salvo "otro".
+ * Se puede ir a actividades distintas el mismo día (CrossFit y Halterofilia, por ejemplo).
+ */
+export function findSameActivityBookingOnDay(
+  sessionId: string,
+  userId: string,
+): { session: ClassSession; activityName: string } | null {
+  const session = classSessionsRepo.getById(sessionId);
+  if (!session) return null;
+  const templates = new Map(classTemplatesRepo.list().map((t) => [t.id, t]));
+  const tpl = templates.get(session.templateId);
+  const sameDay = classSessionsRepo
+    .list()
+    .filter((s) => s.date === session.date && s.id !== session.id && s.status !== "cancelled");
+  for (const other of sameDay) {
+    const otherTpl = templates.get(other.templateId);
+    const sameActivity =
+      other.templateId === session.templateId ||
+      (!!tpl && !!otherTpl && tpl.type !== "otro" && otherTpl.type === tpl.type);
+    if (!sameActivity) continue;
+    const b = getUserBooking(other.id, userId);
+    if (b && b.status !== "cancelled") {
+      return { session: other, activityName: otherTpl?.name ?? tpl?.name ?? "esa actividad" };
+    }
+  }
+  return null;
+}
+
 export function bookSession(
   sessionId: string,
   userId: string,
@@ -85,6 +115,14 @@ export function bookSession(
 
     const existing = getUserBooking(sessionId, userId);
     if (existing) return { ok: false, reason: "Ya tienes una reserva en esta sesión" };
+
+    const sameActivity = findSameActivityBookingOnDay(sessionId, userId);
+    if (sameActivity) {
+      return {
+        ok: false,
+        reason: `Ya tienes ${sameActivity.activityName} ese día a las ${sameActivity.session.startTime}. Solo puedes reservar una vez por actividad y día.`,
+      };
+    }
 
   // Validación de créditos/plan (solo cuando el propio socio se apunta)
   if (!opts.bypassCredits) {

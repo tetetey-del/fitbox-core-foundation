@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { membershipPlansRepo } from "@/lib/storage/repositories/membershipPlans.repo";
-import { assignMembership } from "@/lib/services/membership.service";
+import { assignMembership, hasUsedPlan } from "@/lib/services/membership.service";
 import { parseDateKey, toDateKey } from "@/lib/date";
 import { notifyDataChanged } from "@/lib/data-bus";
 import { registerPayment } from "@/lib/services/membership.service";
@@ -88,9 +88,14 @@ export function AssignPlanDialog({ open, onOpenChange, userId }: Props) {
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {plans.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
+                    <SelectItem
+                      key={p.id}
+                      value={p.id}
+                      disabled={!!p.oncePerMember && hasUsedPlan(userId, p.id)}
+                    >
                       {p.name} — {formatPlanPrice(p.priceMonthly)}
                       {p.type === "credits" ? ` · ${p.creditsPerMonth} créditos` : " · Ilimitado"}
+                      {p.oncePerMember && hasUsedPlan(userId, p.id) ? " · ya lo usó" : ""}
                     </SelectItem>
                   ))}
                 </SelectContent>

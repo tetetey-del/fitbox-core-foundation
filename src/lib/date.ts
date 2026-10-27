@@ -75,6 +75,13 @@ export function hoursBetween(a: Date, b: Date): number {
   return (b.getTime() - a.getTime()) / (1000 * 60 * 60);
 }
 
+/** "martes 28 de octubre" a partir de "2026-10-28". */
+export function formatLongDay(iso: string): string {
+  return parseDateKey(iso)
+    .toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })
+    .replace(",", "");
+}
+
 export function formatDayHeader(d: Date): string {
   return `${DAY_LABELS[(d.getDay() + 6) % 7]} ${String(d.getDate()).padStart(2, "0")}`;
 }

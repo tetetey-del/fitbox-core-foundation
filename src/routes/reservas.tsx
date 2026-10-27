@@ -19,10 +19,12 @@ import {
   startOfWeek,
   toDateKey,
   weekDays,
+  formatLongDay,
 } from "@/lib/date";
 import type { Booking, ClassSession } from "@/types";
 import {
   bookSession,
+  findSameActivityBookingOnDay,
   cancelBooking,
   getUserBooking,
 } from "@/lib/services/booking.service";
@@ -30,6 +32,16 @@ import {
 
 
 import { getPublishedWodByDate } from "@/lib/services/wods.service";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { WodViewer } from "@/components/wods/WodViewer";
 
 export const Route = createFileRoute("/reservas")({ component: ReservasPage });
@@ -41,6 +53,8 @@ function ReservasPage() {
 
   const [monday, setMonday] = useState<Date>(() => startOfWeek(new Date()));
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  /** Clase que el socio está por reservar o cancelar, a la espera de que confirme. */
+  const [pending, setPending] = useState<{ session: ClassSession; action: "book" | "cancel" } | null>(null);
   const [selectedDayKey, setSelectedDayKey] = useState<string>(() => toDateKey(new Date()));
 
 
@@ -126,6 +140,24 @@ function ReservasPage() {
       toast.error("La sesión está cancelada");
       return;
     }
+    const existing = getUserBooking(s.id, currentUser.id);
+    if (!existing) {
+      // Aviso antes de abrir el cartel si ya tiene esta actividad ese día
+      const same = findSameActivityBookingOnDay(s.id, currentUser.id);
+      if (same) {
+        toast.error(`Ya tienes ${same.activityName} ese día a las ${same.session.startTime}`, {
+          description: "Solo puedes reservar una vez por actividad y día.",
+        });
+        return;
+      }
+    }
+    setPending({ session: s, action: existing ? "cancel" : "book" });
+  };
+
+  const confirmPending = () => {
+    if (!pending || !currentUser) return;
+    const s = pending.session;
+    setPending(null);
     const existing = getUserBooking(s.id, currentUser.id);
     if (existing) {
       const res = cancelBooking(existing.id, currentUser.role);
@@ -268,6 +300,40 @@ function ReservasPage() {
         })()}
       </div>
 
+
+      <AlertDialog open={!!pending} onOpenChange={(o) => !o && setPending(null)}>
+        <AlertDialogContent>
+          {pending && (() => {
+            const tpl = templateById.get(pending.session.templateId);
+            const name = tpl?.name ?? "la clase";
+            const when = `${formatLongDay(pending.session.date)} a las ${pending.session.startTime}`;
+            const occ = occByS.get(pending.session.id);
+            const full = pending.action === "book" && !!occ && occ.free <= 0;
+            return (
+              <>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    {pending.action === "book" ? (full ? "Lista de espera" : "Confirmar reserva") : "Cancelar reserva"}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {pending.action === "book"
+                      ? full
+                        ? `La clase de ${name} del ${when} está completa. ¿Quieres entrar en la lista de espera?`
+                        : `Te estás inscribiendo a ${name}, ${when}. ¿Confirmas?`
+                      : `¿Quieres cancelar tu reserva de ${name}, ${when}?`}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{pending.action === "book" ? "Cancelar" : "Volver"}</AlertDialogCancel>
+                  <AlertDialogAction onClick={confirmPending}>
+                    {pending.action === "book" ? (full ? "Entrar en espera" : "Confirmar") : "Sí, cancelar"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </>
+            );
+          })()}
+        </AlertDialogContent>
+      </AlertDialog>
 
       <SessionDetailSheet
         open={!!selected}

@@ -48,6 +48,11 @@ export interface AssignResult {
   reason?: string;
 }
 
+/** ¿El socio ya tuvo alguna vez este plan? (para planes de una sola vez, como la clase de prueba) */
+export function hasUsedPlan(userId: string, planId: string): boolean {
+  return membershipsRepo.query({ userId }).some((m) => m.planId === planId);
+}
+
 export function assignMembership(
   userId: string,
   planId: string,
@@ -57,6 +62,9 @@ export function assignMembership(
   if (!tenantId) return { ok: false, reason: "Sin sesión activa" };
   const plan = membershipPlansRepo.getById(planId);
   if (!plan) return { ok: false, reason: "Plan no encontrado" };
+  if (plan.oncePerMember && hasUsedPlan(userId, planId)) {
+    return { ok: false, reason: `"${plan.name}" solo se puede usar una vez por persona y este socio ya lo usó` };
+  }
 
   // Expira cualquier membresía activa previa del mismo usuario
   const previous = membershipsRepo.query({ userId, status: "active" });

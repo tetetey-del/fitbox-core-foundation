@@ -244,6 +244,8 @@ export interface MembershipPlan extends BaseEntity {
   creditsPerMonth?: number;
   /** Duración del plan en meses: 1 mensual, 3 trimestral, 6 semestral, 12 anual. Por defecto 1. */
   durationMonths?: number;
+  /** Si es true, cada persona puede tenerlo una sola vez (por ejemplo, la clase de prueba). */
+  oncePerMember?: boolean;
   active: boolean;
 }
 

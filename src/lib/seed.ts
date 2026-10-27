@@ -29,8 +29,8 @@ const SEEDED_KEY = buildKey(null, "seeded");
 const DEMO_CLEARED_KEY = buildKey(null, "demo_cleared");
 /** Versión del gimnasio de demo. Si cambia, los navegadores con la demo vieja se vuelven a sembrar. */
 const DEMO_VERSION_KEY = buildKey(null, "demo_version");
-const DEMO_VERSION = 4;
-/** Boxes de demos anteriores que se borran al actualizar: FitBox (v1) y versiones previas de Chia (v2 y v3, en pesos). */
+const DEMO_VERSION = 5;
+/** Boxes de demos anteriores que se borran al actualizar: FitBox (v1) y versiones previas de Chia (v2 a v4). */
 const OLD_DEMO_SLUGS = ["crossfit-norte", "box-sur", "chia-training"];
 const OLD_SUPERADMIN_EMAILS = ["isaac@fitbox.io"];
 
@@ -84,8 +84,8 @@ const CHIA = {
  * La clase individual suele cobrarse entre 15 y 20 €.
  * `priceMonthly` es el precio de cada período (6 meses en el semestral, 12 en el anual).
  */
-const CHIA_PLANS: Array<{ key: string; name: string; price: number; type: "credits" | "unlimited"; credits?: number; months?: number; perWeek: number }> = [
-  { key: "prueba", name: "Clase de prueba", price: 0, type: "credits", credits: 1, perWeek: 1 },
+const CHIA_PLANS: Array<{ key: string; name: string; price: number; type: "credits" | "unlimited"; credits?: number; months?: number; perWeek: number; once?: boolean }> = [
+  { key: "prueba", name: "Clase de prueba", price: 0, type: "credits", credits: 1, perWeek: 1, once: true },
   { key: "suelta", name: "Clase individual", price: 18, type: "credits", credits: 1, perWeek: 1 },
   { key: "8", name: "8 clases · 2 por semana", price: 69, type: "credits", credits: 8, perWeek: 2 },
   { key: "12", name: "12 clases · 3 por semana", price: 85, type: "credits", credits: 12, perWeek: 3 },
@@ -379,6 +379,7 @@ function seedClassesFor({ tenant, coaches, members }: SeedResult) {
         type: p.type,
         creditsPerMonth: p.credits,
         durationMonths: p.months ?? 1,
+        oncePerMember: p.once ?? false,
         active: true,
       }),
     );
@@ -482,6 +483,8 @@ function seedClassesFor({ tenant, coaches, members }: SeedResult) {
     const perWeek = CHIA_PLANS.find((p) => p.key === def.plan)?.perWeek ?? 2;
     if (!user) return;
     const byWeek = new Map<string, number>();
+    // Misma regla que la app: una sola reserva por actividad y por día
+    const activityDays = new Set<string>();
     // Orden mezclado para repartir las reservas en toda la semana, no solo al principio
     const order = sessions.map((s) => ({ s, k: rnd() })).sort((a, b) => a.k - b.k).map((x) => x.s);
     for (const s of order) {
@@ -490,12 +493,14 @@ function seedClassesFor({ tenant, coaches, members }: SeedResult) {
       if (!def.times.includes(s.startTime)) continue;
       const wk = toDateKey(startOfWeek(when));
       if ((byWeek.get(wk) ?? 0) >= perWeek) continue;
+      if (activityDays.has(`${s.date}|${s.templateId}`)) continue;
       if (rnd() < 0.35) continue;
       const count = booked.get(s.id) ?? 0;
       if (count >= s.capacity) continue;
       const bk = bookingsRepo.create({ tenantId: tenant.id, sessionId: s.id, userId: user.id, status: "confirmed" });
       booked.set(s.id, count + 1);
       byWeek.set(wk, (byWeek.get(wk) ?? 0) + 1);
+      activityDays.add(`${s.date}|${s.templateId}`);
       if (when < today) {
         checkinsRepo.create({ tenantId: tenant.id, bookingId: bk.id, sessionId: s.id, userId: user.id, checkedInAt: when.toISOString() });
       }
