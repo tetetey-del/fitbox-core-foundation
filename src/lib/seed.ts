@@ -80,19 +80,19 @@ const CHIA = {
 };
 
 /**
- * Planes en euros. Precios orientativos de un box en España (2026).
+ * Planes en euros. Precios orientativos de un box en España (2026): el pase libre suele estar entre 100 y 110 €.
  * La clase individual suele cobrarse entre 15 y 20 €.
  * `priceMonthly` es el precio de cada período (6 meses en el semestral, 12 en el anual).
  */
 const CHIA_PLANS: Array<{ key: string; name: string; price: number; type: "credits" | "unlimited"; credits?: number; months?: number; perWeek: number }> = [
   { key: "prueba", name: "Clase de prueba", price: 0, type: "credits", credits: 1, perWeek: 1 },
   { key: "suelta", name: "Clase individual", price: 18, type: "credits", credits: 1, perWeek: 1 },
-  { key: "8", name: "8 clases · 2 por semana", price: 59, type: "credits", credits: 8, perWeek: 2 },
-  { key: "12", name: "12 clases · 3 por semana", price: 69, type: "credits", credits: 12, perWeek: 3 },
-  { key: "16", name: "16 clases · 4 por semana", price: 79, type: "credits", credits: 16, perWeek: 4 },
-  { key: "libre", name: "Pase libre", price: 89, type: "unlimited", perWeek: 5 },
-  { key: "semestral", name: "Pase libre semestral (-10%)", price: 481, type: "unlimited", months: 6, perWeek: 5 },
-  { key: "anual", name: "Pase libre anual (-15%)", price: 908, type: "unlimited", months: 12, perWeek: 5 },
+  { key: "8", name: "8 clases · 2 por semana", price: 69, type: "credits", credits: 8, perWeek: 2 },
+  { key: "12", name: "12 clases · 3 por semana", price: 85, type: "credits", credits: 12, perWeek: 3 },
+  { key: "16", name: "16 clases · 4 por semana", price: 95, type: "credits", credits: 16, perWeek: 4 },
+  { key: "libre", name: "Pase libre", price: 105, type: "unlimited", perWeek: 5 },
+  { key: "semestral", name: "Pase libre semestral (-10%)", price: 567, type: "unlimited", months: 6, perWeek: 5 },
+  { key: "anual", name: "Pase libre anual (-15%)", price: 1071, type: "unlimited", months: 12, perWeek: 5 },
 ];
 
 /** Socios de la demo: plan, horario preferido y hace cuánto renovaron. */
