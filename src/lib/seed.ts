@@ -29,8 +29,8 @@ const SEEDED_KEY = buildKey(null, "seeded");
 const DEMO_CLEARED_KEY = buildKey(null, "demo_cleared");
 /** Versión del gimnasio de demo. Si cambia, los navegadores con la demo vieja se vuelven a sembrar. */
 const DEMO_VERSION_KEY = buildKey(null, "demo_version");
-const DEMO_VERSION = 3;
-/** Boxes de demos anteriores que se borran al actualizar: FitBox (v1) y Chia con su tema propio (v2). */
+const DEMO_VERSION = 4;
+/** Boxes de demos anteriores que se borran al actualizar: FitBox (v1) y versiones previas de Chia (v2 y v3, en pesos). */
 const OLD_DEMO_SLUGS = ["crossfit-norte", "box-sur", "chia-training"];
 const OLD_SUPERADMIN_EMAILS = ["isaac@fitbox.io"];
 
@@ -63,7 +63,7 @@ function seededRandom(seed: number): () => number {
   };
 }
 
-// ---- Gimnasio de demo: Chia Training (Córdoba, Argentina) ----
+// ---- Gimnasio de demo: Chia Training (en euros, pensada para mostrar en España) ----
 
 const CHIA = {
   name: "Chia Training",
@@ -80,19 +80,19 @@ const CHIA = {
 };
 
 /**
- * Planes en pesos argentinos. Precios orientativos para un box de Córdoba a fines de 2026,
- * estimados a partir de cuotas publicadas en 2025 y ajustados por inflación.
+ * Planes en euros. Precios orientativos de un box en España (2026): el pase libre suele estar entre 100 y 110 €.
+ * La clase individual suele cobrarse entre 15 y 20 €.
  * `priceMonthly` es el precio de cada período (6 meses en el semestral, 12 en el anual).
  */
 const CHIA_PLANS: Array<{ key: string; name: string; price: number; type: "credits" | "unlimited"; credits?: number; months?: number; perWeek: number }> = [
   { key: "prueba", name: "Clase de prueba", price: 0, type: "credits", credits: 1, perWeek: 1 },
-  { key: "suelta", name: "Clase individual", price: 8000, type: "credits", credits: 1, perWeek: 1 },
-  { key: "8", name: "8 clases · 2 por semana", price: 30000, type: "credits", credits: 8, perWeek: 2 },
-  { key: "12", name: "12 clases · 3 por semana", price: 36000, type: "credits", credits: 12, perWeek: 3 },
-  { key: "16", name: "16 clases · 4 por semana", price: 41000, type: "credits", credits: 16, perWeek: 4 },
-  { key: "libre", name: "Pase libre", price: 46000, type: "unlimited", perWeek: 5 },
-  { key: "semestral", name: "Pase libre semestral (-10%)", price: 248400, type: "unlimited", months: 6, perWeek: 5 },
-  { key: "anual", name: "Pase libre anual (-15%)", price: 469200, type: "unlimited", months: 12, perWeek: 5 },
+  { key: "suelta", name: "Clase individual", price: 18, type: "credits", credits: 1, perWeek: 1 },
+  { key: "8", name: "8 clases · 2 por semana", price: 69, type: "credits", credits: 8, perWeek: 2 },
+  { key: "12", name: "12 clases · 3 por semana", price: 85, type: "credits", credits: 12, perWeek: 3 },
+  { key: "16", name: "16 clases · 4 por semana", price: 95, type: "credits", credits: 16, perWeek: 4 },
+  { key: "libre", name: "Pase libre", price: 105, type: "unlimited", perWeek: 5 },
+  { key: "semestral", name: "Pase libre semestral (-10%)", price: 567, type: "unlimited", months: 6, perWeek: 5 },
+  { key: "anual", name: "Pase libre anual (-15%)", price: 1071, type: "unlimited", months: 12, perWeek: 5 },
 ];
 
 /** Socios de la demo: plan, horario preferido y hace cuánto renovaron. */
@@ -164,7 +164,7 @@ function createChiaTenant(): SeedResult {
     brandColor: CHIA.brandColor,
     themeId: CHIA.themeId,
     status: "active",
-    settings: { cancellationWindowHours: 2, enabledModules: DEFAULT_MODULES, currency: "ARS" },
+    settings: { cancellationWindowHours: 2, enabledModules: DEFAULT_MODULES, currency: "EUR" },
   });
   const owner = createUserInTenant(tenant.id, { ...CHIA.owner, role: "admin" });
   const coaches = CHIA.coaches.map((c) => createUserInTenant(tenant.id, { name: c.name, email: c.email, role: "coach" }));
@@ -782,12 +782,12 @@ function sessionsRepoFor_seed_helper(tenantId: string, programId: string) {
 function seedShopFor({ tenant, members }: SeedResult) {
   const pRepo = productsRepoFor(tenant.id);
   const items = [
-    { name: "Remera Chia", description: "Remera técnica con logo, talles S a XL.", price: 25000, category: "ropa" as const, stock: 30 },
-    { name: "Muñequeras", description: "Par de muñequeras negras.", price: 12000, category: "accesorios" as const, stock: 20 },
-    { name: "Magnesio líquido", description: "Frasco de 250 ml.", price: 9000, category: "accesorios" as const, stock: 15 },
-    { name: "Proteína whey 1 kg", description: "Sabor chocolate.", price: 45000, category: "suplementacion" as const, stock: 10 },
-    { name: "Botella 750 ml", description: "Botella de acero inoxidable.", price: 15000, category: "accesorios" as const, stock: 8 },
-    { name: "Buzo Chia", description: "Buzo negro con logo bordado.", price: 55000, category: "ropa" as const, stock: 12 },
+    { name: "Remera Chia", description: "Remera técnica con logo, talles S a XL.", price: 25, category: "ropa" as const, stock: 30 },
+    { name: "Muñequeras", description: "Par de muñequeras negras.", price: 12, category: "accesorios" as const, stock: 20 },
+    { name: "Magnesio líquido", description: "Frasco de 250 ml.", price: 9, category: "accesorios" as const, stock: 15 },
+    { name: "Proteína whey 1 kg", description: "Sabor chocolate.", price: 35, category: "suplementacion" as const, stock: 10 },
+    { name: "Botella 750 ml", description: "Botella de acero inoxidable.", price: 15, category: "accesorios" as const, stock: 8 },
+    { name: "Buzo Chia", description: "Buzo negro con logo bordado.", price: 45, category: "ropa" as const, stock: 12 },
   ];
   const created = items.map((it) => pRepo.create({ tenantId: tenant.id, ...it, imageUrl: undefined, active: true }));
   const [ana, diego] = members;
