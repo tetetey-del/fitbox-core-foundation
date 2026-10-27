@@ -19,6 +19,7 @@ import { MemberProfileTab } from "./memberDetail/MemberProfileTab";
 import { MemberMembershipTab } from "./memberDetail/MemberMembershipTab";
 import { MemberPaymentsTab } from "./memberDetail/MemberPaymentsTab";
 import { MemberAttendanceTab } from "./memberDetail/MemberAttendanceTab";
+import { UserAvatar } from "@/components/members/UserAvatar";
 
 // Re-export para no romper importadores existentes.
 export { lastAttendanceOf } from "./memberDetail/attendance.helpers";
@@ -51,7 +52,8 @@ export function MemberDetailDialog({ open, onOpenChange, user }: Props) {
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="flex flex-wrap items-center gap-2">
+              <UserAvatar name={user.name} src={user.avatar} className="h-10 w-10 text-sm" />
               {user.name}
               <MembershipBadge status={uiStatus} />
               <CreditsBadge userId={user.id} />

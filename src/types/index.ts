@@ -105,6 +105,14 @@ export interface UserProfile {
   bio?: string;
   /** Si el socio permite al staff ver sus métricas de salud. Default false. */
   showHealthToCoach?: boolean;
+  /** Datos de contacto y ficha del socio. */
+  phone?: string;
+  /** YYYY-MM-DD. Obligatoria para socios: si falta, la app les pide completarla. */
+  birthDate?: string;
+  dni?: string;
+  address?: string;
+  emergencyName?: string;
+  emergencyPhone?: string;
 }
 
 export interface User extends BaseEntity {

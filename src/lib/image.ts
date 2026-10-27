@@ -92,3 +92,34 @@ export function dataUrlBytes(dataUrl: string): number {
   const b64 = dataUrl.slice(comma + 1);
   return Math.floor((b64.length * 3) / 4);
 }
+
+/**
+ * Convierte una foto elegida por el usuario en un JPEG cuadrado chiquito (data URL),
+ * recortando el centro. Así ocupa unos 15-30 KB y entra en el almacenamiento del navegador.
+ */
+export async function photoToAvatarDataUrl(file: File, size = 256): Promise<string> {
+  if (!file.type.startsWith("image/")) throw new Error("El archivo no es una imagen");
+  if (file.size > 15 * 1024 * 1024) throw new Error("La foto pesa demasiado (máximo 15 MB)");
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const i = new Image();
+      i.onload = () => resolve(i);
+      i.onerror = () => reject(new Error("No se pudo leer la foto"));
+      i.src = url;
+    });
+    const side = Math.min(img.naturalWidth, img.naturalHeight);
+    const sx = (img.naturalWidth - side) / 2;
+    const sy = (img.naturalHeight - side) / 2;
+    const canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("No se pudo procesar la foto");
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(img, sx, sy, side, side, 0, 0, size, size);
+    return canvas.toDataURL("image/jpeg", 0.82);
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}

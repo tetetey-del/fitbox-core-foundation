@@ -22,14 +22,14 @@ import { notifyDataChanged } from "./data-bus";
 import { hashPassword } from "./crypto";
 import { usersRepoFor } from "./storage/repositories/users.repo";
 import { createInvitation } from "./services/invitations.service";
-import type { ClassTemplate, Exercise, MembershipPlan, PaymentMethod, PostType, Tenant, ThemeId, User, WodBlock } from "@/types";
+import type { ClassTemplate, Exercise, MembershipPlan, PaymentMethod, PostType, Tenant, ThemeId, User, UserProfile, WodBlock } from "@/types";
 import { DEFAULT_MODULES } from "@/types";
 
 const SEEDED_KEY = buildKey(null, "seeded");
 const DEMO_CLEARED_KEY = buildKey(null, "demo_cleared");
 /** Versión del gimnasio de demo. Si cambia, los navegadores con la demo vieja se vuelven a sembrar. */
 const DEMO_VERSION_KEY = buildKey(null, "demo_version");
-const DEMO_VERSION = 7;
+const DEMO_VERSION = 8;
 /** Boxes de demos anteriores que se borran al actualizar: FitBox (v1) y versiones previas de Chia (v2 a v6). */
 const OLD_DEMO_SLUGS = ["crossfit-norte", "box-sur", "chia-training"];
 const OLD_SUPERADMIN_EMAILS = ["isaac@fitbox.io"];
@@ -157,6 +157,29 @@ function chiaMemberDefs(): ChiaMemberDef[] {
   return [...CHIA_MEMBERS.map((m, i) => ({ ...m, joinedDaysAgo: m.joinedDaysAgo ?? 40 + i * 37 })), ...extra];
 }
 
+const DEMO_STREETS = ["C/ Sindicat", "C/ Blanquerna", "Av. Argentina", "C/ Fábrica", "C/ Manacor", "Passeig Mallorca", "C/ Aragó", "C/ Pere Garau"];
+const DEMO_EMERGENCY = ["Graciela (madre)", "Jorge (padre)", "Pablo (pareja)", "Laura (hermana)", "Diego (hermano)", "Marta (pareja)"];
+
+/** Datos de ficha inventados pero coherentes para el socio número i. */
+function demoProfile(i: number, named: boolean): UserProfile {
+  const phone = `+34 6${String(10 + ((i * 37) % 89)).padStart(2, "0")} ${String(100 + ((i * 53) % 899))} ${String(100 + ((i * 71) % 899))}`;
+  if (i === 0) return { phone };
+  const year = 1975 + ((i * 7) % 30);
+  const month = String(1 + ((i * 5) % 12)).padStart(2, "0");
+  const day = String(1 + ((i * 11) % 28)).padStart(2, "0");
+  const base: UserProfile = { phone, birthDate: `${year}-${month}-${day}` };
+  if (!named) return base;
+  const letters = "TRWAGMYFPDXBNJZSQVHLCKE";
+  const num = 40000000 + i * 1234567;
+  return {
+    ...base,
+    dni: `${num}${letters[num % 23]}`,
+    address: `${DEMO_STREETS[i % DEMO_STREETS.length]} ${3 + ((i * 9) % 60)}, Palma`,
+    emergencyName: DEMO_EMERGENCY[i % DEMO_EMERGENCY.length],
+    emergencyPhone: `+34 6${String(20 + ((i * 13) % 79))} ${String(200 + ((i * 17) % 799))} ${String(300 + ((i * 19) % 699))}`,
+  };
+}
+
 function createChiaTenant(): SeedResult {
   const tenant = tenantsRepo.create({
     name: CHIA.name,
@@ -174,6 +197,10 @@ function createChiaTenant(): SeedResult {
   const usersRepo = usersRepoFor(tenant.id);
   const joined = new Map(members.map((u, i) => [u.id, addDays(new Date(), -(defs[i].joinedDaysAgo ?? 60)).toISOString()]));
   usersRepo.replaceAll(usersRepo.list().map((u) => (joined.has(u.id) ? { ...u, createdAt: joined.get(u.id)! } : u)));
+  // Ficha de cada socio. Sofía (la cuenta de demo) no tiene fecha de nacimiento
+  // para que se vea el aviso "Completa tus datos".
+  const profiles = new Map(members.map((u, i) => [u.id, demoProfile(i, defs[i].email.endsWith("@kinflow.app"))]));
+  usersRepo.replaceAll(usersRepo.list().map((u) => (profiles.has(u.id) ? { ...u, profile: { ...u.profile, ...profiles.get(u.id)! } } : u)));
 
   const exercisesRepo = exercisesRepoFor(tenant.id);
   DEFAULT_EXERCISES.forEach((d) => exercisesRepo.create({ tenantId: tenant.id, isCustom: false, ...d }));

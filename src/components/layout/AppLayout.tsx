@@ -6,6 +6,7 @@ import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
 import { MobileNav } from "./MobileNav";
 import { ImpersonationBanner } from "./ImpersonationBanner";
+import { CompleteProfileBanner } from "./CompleteProfileBanner";
 import { Button } from "@/components/ui/button";
 import { scanExpiringMembershipsForTenant } from "@/lib/services/notifications.service";
 
@@ -49,7 +50,10 @@ export function AppLayout({ children }: { children: ReactNode }) {
         <Sidebar />
         <div className="flex-1 flex flex-col min-w-0">
           <Header />
-          <main className="flex-1 p-4 sm:p-6 md:p-8 pb-24 md:pb-8">{children}</main>
+          <main className="flex-1 p-4 sm:p-6 md:p-8 pb-24 md:pb-8">
+            <CompleteProfileBanner />
+            {children}
+          </main>
           <MobileNav />
         </div>
       </div>

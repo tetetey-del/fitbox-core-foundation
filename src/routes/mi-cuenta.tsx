@@ -18,10 +18,12 @@ import { getUserBadges } from "@/lib/services/challenges.service";
 import { MEMBER_GOAL_LABEL, type MemberGoal } from "@/types";
 import { MembershipBadge } from "@/components/members/MembershipBadge";
 import { CreditsBadge } from "@/components/members/CreditsBadge";
+import { AvatarPicker } from "@/components/members/AvatarPicker";
 import { formatDate } from "@/lib/date";
 import { toDateKey } from "@/lib/date";
 import { useModules } from "@/hooks/useModules";
 import { useDataVersion } from "@/lib/data-bus";
+import { missingOptionalData, needsProfileData, todayKey } from "@/lib/memberData";
 
 const ProgressPanel = lazy(() => import("@/components/health/ProgressPanel"));
 
@@ -64,6 +66,7 @@ function MyAccountPage() {
         </TabsList>
 
         <TabsContent value="perfil" className="grid gap-6">
+          {currentUser.role === "member" && <MyDataCard onSaved={refresh} />}
           <ProfileCard onSaved={refresh} />
           <div className="rounded-lg border border-border bg-card p-5">
             <h2 className="text-sm font-medium mb-3">Mi membresía</h2>
@@ -144,11 +147,90 @@ function MyAccountPage() {
   );
 }
 
+/** Datos personales del socio: la fecha de nacimiento es obligatoria. */
+function MyDataCard({ onSaved }: { onSaved: () => void }) {
+  const { session, currentUser } = useAuth();
+  const p = currentUser?.profile ?? {};
+  const [phone, setPhone] = useState(p.phone ?? "");
+  const [birthDate, setBirthDate] = useState(p.birthDate ?? "");
+  const [dni, setDni] = useState(p.dni ?? "");
+  const [address, setAddress] = useState(p.address ?? "");
+  const [emergencyName, setEmergencyName] = useState(p.emergencyName ?? "");
+  const [emergencyPhone, setEmergencyPhone] = useState(p.emergencyPhone ?? "");
+  const [tried, setTried] = useState(false);
+
+  if (!session || !currentUser) return null;
+  const pending = needsProfileData(currentUser);
+  const missing = missingOptionalData(currentUser);
+
+  const save = () => {
+    setTried(true);
+    if (!birthDate) return toast.error("La fecha de nacimiento es obligatoria");
+    updateUserById(session.tenantId, session.userId, {
+      profile: {
+        ...currentUser.profile,
+        phone: phone.trim() || undefined,
+        birthDate,
+        dni: dni.trim() || undefined,
+        address: address.trim() || undefined,
+        emergencyName: emergencyName.trim() || undefined,
+        emergencyPhone: emergencyPhone.trim() || undefined,
+      },
+    });
+    toast.success("Datos guardados");
+    onSaved();
+  };
+
+  return (
+    <div className={`rounded-lg border bg-card p-5 space-y-4 ${pending ? "border-[#14B8A6]/60" : "border-border"}`}>
+      <div>
+        <h2 className="text-sm font-medium">Mis datos</h2>
+        <p className="text-xs text-muted-foreground mt-1">
+          {pending
+            ? "Completa tus datos para que tu box los tenga a mano. La fecha de nacimiento es obligatoria."
+            : missing.length
+              ? `Te falta: ${missing.join(", ")}.`
+              : "Solo los ve el equipo de tu box."}
+        </p>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <FieldRow label="Fecha de nacimiento *">
+          <Input
+            type="date"
+            max={todayKey()}
+            value={birthDate}
+            onChange={(e) => setBirthDate(e.target.value)}
+            aria-invalid={tried && !birthDate}
+            className={tried && !birthDate ? "border-destructive" : undefined}
+          />
+        </FieldRow>
+        <FieldRow label="Teléfono">
+          <Input type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
+        </FieldRow>
+        <FieldRow label="DNI / NIE">
+          <Input value={dni} onChange={(e) => setDni(e.target.value)} autoCapitalize="characters" />
+        </FieldRow>
+        <FieldRow label="Dirección">
+          <Input value={address} onChange={(e) => setAddress(e.target.value)} autoComplete="street-address" />
+        </FieldRow>
+        <FieldRow label="Contacto de emergencia">
+          <Input value={emergencyName} onChange={(e) => setEmergencyName(e.target.value)} placeholder="Nombre y relación (ej. Ana, madre)" />
+        </FieldRow>
+        <FieldRow label="Teléfono de emergencia">
+          <Input type="tel" inputMode="tel" value={emergencyPhone} onChange={(e) => setEmergencyPhone(e.target.value)} />
+        </FieldRow>
+      </div>
+      <div className="flex justify-end">
+        <Button onClick={save}>Guardar datos</Button>
+      </div>
+    </div>
+  );
+}
+
 function ProfileCard({ onSaved }: { onSaved: () => void }) {
   const { session, currentUser } = useAuth();
   const modules = useModules();
   const [name, setName] = useState(currentUser?.name ?? "");
-  const [avatar, setAvatar] = useState(currentUser?.avatar ?? "");
   const [goal, setGoal] = useState<MemberGoal>(currentUser?.profile?.goal ?? "general");
   const [showHealth, setShowHealth] = useState<boolean>(currentUser?.profile?.showHealthToCoach ?? false);
   const [saving, setSaving] = useState(false);
@@ -159,7 +241,6 @@ function ProfileCard({ onSaved }: { onSaved: () => void }) {
     setSaving(true);
     updateUserById(session.tenantId, session.userId, {
       name: name.trim() || currentUser.name,
-      avatar: avatar || undefined,
       profile: { ...currentUser.profile, goal, showHealthToCoach: showHealth },
     });
     toast.success("Perfil actualizado");
@@ -167,17 +248,20 @@ function ProfileCard({ onSaved }: { onSaved: () => void }) {
     setSaving(false);
   };
 
+  // La foto se guarda en cuanto se elige (o se quita), sin tener que tocar "Guardar".
+  const savePhoto = (dataUrl: string | undefined) => {
+    updateUserById(session.tenantId, session.userId, { avatar: dataUrl });
+    toast.success(dataUrl ? "Foto actualizada" : "Foto quitada");
+    onSaved();
+  };
+
   return (
     <div className="rounded-lg border border-border bg-card p-5 space-y-4">
       <h2 className="text-sm font-medium">Mi perfil</h2>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <FieldRow label="Nombre">
-          <Input value={name} onChange={(e) => setName(e.target.value)} />
-        </FieldRow>
-        <FieldRow label="Avatar (URL)">
-          <Input value={avatar} onChange={(e) => setAvatar(e.target.value)} placeholder="https://…" />
-        </FieldRow>
-      </div>
+      <AvatarPicker name={currentUser.name} value={currentUser.avatar} onChange={savePhoto} />
+      <FieldRow label="Nombre">
+        <Input value={name} onChange={(e) => setName(e.target.value)} />
+      </FieldRow>
       <FieldRow label="Objetivo">
         <div className="grid grid-cols-2 gap-2">
           {(Object.keys(MEMBER_GOAL_LABEL) as MemberGoal[]).map((g) => (

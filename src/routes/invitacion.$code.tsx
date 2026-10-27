@@ -26,6 +26,7 @@ function InvitationPage() {
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState(resolved?.invitation.email ?? "");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,7 +67,7 @@ function InvitationPage() {
     }
     setLoading(true);
     try {
-      const { session } = await acceptInvitation({ code, name, email, password });
+      const { session } = await acceptInvitation({ code, name, email, password, phone });
       _setSession(session);
       navigate({
         to: resolved.invitation.role === "member" ? "/onboarding/member" : "/dashboard",
@@ -101,6 +102,11 @@ function InvitationPage() {
         <Field label="Email">
           <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
         </Field>
+        {resolved.invitation.role === "member" && (
+          <Field label="Teléfono">
+            <Input type="tel" inputMode="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+34 600 000 000" />
+          </Field>
+        )}
         <Field label="Contraseña" hint="Mínimo 8 caracteres.">
           <Input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
         </Field>
