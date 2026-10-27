@@ -1,8 +1,9 @@
-import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthError } from "@/lib/services/auth.service";
 import { acceptInvitation, resolveInvitation } from "@/lib/services/invitations.service";
@@ -28,6 +29,7 @@ function InvitationPage() {
   const [email, setEmail] = useState(resolved?.invitation.email ?? "");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [accepted, setAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -63,6 +65,10 @@ function InvitationPage() {
     setError(null);
     if (password.length < 8) {
       setError("La contraseña debe tener al menos 8 caracteres.");
+      return;
+    }
+    if (!accepted) {
+      setError("Para crear tu cuenta tienes que aceptar los términos y la política de privacidad.");
       return;
     }
     setLoading(true);
@@ -110,6 +116,21 @@ function InvitationPage() {
         <Field label="Contraseña" hint="Mínimo 8 caracteres.">
           <Input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
         </Field>
+        <label className="flex items-start gap-3 rounded-md border border-border p-3 text-xs leading-relaxed text-muted-foreground cursor-pointer">
+          <Checkbox
+            checked={accepted}
+            onCheckedChange={(v) => setAccepted(v === true)}
+            className="mt-0.5"
+            aria-label="Acepto los términos y la política de privacidad"
+          />
+          <span>
+            Acepto los{" "}
+            <Link to="/legal/terminos" target="_blank" className="text-foreground underline">términos</Link> y la{" "}
+            <Link to="/legal/privacidad" target="_blank" className="text-foreground underline">política de privacidad</Link>.
+            Entiendo que mi relación es con {resolved.tenantName}, que es responsable de sus clases, cobros y mis
+            datos; Kinflow es solo la app que usa para organizarse.
+          </span>
+        </label>
         {error && <ErrorBox>{error}</ErrorBox>}
         <Button type="submit" className="w-full h-10" disabled={loading}>
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Crear mi cuenta"}

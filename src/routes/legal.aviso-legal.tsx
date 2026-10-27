@@ -60,6 +60,12 @@ function AvisoLegalPage() {
           Kinflow realiza esfuerzos razonables para garantizar la disponibilidad y exactitud de la información,
           pero no puede garantizar la ausencia total de errores, interrupciones o incidencias técnicas.
         </p>
+        <p>
+          Kinflow es una herramienta que usan gimnasios independientes. Cada gimnasio es el único responsable de su
+          actividad, de sus clases y entrenadores, de sus precios y cobros, y del contenido y los datos que publica o
+          registra en la plataforma. Más detalle en los{" "}
+          <a href="/legal/terminos" className="underline">términos y condiciones</a>.
+        </p>
       </LegalSectionBlock>
 
       <LegalSectionBlock id="enlaces" title={SECTIONS[4].title}>

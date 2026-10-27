@@ -3,17 +3,22 @@ import { LegalLayout, LegalSectionBlock } from "@/components/legal/LegalLayout";
 import { company } from "@/config/company";
 
 const SECTIONS = [
-  { id: "objeto", title: "1. Objeto" },
-  { id: "servicio", title: "2. Descripción del servicio" },
-  { id: "cuenta", title: "3. Cuenta de usuario" },
-  { id: "precios", title: "4. Precios, prueba gratis y facturación" },
-  { id: "cancelacion", title: "5. Cancelación" },
-  { id: "datos", title: "6. Datos de los socios" },
-  { id: "salud", title: "7. Entrenamiento y salud" },
-  { id: "propiedad", title: "8. Propiedad intelectual" },
-  { id: "limitacion", title: "9. Limitación de responsabilidad" },
-  { id: "modificaciones", title: "10. Modificaciones" },
-  { id: "ley", title: "11. Ley aplicable y jurisdicción" },
+  { id: "objeto", title: "1. Objeto y aceptación" },
+  { id: "papel", title: "2. Qué es Kinflow y qué no es" },
+  { id: "gimnasio", title: "3. Responsabilidad del gimnasio" },
+  { id: "socios", title: "4. Socios y entrenadores" },
+  { id: "contenido", title: "5. Contenido publicado por el gimnasio" },
+  { id: "salud", title: "6. Entrenamiento y salud" },
+  { id: "datos", title: "7. Datos de los socios" },
+  { id: "cuenta", title: "8. Cuentas y uso correcto" },
+  { id: "precios", title: "9. Precios, prueba gratis y facturación" },
+  { id: "cancelacion", title: "10. Cancelación" },
+  { id: "servicio", title: "11. Disponibilidad del servicio" },
+  { id: "limitacion", title: "12. Limitación de responsabilidad" },
+  { id: "indemnidad", title: "13. Indemnidad" },
+  { id: "propiedad", title: "14. Propiedad intelectual" },
+  { id: "modificaciones", title: "15. Modificaciones" },
+  { id: "ley", title: "16. Ley aplicable y jurisdicción" },
 ];
 
 export const Route = createFileRoute("/legal/terminos")({
@@ -31,46 +36,98 @@ function TerminosPage() {
     <LegalLayout title="Términos y condiciones" sections={SECTIONS} updatedAt="27 de octubre de 2026">
       <LegalSectionBlock id="objeto" title={SECTIONS[0].title}>
         <p>
-          Los presentes términos regulan el acceso y uso de la plataforma Kinflow, titularidad de <strong>{company.legalName}</strong>,
-          con NIF <strong>{company.taxId}</strong>. El registro y uso de la plataforma implican la aceptación expresa de estos términos.
+          Estos términos regulan el uso de la plataforma Kinflow, titularidad de <strong>{company.legalName}</strong>{" "}
+          (nombre comercial {company.tradeName}), con NIF <strong>{company.taxId}</strong>.
+        </p>
+        <p>
+          El gimnasio que crea una cuenta los acepta expresamente al registrarse. Los socios y entrenadores los
+          aceptan al crear su cuenta o al usar la plataforma.
         </p>
       </LegalSectionBlock>
 
-      <LegalSectionBlock id="servicio" title={SECTIONS[1].title}>
+      <LegalSectionBlock id="papel" title={SECTIONS[1].title}>
         <p>
-          Kinflow es una plataforma de gestión para boxes de CrossFit, Hyrox y gimnasios que permite administrar reservas,
-          socios, cuotas, marcas personales (PRs), publicaciones internas y otras funcionalidades relacionadas.
-          El servicio se presta bajo modalidad SaaS.
+          Kinflow es una <strong>herramienta de software</strong> (SaaS) que los boxes de CrossFit, Hyrox y
+          gimnasios usan para organizar su actividad: reservas, socios, planes, cobros, WODs, marcas personales,
+          publicaciones y tienda.
+        </p>
+        <p>Kinflow <strong>no</strong>:</p>
+        <ul className="list-disc pl-5 space-y-1">
+          <li>presta servicios deportivos, de entrenamiento, de salud ni de nutrición;</li>
+          <li>gestiona, supervisa ni controla las instalaciones, las clases ni el equipo de ningún gimnasio;</li>
+          <li>contrata ni emplea a los entrenadores, ni verifica su titulación;</li>
+          <li>es parte de la relación ni de los contratos entre el gimnasio y sus socios;</li>
+          <li>
+            cobra, custodia ni devuelve dinero de los socios: los pagos que aparecen en la plataforma son registros
+            que hace el propio gimnasio;
+          </li>
+          <li>revisa ni aprueba previamente el contenido que publica cada gimnasio.</li>
+        </ul>
+      </LegalSectionBlock>
+
+      <LegalSectionBlock id="gimnasio" title={SECTIONS[2].title}>
+        <p>
+          Cada gimnasio es el <strong>único responsable</strong> de su actividad y de todo lo que ocurra en ella o
+          como consecuencia de ella, en particular:
+        </p>
+        <ul className="list-disc pl-5 space-y-1">
+          <li>las clases, los entrenamientos, las instalaciones, el material y la seguridad de las personas;</li>
+          <li>las lesiones, accidentes o daños que sufran socios, entrenadores o terceros;</li>
+          <li>
+            la cualificación de sus entrenadores y el cumplimiento de la normativa deportiva, laboral, sanitaria y
+            de seguridad aplicable;
+          </li>
+          <li>
+            contar con los seguros obligatorios o recomendables (por ejemplo, responsabilidad civil y accidentes) y
+            con los documentos que exija su actividad (aptitud física, consentimientos, normas internas);
+          </li>
+          <li>
+            los precios, cuotas, cobros, facturas, impuestos, reembolsos y políticas de cancelación que aplica a
+            sus socios, incluidas las reglas de reservas y créditos que configura en Kinflow;
+          </li>
+          <li>los productos que vende en su tienda y su entrega;</li>
+          <li>el cumplimiento de la normativa de consumidores frente a sus socios;</li>
+          <li>
+            el cumplimiento de toda la normativa que le aplique en su país (España, Argentina u otro), aunque use
+            Kinflow para organizarse.
+          </li>
+        </ul>
+      </LegalSectionBlock>
+
+      <LegalSectionBlock id="socios" title={SECTIONS[3].title}>
+        <p>
+          Si eres <strong>socio o entrenador</strong>, tu relación es con tu gimnasio, no con Kinflow. Cualquier
+          consulta o reclamación sobre clases, reservas, créditos, cuotas, pagos, devoluciones, entrenamientos,
+          lesiones o trato recibido debe dirigirse a tu gimnasio.
+        </p>
+        <p>
+          Kinflow solo responde frente a los socios del funcionamiento técnico de la plataforma, dentro de los
+          límites de estos términos.
         </p>
       </LegalSectionBlock>
 
-      <LegalSectionBlock id="cuenta" title={SECTIONS[2].title}>
+      <LegalSectionBlock id="contenido" title={SECTIONS[4].title}>
         <p>
-          El titular de la cuenta debe facilitar información veraz y mantenerla actualizada. Es responsable de la
-          confidencialidad de sus credenciales y de toda actividad realizada desde su cuenta.
+          Los WODs, rutinas, retos, publicaciones, imágenes, productos, precios y cualquier otro contenido que
+          publiquen el gimnasio, sus entrenadores o sus socios son responsabilidad exclusiva de quien los publica.
+          El gimnasio garantiza que tiene derecho a usarlos (incluidas fotos de personas y marcas de terceros) y
+          que no son ilícitos.
+        </p>
+        <p>
+          Kinflow puede retirar contenido o suspender cuentas cuando tenga conocimiento de que el contenido es
+          ilícito o vulnera estos términos.
         </p>
       </LegalSectionBlock>
 
-      <LegalSectionBlock id="precios" title={SECTIONS[3].title}>
+      <LegalSectionBlock id="salud" title={SECTIONS[5].title}>
         <p>
-          Los precios vigentes están publicados en la sección de precios de la plataforma. Los importes se facturan
-          por adelantado y son sin IVA salvo indicación en contrario. Cualquier impuesto aplicable se añadirá al
-          importe facturado.
-        </p>
-        <p>
-          Los gimnasios pueden probar Kinflow <strong>gratis durante 14 días</strong>, sin compromiso y sin
-          introducir datos de pago. Al terminar la prueba, el servicio solo continúa si el gimnasio contrata un plan.
+          El contenido de entrenamiento que aparece en Kinflow lo crea cada gimnasio y no constituye consejo
+          médico, de salud ni de nutrición. Cada socio entrena bajo su propia responsabilidad y la supervisión de
+          su gimnasio, y debe consultar a un profesional sanitario cuando sea necesario.
         </p>
       </LegalSectionBlock>
 
-      <LegalSectionBlock id="cancelacion" title={SECTIONS[4].title}>
-        <p>
-          El usuario puede cancelar su plan en cualquier momento. La cancelación surtirá efectos al final del
-          periodo facturado. No se realizan reembolsos por periodos ya iniciados salvo obligación legal.
-        </p>
-      </LegalSectionBlock>
-
-      <LegalSectionBlock id="datos" title={SECTIONS[5].title}>
+      <LegalSectionBlock id="datos" title={SECTIONS[6].title}>
         <p>
           Cada gimnasio es el <strong>responsable del tratamiento</strong> de los datos de sus socios y equipo
           (datos de contacto, fecha de nacimiento, documento de identidad, dirección, contacto de emergencia,
@@ -80,47 +137,101 @@ function TerminosPage() {
         </p>
         <p>
           El gimnasio se compromete a informar a sus socios del uso de Kinflow, a contar con una base legal para
-          los datos que registre y a no introducir datos que no necesite para su actividad.
+          los datos que registre, a no introducir datos que no necesite y a atender las solicitudes de sus socios
+          sobre sus datos. Las sanciones o reclamaciones derivadas de un uso indebido de los datos por parte del
+          gimnasio son responsabilidad del gimnasio.
         </p>
       </LegalSectionBlock>
 
-      <LegalSectionBlock id="salud" title={SECTIONS[6].title}>
+      <LegalSectionBlock id="cuenta" title={SECTIONS[7].title}>
         <p>
-          Los entrenamientos, WODs, rutinas y registros de marcas publicados en Kinflow son contenido del gimnasio
-          y de sus entrenadores. No constituyen consejo médico. Cada socio debe entrenar según su estado de salud
-          y consultar a un profesional sanitario cuando sea necesario.
+          Quien crea una cuenta debe facilitar información veraz y mantenerla actualizada, y es responsable de la
+          confidencialidad de sus credenciales y de toda actividad realizada desde su cuenta. El gimnasio es
+          responsable de las cuentas que crea o invita (entrenadores y socios) y de los permisos que les da.
         </p>
       </LegalSectionBlock>
 
-      <LegalSectionBlock id="propiedad" title={SECTIONS[7].title}>
+      <LegalSectionBlock id="precios" title={SECTIONS[8].title}>
         <p>
-          Todos los derechos de propiedad intelectual e industrial sobre la plataforma, su código, diseño, marcas
-          y contenidos corresponden a Kinflow o a sus legítimos titulares. Queda prohibida cualquier reproducción,
-          distribución o modificación sin autorización expresa.
+          Los precios vigentes de Kinflow están publicados en la sección de precios. Se facturan por adelantado y
+          no incluyen IVA salvo indicación en contrario.
+        </p>
+        <p>
+          Los gimnasios pueden probar Kinflow <strong>gratis durante 14 días</strong>, sin compromiso y sin
+          introducir datos de pago. Al terminar la prueba, el servicio solo continúa si el gimnasio contrata un plan.
         </p>
       </LegalSectionBlock>
 
-      <LegalSectionBlock id="limitacion" title={SECTIONS[8].title}>
+      <LegalSectionBlock id="cancelacion" title={SECTIONS[9].title}>
         <p>
-          Salvo dolo o culpa grave, la responsabilidad de Kinflow se limita al importe efectivamente abonado por el
-          usuario durante los seis meses anteriores al hecho generador de la responsabilidad. Kinflow no será
-          responsable de daños indirectos, pérdida de beneficios o lucro cesante.
+          El gimnasio puede cancelar su plan en cualquier momento. La cancelación surte efecto al final del periodo
+          facturado. No se realizan reembolsos por periodos ya iniciados salvo obligación legal. Antes de cancelar,
+          el gimnasio puede pedir una copia de sus datos.
         </p>
       </LegalSectionBlock>
 
-      <LegalSectionBlock id="modificaciones" title={SECTIONS[9].title}>
+      <LegalSectionBlock id="servicio" title={SECTIONS[10].title}>
         <p>
-          Kinflow podrá modificar estos términos por motivos legales, técnicos u operativos. Las modificaciones se
-          comunicarán con antelación razonable y entrarán en vigor en la fecha indicada.
+          Kinflow se ofrece <strong>tal cual</strong> y según disponibilidad. Hacemos esfuerzos razonables para que
+          funcione de forma continua y segura, pero no garantizamos que esté libre de errores ni de interrupciones
+          (por mantenimiento, fallos de proveedores o causas ajenas). La versión de demostración guarda los datos
+          solo en el navegador de cada persona y puede borrarse en cualquier momento.
+        </p>
+        <p>
+          El gimnasio debe conservar por su cuenta la información imprescindible para su actividad (por ejemplo,
+          facturas y contratos con sus socios).
         </p>
       </LegalSectionBlock>
 
-      <LegalSectionBlock id="ley" title={SECTIONS[10].title}>
+      <LegalSectionBlock id="limitacion" title={SECTIONS[11].title}>
         <p>
-          Estos términos se rigen por la <strong>legislación española</strong>. Para la resolución de cualquier
-          controversia las partes se someten a los <strong>Juzgados y Tribunales de {company.jurisdiction}</strong>, con
-          renuncia expresa a cualquier otro fuero que pudiera corresponderles, salvo que la normativa aplicable
-          disponga otra cosa.
+          En la medida máxima permitida por la ley, Kinflow no responde de los daños que se produzcan en la
+          actividad de los gimnasios ni de las decisiones que estos tomen usando la plataforma (por ejemplo, la
+          gestión de reservas, créditos, cobros o comunicaciones con sus socios).
+        </p>
+        <p>
+          Kinflow no será responsable de daños indirectos, pérdida de beneficios, lucro cesante ni pérdida de
+          datos. Su responsabilidad total frente a un gimnasio se limita al importe que este haya pagado a Kinflow
+          en los seis meses anteriores al hecho que la origine. Durante la prueba gratuita el servicio se ofrece
+          sin garantías.
+        </p>
+        <p>
+          Estas limitaciones no se aplican en los casos en que la ley no permite excluir la responsabilidad
+          (dolo, culpa grave o derechos irrenunciables de los consumidores).
+        </p>
+      </LegalSectionBlock>
+
+      <LegalSectionBlock id="indemnidad" title={SECTIONS[12].title}>
+        <p>
+          El gimnasio se compromete a <strong>mantener indemne a Kinflow</strong> y a su titular frente a cualquier
+          reclamación, sanción, daño o gasto (incluidos honorarios de abogados) que reclamen socios, entrenadores,
+          autoridades u otros terceros y que tenga su origen en la actividad del gimnasio, en el contenido o los
+          datos que introduce en Kinflow o en el incumplimiento de estos términos o de la ley.
+        </p>
+      </LegalSectionBlock>
+
+      <LegalSectionBlock id="propiedad" title={SECTIONS[13].title}>
+        <p>
+          Todos los derechos de propiedad intelectual e industrial sobre la plataforma, su código, diseño y marca
+          corresponden a Kinflow o a sus legítimos titulares. El contenido que sube cada gimnasio sigue siendo suyo;
+          el gimnasio autoriza a Kinflow a alojarlo y mostrarlo solo para prestar el servicio.
+        </p>
+      </LegalSectionBlock>
+
+      <LegalSectionBlock id="modificaciones" title={SECTIONS[14].title}>
+        <p>
+          Kinflow podrá modificar estos términos por motivos legales, técnicos u operativos. Los cambios
+          relevantes se comunicarán a los gimnasios con antelación razonable y entrarán en vigor en la fecha
+          indicada.
+        </p>
+      </LegalSectionBlock>
+
+      <LegalSectionBlock id="ley" title={SECTIONS[15].title}>
+        <p>
+          Estos términos se rigen por la <strong>legislación española</strong>. Para cualquier controversia con un
+          gimnasio, las partes se someten a los <strong>Juzgados y Tribunales de {company.jurisdiction}</strong>.
+          Si quien reclama es un consumidor, podrá acudir a los tribunales de su domicilio cuando la ley así lo
+          establezca.
         </p>
       </LegalSectionBlock>
     </LegalLayout>

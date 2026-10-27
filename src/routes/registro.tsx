@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthError } from "@/lib/services/auth.service";
 import { AuthShell, ErrorBox, Field } from "./login";
@@ -24,6 +25,7 @@ function RegisterPage() {
   const [ownerName, setOwnerName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [accepted, setAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,9 +36,13 @@ function RegisterPage() {
       setError("La contraseña debe tener al menos 8 caracteres.");
       return;
     }
+    if (!accepted) {
+      setError("Para crear tu box tienes que aceptar los términos y la política de privacidad.");
+      return;
+    }
     setLoading(true);
     try {
-      await registerOwner({ boxName, ownerName, email, password });
+      await registerOwner({ boxName, ownerName, email, password, acceptedTerms: accepted });
       navigate({ to: "/onboarding/owner" });
     } catch (err) {
       setError(err instanceof AuthError ? err.message : "No se pudo crear la cuenta");
@@ -63,6 +69,22 @@ function RegisterPage() {
         <Field label="Contraseña" hint="Mínimo 8 caracteres.">
           <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="new-password" placeholder="••••••••" />
         </Field>
+        <label className="flex items-start gap-3 rounded-md border border-border p-3 text-xs leading-relaxed text-muted-foreground cursor-pointer">
+          <Checkbox
+            checked={accepted}
+            onCheckedChange={(v) => setAccepted(v === true)}
+            className="mt-0.5"
+            aria-label="Acepto los términos y la política de privacidad"
+          />
+          <span>
+            Acepto los{" "}
+            <Link to="/legal/terminos" target="_blank" className="text-foreground underline">términos y condiciones</Link>{" "}
+            y la{" "}
+            <Link to="/legal/privacidad" target="_blank" className="text-foreground underline">política de privacidad</Link>.
+            Entiendo que mi box es el único responsable de su actividad (clases, entrenadores, cobros y seguridad) y
+            de los datos de sus socios, y que Kinflow es solo la herramienta.
+          </span>
+        </label>
         {error && <ErrorBox>{error}</ErrorBox>}
         <Button type="submit" className="w-full h-10" disabled={loading}>
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Crear cuenta"}

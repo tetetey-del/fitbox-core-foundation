@@ -8,6 +8,9 @@
 /** Ventana por defecto (horas) para que un socio pueda cancelar sin coste. */
 export const DEFAULT_CANCELLATION_HOURS = 1;
 
+/** Versión de los términos y la política de privacidad. Cambiarla cuando se modifiquen los textos legales. */
+export const LEGAL_VERSION = "2026-10-27";
+
 // ---- Auth ----
 /** Longitud mínima de contraseña. */
 export const MIN_PASSWORD_LENGTH = 8;

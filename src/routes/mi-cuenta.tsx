@@ -143,6 +143,12 @@ function MyAccountPage() {
           <ChangePasswordCard changePassword={changePassword} />
         </TabsContent>
       </Tabs>
+      <p className="mt-8 max-w-3xl text-xs text-muted-foreground">
+        Kinflow es la app que usa tu box para organizarse. Las clases, los cobros y tus datos los gestiona tu box:
+        cualquier consulta, escríbele a ellos.{" "}
+        <Link to="/legal/terminos" className="underline">Términos</Link> ·{" "}
+        <Link to="/legal/privacidad" className="underline">Privacidad</Link>
+      </p>
     </AppLayout>
   );
 }

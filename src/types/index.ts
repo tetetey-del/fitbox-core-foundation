@@ -87,6 +87,9 @@ export interface Tenant extends BaseEntity {
   themeId?: ThemeId;
   status?: TenantStatus;
   settings?: TenantSettings;
+  /** Cuándo aceptó el gimnasio los términos y qué versión (prueba de la aceptación). */
+  termsAcceptedAt?: string;
+  termsVersion?: string;
 }
 
 export type UserStatus = "active" | "invited" | "pending" | "suspended";

@@ -16,6 +16,7 @@ import { passwordResetsRepo } from "@/lib/storage/repositories/passwordResets.re
 import { tenantsRepo } from "@/lib/storage/repositories/tenants.repo";
 import { generateOtpCode, hashPassword, verifyPassword } from "@/lib/crypto";
 import { DEFAULT_MODULES } from "@/types";
+import { DEFAULT_CANCELLATION_HOURS, LEGAL_VERSION } from "@/lib/constants";
 import { slugify } from "@/lib/seed";
 import { exercisesRepoFor } from "@/lib/storage/repositories/exercises.repo";
 import { DEFAULT_EXERCISES } from "./prs.service";
@@ -27,7 +28,8 @@ export type AuthErrorCode =
   | "email_already_used"
   | "invalid_code"
   | "code_expired"
-  | "weak_password";
+  | "weak_password"
+  | "terms_required";
 
 export class AuthError extends Error {
   constructor(public code: AuthErrorCode, message: string) {
@@ -43,6 +45,7 @@ const MESSAGES: Record<AuthErrorCode, string> = {
   invalid_code: "El código no es válido.",
   code_expired: "El código ha caducado. Solicita uno nuevo.",
   weak_password: "La contraseña debe tener al menos 8 caracteres.",
+  terms_required: "Debes aceptar los términos y la política de privacidad.",
 };
 
 function fail(code: AuthErrorCode): never {
@@ -99,12 +102,15 @@ export interface RegisterOwnerInput {
   email: string;
   password: string;
   brandColor?: string;
+  /** Debe ser true: el gimnasio acepta términos y privacidad al registrarse. */
+  acceptedTerms: boolean;
 }
 
 /** Registra un nuevo OWNER + tenant vacío. Devuelve la sesión iniciada. */
 export async function registerOwner(input: RegisterOwnerInput): Promise<Session> {
   const email = input.email.trim().toLowerCase();
   if (input.password.length < 8) fail("weak_password");
+  if (!input.acceptedTerms) fail("terms_required");
 
   if (superAdminsStore.findByEmail(email)) fail("email_already_used");
   if (findUserByEmailGlobal(email)) fail("email_already_used");
@@ -115,9 +121,11 @@ export async function registerOwner(input: RegisterOwnerInput): Promise<Session>
     name: input.boxName.trim(),
     slug: `${slugify(input.boxName)}-${Date.now().toString(36).slice(-4)}`,
     brandColor: input.brandColor ?? "#14B8A6",
-    themeId: "dark-carbon",
+    themeId: "flow",
     status: "active",
-    settings: { cancellationWindowHours: 2, enabledModules: DEFAULT_MODULES },
+    settings: { cancellationWindowHours: DEFAULT_CANCELLATION_HOURS, enabledModules: DEFAULT_MODULES },
+    termsAcceptedAt: new Date().toISOString(),
+    termsVersion: LEGAL_VERSION,
   });
 
   // Sembrar ejercicios base
