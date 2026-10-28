@@ -28,6 +28,7 @@ import { Route as RetosRouteImport } from './routes/retos'
 import { Route as RutinasRouteImport } from './routes/rutinas'
 import { Route as SociosRouteImport } from './routes/socios'
 import { Route as TiendaRouteImport } from './routes/tienda'
+import { Route as AppManifestSlugRouteImport } from './routes/app-manifest.$slug'
 import { Route as BSlugRouteImport } from './routes/b.$slug'
 import { Route as InvitacionCodeRouteImport } from './routes/invitacion.$code'
 import { Route as LegalAvisoLegalRouteImport } from './routes/legal.aviso-legal'
@@ -132,6 +133,11 @@ const TiendaRoute = TiendaRouteImport.update({
   path: '/tienda',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppManifestSlugRoute = AppManifestSlugRouteImport.update({
+  id: '/app-manifest/$slug',
+  path: '/app-manifest/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BSlugRoute = BSlugRouteImport.update({
   id: '/b/$slug',
   path: '/b/$slug',
@@ -193,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/rutinas': typeof RutinasRoute
   '/socios': typeof SociosRoute
   '/tienda': typeof TiendaRoute
+  '/app-manifest/$slug': typeof AppManifestSlugRoute
   '/b/$slug': typeof BSlugRoute
   '/invitacion/$code': typeof InvitacionCodeRoute
   '/legal/aviso-legal': typeof LegalAvisoLegalRoute
@@ -222,6 +229,7 @@ export interface FileRoutesByTo {
   '/rutinas': typeof RutinasRoute
   '/socios': typeof SociosRoute
   '/tienda': typeof TiendaRoute
+  '/app-manifest/$slug': typeof AppManifestSlugRoute
   '/b/$slug': typeof BSlugRoute
   '/invitacion/$code': typeof InvitacionCodeRoute
   '/legal/aviso-legal': typeof LegalAvisoLegalRoute
@@ -252,6 +260,7 @@ export interface FileRoutesById {
   '/rutinas': typeof RutinasRoute
   '/socios': typeof SociosRoute
   '/tienda': typeof TiendaRoute
+  '/app-manifest/$slug': typeof AppManifestSlugRoute
   '/b/$slug': typeof BSlugRoute
   '/invitacion/$code': typeof InvitacionCodeRoute
   '/legal/aviso-legal': typeof LegalAvisoLegalRoute
@@ -283,6 +292,7 @@ export interface FileRouteTypes {
     | '/rutinas'
     | '/socios'
     | '/tienda'
+    | '/app-manifest/$slug'
     | '/b/$slug'
     | '/invitacion/$code'
     | '/legal/aviso-legal'
@@ -312,6 +322,7 @@ export interface FileRouteTypes {
     | '/rutinas'
     | '/socios'
     | '/tienda'
+    | '/app-manifest/$slug'
     | '/b/$slug'
     | '/invitacion/$code'
     | '/legal/aviso-legal'
@@ -341,6 +352,7 @@ export interface FileRouteTypes {
     | '/rutinas'
     | '/socios'
     | '/tienda'
+    | '/app-manifest/$slug'
     | '/b/$slug'
     | '/invitacion/$code'
     | '/legal/aviso-legal'
@@ -371,6 +383,7 @@ export interface RootRouteChildren {
   RutinasRoute: typeof RutinasRoute
   SociosRoute: typeof SociosRoute
   TiendaRoute: typeof TiendaRoute
+  AppManifestSlugRoute: typeof AppManifestSlugRoute
   BSlugRoute: typeof BSlugRoute
   InvitacionCodeRoute: typeof InvitacionCodeRoute
   LegalAvisoLegalRoute: typeof LegalAvisoLegalRoute
@@ -516,6 +529,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TiendaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app-manifest/$slug': {
+      id: '/app-manifest/$slug'
+      path: '/app-manifest/$slug'
+      fullPath: '/app-manifest/$slug'
+      preLoaderRoute: typeof AppManifestSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/b/$slug': {
       id: '/b/$slug'
       path: '/b/$slug'
@@ -595,6 +615,7 @@ const rootRouteChildren: RootRouteChildren = {
   RutinasRoute: RutinasRoute,
   SociosRoute: SociosRoute,
   TiendaRoute: TiendaRoute,
+  AppManifestSlugRoute: AppManifestSlugRoute,
   BSlugRoute: BSlugRoute,
   InvitacionCodeRoute: InvitacionCodeRoute,
   LegalAvisoLegalRoute: LegalAvisoLegalRoute,

@@ -123,7 +123,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/icon-512.png", type: "image/png", sizes: "512x512" },
       { rel: "apple-touch-icon", href: brand?.appIcon?.["180"] ?? "/apple-touch-icon.png", sizes: "180x180" },
       brand
-        ? { rel: "manifest", href: brandManifestUrl(brand.slug, loaderData?.origin ?? ""), crossOrigin: "anonymous" }
+        ? { rel: "manifest", href: brandManifestUrl(brand.slug) }
         : { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },

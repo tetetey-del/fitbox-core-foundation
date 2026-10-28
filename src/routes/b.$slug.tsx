@@ -96,17 +96,22 @@ function BoxLandingPage() {
         {platform !== "installed" && (
           <div className="mt-10 w-full max-w-sm rounded-xl border border-border bg-card p-4 text-left text-sm">
             <div className="font-medium">Instala la app de {brand.name}</div>
-            {platform === "android" ? (
-              <p className="mt-1 text-muted-foreground">
-                Toca el menú <MoreVertical className="inline h-4 w-4 -mt-0.5" strokeWidth={1.75} /> del navegador →{" "}
-                <strong>Instalar aplicación</strong> (o <strong>Añadir a pantalla de inicio</strong>).
-              </p>
-            ) : (
-              <p className="mt-1 text-muted-foreground">
-                En el iPhone, toca <Share className="inline h-4 w-4 -mt-0.5" strokeWidth={1.75} /> <strong>Compartir</strong>{" "}
-                → <strong>Añadir a pantalla de inicio</strong>. Te quedará con el logo de tu box y podrás recibir avisos.
-              </p>
+            {(platform === "android" ? ["android", "ios"] : ["ios", "android"]).map((os) =>
+              os === "ios" ? (
+                <p key={os} className="mt-2 text-muted-foreground">
+                  <strong className="text-foreground">iPhone:</strong> abre este link en Safari, toca{" "}
+                  <Share className="inline h-4 w-4 -mt-0.5" strokeWidth={1.75} /> <strong>Compartir</strong> →{" "}
+                  <strong>Añadir a pantalla de inicio</strong>.
+                </p>
+              ) : (
+                <p key={os} className="mt-2 text-muted-foreground">
+                  <strong className="text-foreground">Android:</strong> abre este link en Chrome, toca el menú{" "}
+                  <MoreVertical className="inline h-4 w-4 -mt-0.5" strokeWidth={1.75} /> →{" "}
+                  <strong>Instalar aplicación</strong> (o <strong>Añadir a pantalla de inicio</strong>).
+                </p>
+              ),
             )}
+            <p className="mt-2 text-xs text-muted-foreground">Te quedará con el logo de tu box y podrás recibir avisos.</p>
           </div>
         )}
       </main>

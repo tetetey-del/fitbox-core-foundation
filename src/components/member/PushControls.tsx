@@ -37,7 +37,7 @@ async function turnOn(setState: (s: PushState) => void, setBusy: (b: boolean) =>
 function InstallHint() {
   return (
     <p className="text-xs text-muted-foreground">
-      En iPhone, primero agrega Kinflow a la pantalla de inicio: toca{" "}
+      En el iPhone, los avisos llegan solo con la app en la pantalla de inicio: toca{" "}
       <Share className="inline h-3.5 w-3.5 -mt-0.5" strokeWidth={1.75} /> <strong>Compartir</strong> →{" "}
       <strong>Añadir a pantalla de inicio</strong>, y abre la app desde ese ícono.
     </p>

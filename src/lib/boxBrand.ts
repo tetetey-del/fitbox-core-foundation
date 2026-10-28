@@ -7,7 +7,6 @@
  * - iPhone usa `apple-touch-icon` y `apple-mobile-web-app-title` (se cambian acá).
  * - Android usa el manifest, que arma la función de Supabase `kf-manifest` para cada box.
  */
-import { SUPABASE_URL } from "@/config/supabase";
 
 export interface BoxBrand {
   slug: string;
@@ -76,9 +75,9 @@ function writeBrandCookie(brand: BoxBrand | null) {
   }
 }
 
-/** Manifest del box (lo arma la función de Supabase `kf-manifest`). */
-export function brandManifestUrl(slug: string, origin: string): string {
-  return `${SUPABASE_URL}/functions/v1/kf-manifest?box=${encodeURIComponent(slug)}&o=${encodeURIComponent(origin)}`;
+/** Manifest del box, servido desde el mismo dominio de la app (ruta /app-manifest/<slug>). */
+export function brandManifestUrl(slug: string): string {
+  return `/app-manifest/${encodeURIComponent(slug)}`;
 }
 
 function setLink(rel: string, href: string, extra?: Record<string, string>) {
@@ -112,8 +111,10 @@ export function applyBoxBrand(brand: BoxBrand | null): void {
     setMeta("apple-mobile-web-app-title", "Kinflow");
     return;
   }
-  const manifest = brandManifestUrl(brand.slug, window.location.origin);
-  setLink("manifest", manifest, { crossorigin: "anonymous" });
+  const manifest = brandManifestUrl(brand.slug);
+  const current = document.head.querySelector<HTMLLinkElement>('link[rel="manifest"]');
+  current?.removeAttribute("crossorigin");
+  setLink("manifest", manifest);
   setLink("apple-touch-icon", brand.appIcon?.["180"] ?? "/apple-touch-icon.png");
   setMeta("apple-mobile-web-app-title", brand.name);
 }
