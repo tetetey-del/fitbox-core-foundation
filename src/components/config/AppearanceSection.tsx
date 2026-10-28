@@ -12,6 +12,8 @@ import type { ThemeId } from "@/types";
 import { cn } from "@/lib/utils";
 import { MAX_LOGO_BYTES } from "@/lib/constants";
 import { compressImage, dataUrlBytes } from "@/lib/image";
+import { uploadAppIcons } from "@/lib/boxBrand";
+import { isCloudSession } from "@/lib/cloud/bookings";
 
 export function AppearanceSection() {
   const { currentTenant, refresh } = useAuth();
@@ -40,13 +42,28 @@ export function AppearanceSection() {
     }
   };
 
-  const save = () => {
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
     if (!currentTenant) return;
-    tenantsRepo.update(currentTenant.id, { themeId, brandColor, logo });
+    setSaving(true);
+    let appIcon = currentTenant.appIcon;
+    // Box real: con el logo se generan los íconos de la app que instalan los socios.
+    if (isCloudSession() && (logo !== currentTenant.logo || (logo && !appIcon))) {
+      try {
+        appIcon = logo ? await uploadAppIcons(currentTenant.id, logo) : undefined;
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "No se pudieron generar los íconos de la app");
+      }
+    }
+    tenantsRepo.update(currentTenant.id, { themeId, brandColor, logo, appIcon });
     applyTheme(themeId, brandColor);
-    toast.success("Apariencia actualizada");
+    toast.success("Apariencia actualizada", {
+      description: isCloudSession() && logo && appIcon ? "La app de tus socios ya usa tu logo." : undefined,
+    });
     notifyDataChanged();
     refresh();
+    setSaving(false);
   };
 
   return (
@@ -146,11 +163,13 @@ export function AppearanceSection() {
               </Button>
             )}
           </div>
-          <p className="text-xs text-muted-foreground">Máx. 300 KB. PNG o JPG.</p>
+          <p className="text-xs text-muted-foreground">
+            Máx. 300 KB. PNG o JPG, mejor cuadrado. Es también el ícono de la app que instalan tus socios.
+          </p>
         </div>
       </div>
 
-      <Button onClick={save}>Guardar apariencia</Button>
+      <Button onClick={save} disabled={saving}>{saving ? "Guardando…" : "Guardar apariencia"}</Button>
     </section>
   );
 }

@@ -13,6 +13,7 @@ import { buildKey, get } from "@/lib/storage/db";
 import { sessionStore } from "@/lib/storage/session";
 import { cloudEnabled } from "@/lib/cloud/client";
 import { cloudEnterIfSignedIn } from "@/lib/cloud/auth";
+import { readBoxBrand, saveBoxBrand, type BoxBrand } from "@/lib/boxBrand";
 
 const SEEDED_KEY = buildKey(null, "seeded");
 
@@ -37,6 +38,8 @@ function LoginPage() {
   const navigate = useNavigate();
   const { redirect, confirmado } = useSearch({ from: "/login" });
 
+  const [brand, setBrand] = useState<BoxBrand | null>(null);
+  useEffect(() => setBrand(readBoxBrand()), []);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -93,7 +96,11 @@ function LoginPage() {
   };
 
   return (
-    <AuthShell title="Iniciar sesión" subtitle="Accede a tu box con tu email y contraseña.">
+    <AuthShell
+      title="Iniciar sesión"
+      subtitle={brand ? `Entra a ${brand.name} con tu email y contraseña.` : "Accede a tu box con tu email y contraseña."}
+      brand={brand}
+    >
       {confirmado && !error && (
         <div className="mb-4 rounded-md border border-[#14B8A6]/40 bg-[#14B8A6]/10 px-3 py-2 text-sm">
           ¡Email confirmado! {loading ? "Entrando a tu box…" : "Ya puedes iniciar sesión."}
@@ -128,9 +135,22 @@ function LoginPage() {
       </form>
       <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
         <Link to="/recuperar" className="hover:text-foreground">¿Olvidaste tu contraseña?</Link>
-        <Link to="/registro" className="hover:text-foreground">Crear cuenta</Link>
+        {!brand && <Link to="/registro" className="hover:text-foreground">Crear cuenta</Link>}
       </div>
-      <DemoAccountsPanel />
+      {brand ? (
+        <button
+          type="button"
+          onClick={() => {
+            saveBoxBrand(null);
+            setBrand(null);
+          }}
+          className="mt-6 w-full text-center text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+        >
+          ¿No eres de {brand.name}?
+        </button>
+      ) : (
+        <DemoAccountsPanel />
+      )}
     </AuthShell>
   );
 }
@@ -184,18 +204,33 @@ export function AuthShell({
   title,
   subtitle,
   children,
+  brand,
 }: {
   title: string;
   subtitle?: string;
   children: React.ReactNode;
+  /** Si se entra desde la app de un box, se muestra su logo y nombre (y Kinflow, chiquito). */
+  brand?: BoxBrand | null;
 }) {
   return (
     <div className="min-h-dvh bg-background text-foreground flex flex-col">
-      <header className="h-14 flex items-center px-4 sm:px-6 border-b border-border/60">
-        <Link to="/" className="flex items-center gap-2">
-          <KinflowMark className="h-7 w-7" />
-          <span className="font-semibold tracking-tight">Kinflow</span>
-        </Link>
+      <header className="h-14 flex items-center justify-between gap-3 px-4 sm:px-6 border-b border-border/60">
+        {brand ? (
+          <>
+            <Link to="/b/$slug" params={{ slug: brand.slug }} className="flex min-w-0 items-center gap-2">
+              <BoxIcon brand={brand} className="h-8 w-8" />
+              <span className="truncate font-semibold tracking-tight">{brand.name}</span>
+            </Link>
+            <span className="flex shrink-0 items-center gap-1 text-[11px] text-muted-foreground">
+              con tecnología de <KinflowMark className="h-3.5 w-3.5" /> Kinflow
+            </span>
+          </>
+        ) : (
+          <Link to="/" className="flex items-center gap-2">
+            <KinflowMark className="h-7 w-7" />
+            <span className="font-semibold tracking-tight">Kinflow</span>
+          </Link>
+        )}
       </header>
       <main className="flex-1 flex items-center justify-center px-4 py-10">
         <div className="w-full max-w-md">
@@ -205,6 +240,21 @@ export function AuthShell({
         </div>
       </main>
     </div>
+  );
+}
+
+/** Ícono del box: su logo (si lo subió) o sus iniciales sobre su color. */
+export function BoxIcon({ brand, className = "h-8 w-8" }: { brand: BoxBrand; className?: string }) {
+  const src = brand.appIcon?.["192"];
+  if (src) return <img src={src} alt="" className={`${className} rounded-lg object-cover`} />;
+  const initials = brand.name.split(" ").filter(Boolean).map((p) => p[0]).slice(0, 2).join("").toUpperCase();
+  return (
+    <span
+      className={`${className} flex items-center justify-center rounded-lg text-xs font-bold text-white`}
+      style={{ backgroundColor: brand.brandColor ?? "#14B8A6" }}
+    >
+      {initials}
+    </span>
   );
 }
 

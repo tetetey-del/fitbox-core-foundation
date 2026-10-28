@@ -197,6 +197,8 @@ export interface CloudInvitation {
   email?: string;
   expiresAt: string;
   status: "pending" | "accepted" | "revoked" | "expired";
+  slug?: string;
+  appIcon?: Record<string, string>;
 }
 
 export async function cloudGetInvitation(code: string): Promise<CloudInvitation | null> {

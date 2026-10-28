@@ -92,6 +92,8 @@ export interface Tenant extends BaseEntity {
   /** Cuándo aceptó el gimnasio los términos y qué versión (prueba de la aceptación). */
   termsAcceptedAt?: string;
   termsVersion?: string;
+  /** Íconos de la app instalada generados desde el logo (URLs "180", "192", "512"). Solo boxes reales. */
+  appIcon?: Record<string, string>;
 }
 
 export type UserStatus = "active" | "invited" | "pending" | "suspended";

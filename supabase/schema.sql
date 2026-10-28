@@ -244,3 +244,14 @@ grant execute on function public.kf_get_invitation(text) to anon, authenticated;
 --   waitlist_promoted, session_cancelled u order_ready, si la persona tiene suscripciones, llama por pg_net
 --   a la Edge Function kf-push (verify_jwt=false; se valida con kf_push_secret), que envía el push con web-push
 --   y borra suscripciones vencidas (404/410).
+
+-- =========================================================
+-- 28/10/2026 · Marca de cada box en la app (migración kinflow_box_branding + función kf-manifest)
+-- =========================================================
+-- Storage bucket público 'box-icons' (solo PNG, 1 MB): <tenant_id>/icon-180.png, icon-192.png, icon-512.png.
+--   Solo el admin del box puede subir/cambiar/borrar en su carpeta. tenants.data.appIcon guarda sus URLs.
+-- Índice único tenants_slug_unique sobre lower(data->>'slug'): cada box tiene su dirección /b/<slug>.
+-- kf_box_public(slug): nombre, dirección, color e íconos (anon). kf_slug_available(slug, tenant) (authenticated).
+-- kf_get_invitation también devuelve slug y appIcon.
+-- Edge Function kf-manifest?box=<slug>&o=<origen>: manifest con nombre e íconos del box (Android).
+-- kf-push manda el ícono del box en la notificación.

@@ -10,6 +10,7 @@ import { acceptInvitation, resolveInvitation } from "@/lib/services/invitations.
 import { AuthShell, ErrorBox, Field } from "./login";
 import { cloudEnabled } from "@/lib/cloud/client";
 import { cloudAcceptInvitation, cloudGetInvitation } from "@/lib/cloud/auth";
+import { saveBoxBrand } from "@/lib/boxBrand";
 import { sessionStore } from "@/lib/storage/session";
 
 interface Resolved {
@@ -50,6 +51,7 @@ function InvitationPage() {
       if (cloudEnabled()) {
         const inv = await cloudGetInvitation(code);
         if (inv) {
+          if (inv.slug) saveBoxBrand({ slug: inv.slug, name: inv.tenantName, brandColor: inv.brandColor, appIcon: inv.appIcon });
           r = {
             cloud: true,
             invitation: { role: inv.role, email: inv.email },
