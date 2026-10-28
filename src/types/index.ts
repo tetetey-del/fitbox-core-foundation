@@ -94,6 +94,8 @@ export interface Tenant extends BaseEntity {
   termsVersion?: string;
   /** Íconos de la app instalada generados desde el logo (URLs "180", "192", "512"). Solo boxes reales. */
   appIcon?: Record<string, string>;
+  /** Ajustes del ícono elegidos por el box: tamaño del logo y color de fondo. */
+  appIconStyle?: { scale?: number; bg?: string };
 }
 
 export type UserStatus = "active" | "invited" | "pending" | "suspended";
