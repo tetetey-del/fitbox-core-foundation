@@ -212,3 +212,9 @@ grant execute on function public.kf_get_invitation(text) to anon, authenticated;
 -- 28/10/2026 (kinflow_bookings_admin_only, kinflow_coach_no_bookings_write):
 -- apuntar o quitar a otras personas de una clase es solo del admin (dueño). Los coaches
 -- no escriben reservas directamente (kf_staff_can_write); sí marcan asistencia, clases, WODs, etc.
+-- 28/10/2026 (kinflow_waitlist_added_by_admin, kinflow_waitlist_notice_date): las reservas que el dueño
+-- hace para otra persona llevan addedByStaff=true; al liberarse un lugar, esas entran aunque no tengan
+-- plan ni créditos. El aviso de promoción muestra la fecha como DD/MM.
+-- 28/10/2026 (kinflow_credits_always_required): todos necesitan plan y créditos para reservar,
+-- también cuando el dueño anota a alguien (se le descuenta 1 crédito). La lista de espera también
+-- exige créditos a todos. (Se deja sin efecto la excepción addedByStaff.)

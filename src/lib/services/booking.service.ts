@@ -340,8 +340,15 @@ export function cancelSession(sessionId: string): void {
 // ---- Alta manual de asistente (staff) ----
 
 export function addAttendee(sessionId: string, userId: string): BookResult {
-  // El staff apunta manualmente: se saltan las restricciones de créditos.
-  return bookSession(sessionId, userId, { bypassCredits: true });
+  // El dueño anota a alguien: se controlan su plan y sus créditos igual que si reservara él.
+  const res = bookSession(sessionId, userId);
+  if (!res.ok && res.reason === "Sin membresía activa") {
+    return { ok: false, reason: "Esa persona no tiene un plan activo. Asígnale un plan primero." };
+  }
+  if (!res.ok && res.reason === "Sin créditos disponibles este ciclo") {
+    return { ok: false, reason: "Esa persona no tiene créditos disponibles." };
+  }
+  return res;
 }
 
 export interface SessionForUser extends ClassSession {

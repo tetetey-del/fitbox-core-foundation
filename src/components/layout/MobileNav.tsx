@@ -81,9 +81,9 @@ export function MobileNav() {
       <div className="md:hidden h-16" aria-hidden />
       <nav
         aria-label="Navegación principal"
-        className="md:hidden fixed bottom-0 inset-x-0 z-40 h-16 border-t border-border bg-background/95 backdrop-blur"
+        className="md:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background pb-[env(safe-area-inset-bottom)]"
       >
-        <ul className="grid grid-cols-4 h-full">
+        <ul className="grid grid-cols-4 h-16">
           {primary.map((item) => {
             const active = pathname === item.to;
             const Icon = item.icon;
