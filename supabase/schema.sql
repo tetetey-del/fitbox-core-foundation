@@ -267,3 +267,15 @@ grant execute on function public.kf_get_invitation(text) to anon, authenticated;
 -- Solo staff (no está en kf_member_readable). La app del staff pone los WODs de las próximas
 -- 4 semanas en `wods` con cycleId e id fijo "cyc-<ciclo>-<fecha>"; los socios ven esos WODs
 -- como cualquier otro. Editar un día a mano le quita el cycleId.
+
+-- ---------- Sincronización liviana (28/10) ----------
+-- Índice records_updated_idx (tenant_id, updated_at).
+-- Tabla deleted_records (tenant_id, collection, id, user_id, deleted_at) llenada por el trigger
+-- records_deleted (after delete on records); RLS de lectura igual que records. pg_cron
+-- 'kinflow-limpiar-borrados' borra lo de más de 30 días (todos los días 03:17).
+-- kf_pull(t, since) (security invoker, respeta RLS):
+--   since null → bajada completa sin lo viejo: class_sessions y wods de hace más de 60 días
+--   (180 para el staff), reservas de esas clases (salvo las propias), check-ins de otros en
+--   esas clases (los propios y los del staff se bajan todos) y avisos de más de 90 días.
+--   since fecha → solo lo que cambió después (updated_at > since).
+-- La app baja todo al entrar y cada 15 minutos; cada 30 segundos solo los cambios y borrados.

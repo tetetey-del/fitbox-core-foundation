@@ -1,4 +1,4 @@
-import { attendanceOf, favoriteClass, monthlyAttendance } from "./attendance.helpers";
+import { attendanceOf, favoriteClass, monthlyAttendance, totalAttendance } from "./attendance.helpers";
 import { formatDate } from "@/lib/date";
 
 /** Bloque "Actividad": KPIs de asistencia y últimos check-ins. */
@@ -12,7 +12,7 @@ export function MemberAttendanceTab({ userId }: { userId: string }) {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         <div className="rounded-md border border-border bg-card p-3">
           <div className="text-xs text-muted-foreground">Clases hechas</div>
-          <div className="text-2xl font-semibold mt-1" style={{ color: "var(--brand)" }}>{history.length}</div>
+          <div className="text-2xl font-semibold mt-1" style={{ color: "var(--brand)" }}>{totalAttendance(userId)}</div>
         </div>
         <div className="rounded-md border border-border bg-card p-3">
           <div className="text-xs text-muted-foreground">Este mes</div>

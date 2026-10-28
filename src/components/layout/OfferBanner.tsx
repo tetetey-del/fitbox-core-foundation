@@ -9,7 +9,7 @@ import { classSessionsRepo } from "@/lib/storage/repositories/classSessions.repo
 import { classTemplatesRepo } from "@/lib/storage/repositories/classTemplates.repo";
 import { expireOffers, respondOffer } from "@/lib/services/booking.service";
 import { cloudRespondOffer, isCloudSession } from "@/lib/cloud/bookings";
-import { pullTenant } from "@/lib/cloud/sync";
+import { pullChanges } from "@/lib/cloud/sync";
 
 /**
  * Cartel arriba de todo cuando a un socio se le ofrece un lugar de la lista de espera:
@@ -47,7 +47,7 @@ export function OfferBanner() {
   // Box real: cuando se vence una oferta, traer el estado nuevo del servidor.
   const anyExpired = offers.some(({ b }) => new Date(b.offerExpiresAt!).getTime() <= now);
   useEffect(() => {
-    if (anyExpired && isCloudSession()) void pullTenant().catch(() => {});
+    if (anyExpired && isCloudSession()) void pullChanges().catch(() => {});
   }, [anyExpired]);
 
   if (offers.length === 0) return null;

@@ -6,7 +6,7 @@
 import type { Booking } from "@/types";
 import type { BookResult, CancelResult } from "@/lib/services/booking.service";
 import { sb } from "./client";
-import { flush, getCloudContext, pullTenant } from "./sync";
+import { flush, getCloudContext, pullChanges } from "./sync";
 
 /** ¿La sesión activa es de un box real (Supabase)? */
 export function isCloudSession(): boolean {
@@ -27,7 +27,7 @@ export async function cloudBookSession(sessionId: string, userId?: string): Prom
   });
   if (error) return { ok: false, reason: NETWORK };
   const res = data as { ok: boolean; reason?: string; booking?: Booking };
-  if (res.ok) await pullTenant().catch(() => {});
+  if (res.ok) await pullChanges().catch(() => {});
   return { ok: res.ok, reason: res.reason, booking: res.booking };
 }
 
@@ -38,7 +38,7 @@ export async function cloudCancelBooking(bookingId: string): Promise<CancelResul
   const { data, error } = await sb().rpc("kf_cancel_booking", { t: ctx.tenantId, p_booking: bookingId });
   if (error) return { ok: false, reason: NETWORK };
   const res = data as { ok: boolean; reason?: string; charged?: boolean; promoted?: Booking | null };
-  if (res.ok) await pullTenant().catch(() => {});
+  if (res.ok) await pullChanges().catch(() => {});
   return { ok: res.ok, reason: res.reason, charged: res.charged, promoted: res.promoted ?? undefined };
 }
 
@@ -50,6 +50,6 @@ export async function cloudRespondOffer(bookingId: string, accept: boolean): Pro
   const { data, error } = await sb().rpc("kf_respond_offer", { t: ctx.tenantId, p_booking: bookingId, p_accept: accept });
   if (error) return { ok: false, reason: NETWORK };
   const res = data as { ok: boolean; reason?: string };
-  await pullTenant().catch(() => {});
+  await pullChanges().catch(() => {});
   return res;
 }
