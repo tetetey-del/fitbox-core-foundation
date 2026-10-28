@@ -8,6 +8,8 @@ import { MobileNav } from "./MobileNav";
 import { ImpersonationBanner } from "./ImpersonationBanner";
 import { CompleteProfileBanner } from "./CompleteProfileBanner";
 import { OfferBanner } from "./OfferBanner";
+import { PushPrompt } from "@/components/member/PushControls";
+import { registerServiceWorker } from "@/lib/cloud/push";
 import { Button } from "@/components/ui/button";
 import { scanExpiringMembershipsForTenant } from "@/lib/services/notifications.service";
 
@@ -18,6 +20,11 @@ export function AppLayout({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (ready && !session) navigate({ to: "/login" });
   }, [ready, session, navigate]);
+
+  // Service worker para las notificaciones push (solo boxes reales).
+  useEffect(() => {
+    if (session?.cloud) registerServiceWorker();
+  }, [session?.cloud]);
 
   useEffect(() => {
     if (currentTenant?.id) scanExpiringMembershipsForTenant(currentTenant.id);
@@ -53,6 +60,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
           <Header />
           <main className="flex-1 p-4 sm:p-6 md:p-8 pb-24 md:pb-8">
             <OfferBanner />
+            <PushPrompt />
             <CompleteProfileBanner />
             {children}
           </main>

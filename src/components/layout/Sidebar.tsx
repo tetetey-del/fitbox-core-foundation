@@ -12,6 +12,7 @@ import {
   ClipboardList,
   ShoppingBag,
   BadgeCheck,
+  LayoutGrid,
 } from "lucide-react";
 import type { UserRole } from "@/types";
 import { useRole } from "@/hooks/useRole";
@@ -44,6 +45,7 @@ const MEMBER_NAV: NavItem[] = [
   { label: "Feed", to: "/feed", icon: Newspaper, roles: ["member"], module: "feed" },
   { label: "Reservas", to: "/reservas", icon: CalendarDays, roles: ["member"], module: "reservas" },
   { label: "Membresía", to: "/membresia", icon: BadgeCheck, roles: ["member"] },
+  { label: "Más", to: "/mas", icon: LayoutGrid, roles: ["member"] },
   { label: "Mi cuenta", to: "/mi-cuenta", icon: UserIcon, roles: ["member"] },
 ];
 

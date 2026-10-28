@@ -231,3 +231,16 @@ grant execute on function public.kf_get_invitation(text) to anon, authenticated;
 --   pg_cron 'kinflow-vencer-ofertas' corre kf_expire_all_offers() cada minuto.
 -- kf_cancel_booking y kf_book_session vencen las ofertas viejas antes de actuar.
 -- Helpers: kf_notify, kf_session_label, kf_renumber_waitlist.
+
+-- =========================================================
+-- 28/10/2026 · Notificaciones push (migración kinflow_push_notifications + función kf-push)
+-- =========================================================
+-- public.push_subscriptions(endpoint pk, user_id, tenant_id, app_user_id, p256dh, auth): cada persona
+--   maneja solo las suyas (RLS). Se borran al cerrar sesión en ese dispositivo.
+-- Vault: kf_vapid_public, kf_vapid_private, kf_push_secret (las claves no están en el repo).
+-- kf_vapid_public_key(): clave pública para suscribirse (anon/authenticated).
+-- kf_push_config(): claves y secreto, solo service_role (la usa la función kf-push).
+-- Trigger records_notifications_push: al crear un aviso de tipo waitlist_offer, waitlist_offer_expired,
+--   waitlist_promoted, session_cancelled u order_ready, si la persona tiene suscripciones, llama por pg_net
+--   a la Edge Function kf-push (verify_jwt=false; se valida con kf_push_secret), que envía el push con web-push
+--   y borra suscripciones vencidas (404/410).
