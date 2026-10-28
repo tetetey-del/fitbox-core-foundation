@@ -31,6 +31,16 @@ export function attendanceOf(userId: string): AttendanceEntry[] {
     .sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time));
 }
 
+/** Nº total de clases hechas por el socio (cada check-in que le dio el coach). */
+export function totalAttendance(userId: string): number {
+  return attendanceOf(userId).length;
+}
+
+/** "1 clase" / "N clases". */
+export function classesLabel(n: number): string {
+  return `${n} ${n === 1 ? "clase" : "clases"}`;
+}
+
 /** Nº de asistencias del socio dentro del mes calendario en curso. */
 export function monthlyAttendance(userId: string): number {
   const now = new Date();
