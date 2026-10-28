@@ -33,7 +33,8 @@ export function attendanceOf(userId: string): AttendanceEntry[] {
 
 /** Nº total de clases hechas por el socio (cada check-in que le dio el coach). */
 export function totalAttendance(userId: string): number {
-  return attendanceOf(userId).length;
+  // Se cuentan todos los check-ins, aunque la clase sea vieja y ya no esté en el dispositivo.
+  return checkinsRepo.query({ userId }).length;
 }
 
 /** "1 clase" / "N clases". */

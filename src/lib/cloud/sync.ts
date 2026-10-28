@@ -203,34 +203,80 @@ export async function flush(): Promise<void> {
 
 // ---------- Bajada de datos ----------
 
-/** Baja todos los datos del box activo que esta persona puede ver y reemplaza la copia local. */
+// Momento del último dato bajado por box (para pedir solo lo que cambió después).
+const lastSync = new Map<string, string>();
+let lastFullAt = 0;
+/** Cada cuánto se hace igual una bajada completa (por si algo se perdió). */
+const FULL_EVERY_MS = 15 * 60_000;
+/** Margen para no perder cambios que se guardaron mientras se bajaba. */
+const OVERLAP_MS = 30_000;
+
+type PulledRow = { collection: string; id: string; data: Row; updated_at: string };
+
+async function fetchRows(tenantId: string, since: string | null): Promise<PulledRow[]> {
+  const client = sb();
+  const rows: PulledRow[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await client.rpc("kf_pull", { t: tenantId, since }).range(from, from + PAGE - 1);
+    if (error) throw error;
+    rows.push(...((data ?? []) as PulledRow[]));
+    if (!data || data.length < PAGE) break;
+  }
+  return rows;
+}
+
+function newestOf(rows: PulledRow[], fallback: string | undefined): string | undefined {
+  let max = fallback;
+  for (const r of rows) if (!max || r.updated_at > max) max = r.updated_at;
+  return max;
+}
+
+function readLocalFor(tenantId: string, collection: string): Row[] {
+  try {
+    return JSON.parse(window.localStorage.getItem(buildKey(tenantId, collection)) ?? "[]") as Row[];
+  } catch {
+    return [];
+  }
+}
+
+async function pullTenantRow(tenantId: string): Promise<void> {
+  const { data: tenantRow, error } = await sb().from("tenants").select("id,data").eq("id", tenantId).maybeSingle();
+  if (error) throw error;
+  if (!tenantRow) return;
+  const tenant = { ...(tenantRow.data as Row), id: tenantRow.id as string };
+  let list: Row[] = [];
+  try {
+    list = JSON.parse(window.localStorage.getItem(TENANTS_KEY) ?? "[]");
+  } catch {
+    list = [];
+  }
+  const idx = list.findIndex((t) => t.id === tenant.id);
+  if (idx === -1) list.push(tenant);
+  else if (JSON.stringify(list[idx]) === JSON.stringify(tenant)) return;
+  else list[idx] = tenant;
+  setRaw(TENANTS_KEY, list);
+}
+
+/**
+ * Bajada completa: lo que esta persona puede ver (RLS), sin lo viejo (clases, reservas y
+ * WODs de hace más de 2 meses para socios, 6 para el staff). Reemplaza la copia local.
+ */
 export async function pullTenant(): Promise<void> {
   if (!ctx || !isBrowser()) return;
   const { tenantId, role, appUserId } = ctx;
   const client = sb();
+  const startedAt = new Date(Date.now() - OVERLAP_MS).toISOString();
 
-  const { data: tenantRow, error: tErr } = await client.from("tenants").select("id,data").eq("id", tenantId).maybeSingle();
-  if (tErr) throw tErr;
-
-  const rows: { collection: string; id: string; data: Row }[] = [];
-  for (let from = 0; ; from += PAGE) {
-    const { data, error } = await client
-      .from("records")
-      .select("collection,id,data")
-      .eq("tenant_id", tenantId)
-      .order("collection")
-      .order("id")
-      .range(from, from + PAGE - 1);
-    if (error) throw error;
-    rows.push(...((data ?? []) as typeof rows));
-    if (!data || data.length < PAGE) break;
-  }
+  await pullTenantRow(tenantId);
+  const rows = await fetchRows(tenantId, null);
   if (!ctx || ctx.tenantId !== tenantId) return; // cambió la sesión mientras bajaba
 
   const byCollection = new Map<string, Row[]>();
   for (const r of rows) {
     const item = { ...r.data, id: r.id } as Row;
-    byCollection.set(r.collection, [...(byCollection.get(r.collection) ?? []), item]);
+    const list = byCollection.get(r.collection);
+    if (list) list.push(item);
+    else byCollection.set(r.collection, [item]);
   }
 
   // Los socios no ven las fichas completas de los demás: solo nombre, foto y rol.
@@ -254,21 +300,85 @@ export async function pullTenant(): Promise<void> {
     setRaw(buildKey(tenantId, collection), items);
   }
 
-  if (tenantRow) {
-    const tenant = { ...(tenantRow.data as Row), id: tenantRow.id as string };
-    let list: Row[] = [];
-    try {
-      list = JSON.parse(window.localStorage.getItem(TENANTS_KEY) ?? "[]");
-    } catch {
-      list = [];
-    }
-    const idx = list.findIndex((t) => t.id === tenant.id);
-    if (idx === -1) list.push(tenant);
-    else list[idx] = tenant;
-    setRaw(TENANTS_KEY, list);
+  const newest = newestOf(rows, undefined);
+  lastSync.set(tenantId, newest && newest < startedAt ? newest : startedAt);
+  lastFullAt = Date.now();
+  notifyDataChanged();
+  emit({ type: "pulled" });
+}
+
+/**
+ * Bajada liviana: solo lo que cambió (y lo que se borró) desde la última vez.
+ * Si nunca se bajó todo, o pasó mucho tiempo, hace una bajada completa.
+ */
+export async function pullChanges(): Promise<void> {
+  if (!ctx || !isBrowser()) return;
+  const { tenantId } = ctx;
+  const since = lastSync.get(tenantId);
+  if (!since || Date.now() - lastFullAt > FULL_EVERY_MS) return pullTenant();
+
+  const sinceWithOverlap = new Date(new Date(since).getTime() - OVERLAP_MS).toISOString();
+  const [rows, deleted] = await Promise.all([
+    fetchRows(tenantId, sinceWithOverlap),
+    sb()
+      .from("deleted_records")
+      .select("collection,id,deleted_at")
+      .eq("tenant_id", tenantId)
+      .gt("deleted_at", sinceWithOverlap)
+      .then(({ data, error }) => {
+        if (error) throw error;
+        return (data ?? []) as { collection: string; id: string; deleted_at: string }[];
+      }),
+    pullTenantRow(tenantId),
+  ]);
+  if (!ctx || ctx.tenantId !== tenantId) return;
+
+  const changed = new Map<string, { upserts: Map<string, Row>; deletes: Set<string> }>();
+  const entry = (c: string) => {
+    let e = changed.get(c);
+    if (!e) changed.set(c, (e = { upserts: new Map(), deletes: new Set() }));
+    return e;
+  };
+  for (const r of rows) entry(r.collection).upserts.set(r.id, { ...r.data, id: r.id } as Row);
+  for (const d of deleted) {
+    // Si se borró y se volvió a crear con el mismo id, gana el dato nuevo.
+    if (!entry(d.collection).upserts.has(d.id)) entry(d.collection).deletes.add(d.id);
   }
 
-  notifyDataChanged();
+  let touched = false;
+  for (const [collection, { upserts, deletes }] of changed) {
+    if (LOCAL_ONLY.has(collection)) continue;
+    // Los socios reciben la lista de personas por kf_directory (en la bajada completa).
+    if (collection === "users" && ctx.role === "member") {
+      for (const id of [...upserts.keys()]) if (id !== ctx.appUserId) upserts.delete(id);
+    }
+    const local = readLocalFor(tenantId, collection);
+    let dirty = false;
+    const next: Row[] = [];
+    for (const row of local) {
+      if (deletes.has(row.id)) {
+        dirty = true;
+        continue;
+      }
+      const up = upserts.get(row.id);
+      if (up) {
+        upserts.delete(row.id);
+        if (JSON.stringify(up) !== JSON.stringify(row)) dirty = true;
+        next.push(up);
+      } else next.push(row);
+    }
+    for (const up of upserts.values()) {
+      next.push(up);
+      dirty = true;
+    }
+    if (dirty) {
+      setRaw(buildKey(tenantId, collection), next);
+      touched = true;
+    }
+  }
+
+  lastSync.set(tenantId, newestOf(rows, since) ?? since);
+  if (touched) notifyDataChanged();
   emit({ type: "pulled" });
 }
 
@@ -294,15 +404,15 @@ export function clearLocalTenant(tenantId: string): void {
 
 let poll: ReturnType<typeof setInterval> | null = null;
 function onVisible() {
-  if (document.visibilityState === "visible") void flush().then(() => pullTenant()).catch(() => {});
+  if (document.visibilityState === "visible") void flush().then(() => pullChanges()).catch(() => {});
 }
 
-/** Mientras la app está abierta, trae los cambios de otras personas cada minuto y al volver a la pestaña. */
+/** Mientras la app está abierta, trae los cambios de otras personas cada 30 segundos y al volver a la pestaña. */
 export function startCloudRefresh(): void {
   stopCloudRefresh();
   if (!isBrowser()) return;
   poll = setInterval(() => {
-    if (document.visibilityState === "visible") void flush().then(() => pullTenant()).catch(() => {});
+    if (document.visibilityState === "visible") void flush().then(() => pullChanges()).catch(() => {});
   }, 30_000);
   document.addEventListener("visibilitychange", onVisible);
   window.addEventListener("beforeunload", () => void flush());
