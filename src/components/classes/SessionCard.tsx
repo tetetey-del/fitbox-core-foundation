@@ -14,7 +14,7 @@ interface Props {
   /** La clase ya empezó o terminó. */
   past?: boolean;
   /** Estado de la reserva del socio que mira (para resaltarla). */
-  booked?: "confirmed" | "waitlist";
+  booked?: "confirmed" | "waitlist" | "offered";
   /** Ocupación precalculada por el contenedor (evita recalcular en cada card). */
   occupancy?: { confirmed: Booking[]; waitlist: Booking[]; capacity: number };
 }
@@ -55,7 +55,7 @@ export function SessionCard({ session, template, coach, onClick, active, compact
             className="ml-auto shrink-0 rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wide font-semibold"
             style={{ backgroundColor: "var(--brand)", color: "var(--primary-foreground)" }}
           >
-            {booked === "confirmed" ? "Reservada" : "En espera"}
+            {booked === "confirmed" ? "Reservada" : booked === "offered" ? "¡Confirma!" : "En espera"}
           </span>
         ) : past ? (
           <span className="ml-auto text-[10px] uppercase tracking-wide text-muted-foreground font-medium">

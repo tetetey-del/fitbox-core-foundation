@@ -153,6 +153,7 @@ export function SessionDetailSheet({
 
         <WaitlistList
           waitlist={occ.waitlist}
+          offered={occ.offered}
           userById={userById}
           isStaff={isAdmin}
           onRemove={handleRemove}

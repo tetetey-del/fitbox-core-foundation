@@ -218,3 +218,16 @@ grant execute on function public.kf_get_invitation(text) to anon, authenticated;
 -- 28/10/2026 (kinflow_credits_always_required): todos necesitan plan y créditos para reservar,
 -- también cuando el dueño anota a alguien (se le descuenta 1 crédito). La lista de espera también
 -- exige créditos a todos. (Se deja sin efecto la excepción addedByStaff.)
+
+-- =========================================================
+-- 28/10/2026 · Lista de espera con confirmación (migraciones kinflow_offers_*)
+-- =========================================================
+-- Al liberarse un lugar (cancelación) se OFRECE al primero de la lista de espera con plan y créditos:
+-- booking.status = 'offered', offerExpiresAt = ahora + 10 min (o el inicio de la clase si es antes).
+-- El lugar ofrecido cuenta como ocupado. Todavía no se descuenta el crédito.
+--   kf_offer_next(t, session)        ofrece los lugares libres y avisa ("¡Se liberó un lugar!")
+--   kf_respond_offer(t, booking, ok) el socio confirma (se descuenta 1 crédito) o rechaza (pasa al siguiente)
+--   kf_expire_offers(t) / kf_expire_all_offers()  vencen las ofertas sin respuesta (aviso "Se venció el plazo")
+--   pg_cron 'kinflow-vencer-ofertas' corre kf_expire_all_offers() cada minuto.
+-- kf_cancel_booking y kf_book_session vencen las ofertas viejas antes de actuar.
+-- Helpers: kf_notify, kf_session_label, kf_renumber_waitlist.

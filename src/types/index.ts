@@ -218,7 +218,11 @@ export interface ClassSession extends BaseEntity {
   status: ClassSessionStatus;
 }
 
-export type BookingStatus = "confirmed" | "waitlist" | "cancelled";
+/**
+ * offered = se liberó un lugar y se le ofreció a esta persona de la lista de espera;
+ * tiene hasta offerExpiresAt para confirmarlo (si no, pasa a la siguiente).
+ */
+export type BookingStatus = "confirmed" | "waitlist" | "offered" | "cancelled";
 
 export interface Booking extends BaseEntity {
   tenantId: string;
@@ -226,6 +230,10 @@ export interface Booking extends BaseEntity {
   userId: string;
   status: BookingStatus;
   position?: number;
+  /** Hasta cuándo puede confirmar el lugar ofrecido (ISO). */
+  offerExpiresAt?: string;
+  /** true si se le venció el plazo para confirmar. */
+  offerExpired?: boolean;
 }
 
 export interface CheckIn extends BaseEntity {
@@ -410,6 +418,8 @@ export const WOD_BLOCK_LABEL: Record<WodBlockType, string> = {
 
 export type NotificationType =
   | "waitlist_promoted"
+  | "waitlist_offer"
+  | "waitlist_offer_expired"
   | "membership_expiring"
   | "session_cancelled"
   | "new_post"

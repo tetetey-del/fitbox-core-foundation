@@ -47,9 +47,14 @@ export function isLateCancellation(session: ClassSession): { late: boolean; wind
 export interface Occupancy {
   confirmed: Booking[];
   waitlist: Booking[];
+  /** Lugares ofrecidos a alguien de la lista de espera, esperando su confirmación. */
+  offered: Booking[];
   free: number;
   capacity: number;
 }
+
+/** Minutos que tiene alguien de la lista de espera para confirmar un lugar que se liberó. */
+export const OFFER_MINUTES = 10;
 
 export function getSessionOccupancy(sessionId: string): Occupancy {
   const session = classSessionsRepo.getById(sessionId);
@@ -61,7 +66,8 @@ export function getSessionOccupancy(sessionId: string): Occupancy {
   const waitlist = bookings
     .filter((b) => b.status === "waitlist")
     .sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
-  return { confirmed, waitlist, capacity, free: Math.max(0, capacity - confirmed.length) };
+  const offered = bookings.filter((b) => b.status === "offered");
+  return { confirmed, waitlist, offered, capacity, free: Math.max(0, capacity - confirmed.length - offered.length) };
 }
 
 export function getUserBooking(sessionId: string, userId: string): Booking | null {
@@ -209,8 +215,9 @@ export function cancelBooking(bookingId: string, actorRole: UserRole): CancelRes
   const charged = !isStaff && booking.status === "confirmed" && isLateCancellation(session).late;
 
   const wasConfirmed = booking.status === "confirmed";
+  const hadSpot = booking.status === "confirmed" || booking.status === "offered";
 
-  bookingsRepo.update(bookingId, { status: "cancelled", position: undefined });
+  bookingsRepo.update(bookingId, { status: "cancelled", position: undefined, offerExpiresAt: undefined });
 
   // Devolver crédito si la reserva era confirmada y no se canceló tarde
   if (wasConfirmed && !charged) {
@@ -223,7 +230,7 @@ export function cancelBooking(bookingId: string, actorRole: UserRole): CancelRes
 
   let promoted: Booking | undefined;
 
-  if (wasConfirmed) {
+  if (hadSpot) {
     promoted = promoteNextFromWaitlist(booking.sessionId);
   } else if (booking.status === "waitlist") {
     const occ = getSessionOccupancy(booking.sessionId);
@@ -234,38 +241,92 @@ export function cancelBooking(bookingId: string, actorRole: UserRole): CancelRes
 }
 
 /**
- * Promociona al primero de la lista de espera que tenga créditos disponibles.
- * Si el primero no puede (sin créditos), se prueba con el siguiente. Los que
- * no pueden se mantienen en la lista de espera para más adelante.
+ * Se liberó un lugar: se le OFRECE al primero de la lista de espera que tenga plan y créditos.
+ * Tiene OFFER_MINUTES minutos (o hasta que empiece la clase) para confirmarlo; mientras tanto
+ * el lugar queda reservado para esa persona y todavía no se le descuenta el crédito.
  */
 function promoteNextFromWaitlist(sessionId: string): Booking | undefined {
   const occ = getSessionOccupancy(sessionId);
   const session = classSessionsRepo.getById(sessionId);
+  if (!session || session.status === "cancelled" || hasSessionStarted(session) || occ.free <= 0) return undefined;
   for (const candidate of occ.waitlist) {
     const check = inspectCredits(candidate.userId);
     if (!check.hasMembership) continue;
     if (check.needsCredit && !check.hasCredits) continue;
-    if (check.needsCredit) consumeCredit(candidate.userId);
+    const start = sessionStart(session.date, session.startTime).getTime();
+    const expires = new Date(Math.min(Date.now() + OFFER_MINUTES * 60_000, start));
     const updated = bookingsRepo.update(candidate.id, {
-      status: "confirmed",
+      status: "offered",
       position: undefined,
+      offerExpiresAt: expires.toISOString(),
     });
     const rest = getSessionOccupancy(sessionId).waitlist;
     rest.forEach((b, i) => bookingsRepo.update(b.id, { position: i + 1 }));
-    if (session) {
-      const tpl = classTemplatesRepo.getById(session.templateId);
-      notify({
-        tenantId: session.tenantId,
-        userId: candidate.userId,
-        type: "waitlist_promoted",
-        title: "¡Has pasado de lista de espera!",
-        body: `${tpl?.name ?? "Clase"} · ${formatDate(session.date)} a las ${session.startTime}`,
-        linkTo: "/reservas",
-      });
-    }
+    const tpl = classTemplatesRepo.getById(session.templateId);
+    const hh = expires.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+    notify({
+      tenantId: session.tenantId,
+      userId: candidate.userId,
+      type: "waitlist_offer",
+      title: "¡Se liberó un lugar!",
+      body: `${tpl?.name ?? "Clase"} · ${formatDate(session.date)} a las ${session.startTime}. Confírmalo antes de las ${hh} h o pasará a la siguiente persona.`,
+      linkTo: "/reservas",
+    });
     return updated ?? undefined;
   }
   return undefined;
+}
+
+/** Respuesta del socio a un lugar ofrecido: confirmar (se descuenta el crédito) o rechazarlo. */
+export function respondOffer(bookingId: string, accept: boolean): { ok: boolean; reason?: string } {
+  expireOffers();
+  const booking = bookingsRepo.getById(bookingId);
+  if (!booking) return { ok: false, reason: "La reserva no existe" };
+  if (booking.status !== "offered") {
+    return {
+      ok: false,
+      reason: booking.offerExpired
+        ? "Se venció el plazo para confirmar: el lugar pasó a la siguiente persona."
+        : "Este lugar ya no está disponible.",
+    };
+  }
+  if (!accept) {
+    bookingsRepo.update(bookingId, { status: "cancelled", offerExpiresAt: undefined });
+    promoteNextFromWaitlist(booking.sessionId);
+    return { ok: true };
+  }
+  if (!consumeCredit(booking.userId) || !inspectCredits(booking.userId).hasMembership) {
+    bookingsRepo.update(bookingId, { status: "cancelled", offerExpiresAt: undefined });
+    promoteNextFromWaitlist(booking.sessionId);
+    return { ok: false, reason: "No tienes créditos disponibles: el lugar pasó a la siguiente persona." };
+  }
+  bookingsRepo.update(bookingId, { status: "confirmed", offerExpiresAt: undefined });
+  return { ok: true };
+}
+
+/** Vence los lugares ofrecidos que nadie confirmó a tiempo y los ofrece al siguiente. Devuelve cuántos venció. */
+export function expireOffers(): number {
+  const now = Date.now();
+  const due = bookingsRepo
+    .list()
+    .filter((b) => b.status === "offered" && b.offerExpiresAt && new Date(b.offerExpiresAt).getTime() <= now);
+  for (const b of due) {
+    bookingsRepo.update(b.id, { status: "cancelled", offerExpired: true, offerExpiresAt: undefined });
+    const session = classSessionsRepo.getById(b.sessionId);
+    const tpl = session ? classTemplatesRepo.getById(session.templateId) : null;
+    if (session) {
+      notify({
+        tenantId: session.tenantId,
+        userId: b.userId,
+        type: "waitlist_offer_expired",
+        title: "Se venció el plazo",
+        body: `No confirmaste el lugar en ${tpl?.name ?? "la clase"} · ${formatDate(session.date)} a las ${session.startTime} y pasó a la siguiente persona.`,
+        linkTo: "/reservas",
+      });
+    }
+    promoteNextFromWaitlist(b.sessionId);
+  }
+  return due.length;
 }
 
 // ---- Check-ins (solo staff) ----

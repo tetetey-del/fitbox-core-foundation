@@ -41,3 +41,15 @@ export async function cloudCancelBooking(bookingId: string): Promise<CancelResul
   if (res.ok) await pullTenant().catch(() => {});
   return { ok: res.ok, reason: res.reason, charged: res.charged, promoted: res.promoted ?? undefined };
 }
+
+/** Responder a un lugar ofrecido de la lista de espera: confirmar (true) o "no, gracias" (false). */
+export async function cloudRespondOffer(bookingId: string, accept: boolean): Promise<{ ok: boolean; reason?: string }> {
+  const ctx = getCloudContext();
+  if (!ctx) return { ok: false, reason: NETWORK };
+  await flush();
+  const { data, error } = await sb().rpc("kf_respond_offer", { t: ctx.tenantId, p_booking: bookingId, p_accept: accept });
+  if (error) return { ok: false, reason: NETWORK };
+  const res = data as { ok: boolean; reason?: string };
+  await pullTenant().catch(() => {});
+  return res;
+}
