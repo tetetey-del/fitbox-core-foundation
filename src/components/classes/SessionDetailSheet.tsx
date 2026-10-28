@@ -26,6 +26,7 @@ import { notifyDataChanged, useDataVersion } from "@/lib/data-bus";
 import { AttendeesList } from "./sessionDetail/AttendeesList";
 import { WaitlistList } from "./sessionDetail/WaitlistList";
 import { AddAttendeeCombobox } from "./sessionDetail/AddAttendeeCombobox";
+import { cloudBookSession, cloudCancelBooking, isCloudSession } from "@/lib/cloud/bookings";
 
 interface Props {
   open: boolean;
@@ -74,8 +75,8 @@ export function SessionDetailSheet({
     notifyDataChanged();
   };
 
-  const handleRemove = (bookingId: string) => {
-    const res = cancelBooking(bookingId, currentUser.role);
+  const handleRemove = async (bookingId: string) => {
+    const res = isCloudSession() ? await cloudCancelBooking(bookingId) : cancelBooking(bookingId, currentUser.role);
     if (!res.ok) toast.error(res.reason ?? "No se pudo quitar");
     else {
       toast.success("Reserva eliminada");
@@ -84,9 +85,9 @@ export function SessionDetailSheet({
     notifyDataChanged();
   };
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!addUserId) return;
-    const res = addAttendee(session.id, addUserId);
+    const res = isCloudSession() ? await cloudBookSession(session.id, addUserId) : addAttendee(session.id, addUserId);
     if (!res.ok) toast.error(res.reason ?? "No se pudo añadir");
     else toast.success("Asistente añadido");
     setAddUserId("");
