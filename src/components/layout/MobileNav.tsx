@@ -13,6 +13,7 @@ import {
   Award,
   ClipboardList,
   ShoppingBag,
+  BadgeCheck,
 } from "lucide-react";
 import type { UserRole } from "@/types";
 import { useRole } from "@/hooks/useRole";
@@ -49,17 +50,13 @@ const STAFF_SECONDARY: NavItem[] = [
   { label: "Configuración", to: "/configuracion", icon: Settings, roles: ["admin"] },
 ];
 
+// Socio: solo tres secciones abajo. Retos, marcas, rutinas y tienda están en Mi cuenta (menú del avatar).
 const MEMBER_PRIMARY: NavItem[] = [
   { label: "Feed", to: "/feed", icon: Newspaper, roles: ["member"], module: "feed" },
   { label: "Reservas", to: "/reservas", icon: CalendarDays, roles: ["member"], module: "reservas" },
-  { label: "Retos", to: "/retos", icon: Award, roles: ["member"], module: "challenges" },
+  { label: "Membresía", to: "/membresia", icon: BadgeCheck, roles: ["member"] },
 ];
-const MEMBER_SECONDARY: NavItem[] = [
-  { label: "PRs", to: "/prs", icon: Trophy, roles: ["member"], module: "prs" },
-  { label: "Rutinas", to: "/rutinas", icon: ClipboardList, roles: ["member"], module: "programs" },
-  { label: "Tienda", to: "/tienda", icon: ShoppingBag, roles: ["member"], module: "shop" },
-  { label: "Mi cuenta", to: "/mi-cuenta", icon: UserIcon, roles: ["member"] },
-];
+const MEMBER_SECONDARY: NavItem[] = [];
 
 export function MobileNav() {
   const { role, isAny } = useRole();
@@ -83,7 +80,7 @@ export function MobileNav() {
         aria-label="Navegación principal"
         className="md:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background pb-[env(safe-area-inset-bottom)]"
       >
-        <ul className="grid grid-cols-4 h-16">
+        <ul className={cn("grid h-16", isMember ? "grid-cols-3" : "grid-cols-4")}>
           {primary.map((item) => {
             const active = pathname === item.to;
             const Icon = item.icon;
@@ -96,14 +93,15 @@ export function MobileNav() {
                     "flex flex-col items-center justify-center h-full gap-1 text-[11px] font-medium",
                     active ? "text-foreground" : "text-muted-foreground",
                   )}
+                  style={active ? { color: "var(--brand)" } : undefined}
                 >
-                  <Icon className="h-5 w-5" strokeWidth={1.5} />
+                  <Icon className="h-5 w-5" strokeWidth={active ? 2 : 1.5} />
                   <span>{item.label}</span>
                 </Link>
               </li>
             );
           })}
-          <li>
+          {!isMember && <li>
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
                 <button
@@ -149,7 +147,7 @@ export function MobileNav() {
                 </ul>
               </SheetContent>
             </Sheet>
-          </li>
+          </li>}
         </ul>
       </nav>
     </>

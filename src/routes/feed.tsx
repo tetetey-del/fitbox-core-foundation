@@ -31,6 +31,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { MemberHero } from "@/components/member/MemberHero";
 
 export const POST_ICONS = {
   aviso: AlertTriangle,
@@ -83,8 +84,9 @@ function FeedPage() {
 
   return (
     <AppLayout>
+      <MemberHero />
       <PageHeader
-        title="Feed"
+        title={isStaff ? "Feed" : "Novedades del box"}
         description="Avisos, consejos, recetas y WODs del box."
       >
         {isStaff && (
@@ -97,7 +99,12 @@ function FeedPage() {
 
       {posts.length === 0 ? (
         <div className="rounded-lg border border-dashed border-border p-10 text-center">
-          <Dumbbell className="h-6 w-6 mx-auto text-muted-foreground" strokeWidth={1.5} />
+          <span
+            className="mx-auto flex h-12 w-12 items-center justify-center rounded-full"
+            style={{ backgroundColor: "color-mix(in srgb, var(--brand) 18%, transparent)", color: "var(--brand)" }}
+          >
+            <Dumbbell className="h-6 w-6" strokeWidth={1.75} />
+          </span>
           <p className="mt-3 text-sm text-muted-foreground">
             El feed está vacío. {isStaff ? "Crea el primer post." : "Aún no hay publicaciones."}
           </p>

@@ -11,6 +11,7 @@ export function CompleteProfileBanner() {
   return (
     <Link
       to="/mi-cuenta"
+      hash="mis-datos"
       className="mb-4 flex items-center gap-3 rounded-lg border border-[#14B8A6]/40 bg-[#14B8A6]/10 p-3 text-sm hover:bg-[#14B8A6]/15 transition-colors"
     >
       <UserRound className="h-4 w-4 shrink-0 text-[#14B8A6]" strokeWidth={1.75} />

@@ -11,6 +11,7 @@ import {
   Award,
   ClipboardList,
   ShoppingBag,
+  BadgeCheck,
 } from "lucide-react";
 import type { UserRole } from "@/types";
 import { useRole } from "@/hooks/useRole";
@@ -42,10 +43,7 @@ const STAFF_NAV: NavItem[] = [
 const MEMBER_NAV: NavItem[] = [
   { label: "Feed", to: "/feed", icon: Newspaper, roles: ["member"], module: "feed" },
   { label: "Reservas", to: "/reservas", icon: CalendarDays, roles: ["member"], module: "reservas" },
-  { label: "PRs", to: "/prs", icon: Trophy, roles: ["member"], module: "prs" },
-  { label: "Retos", to: "/retos", icon: Award, roles: ["member"], module: "challenges" },
-  { label: "Rutinas", to: "/rutinas", icon: ClipboardList, roles: ["member"], module: "programs" },
-  { label: "Tienda", to: "/tienda", icon: ShoppingBag, roles: ["member"], module: "shop" },
+  { label: "Membresía", to: "/membresia", icon: BadgeCheck, roles: ["member"] },
   { label: "Mi cuenta", to: "/mi-cuenta", icon: UserIcon, roles: ["member"] },
 ];
 
