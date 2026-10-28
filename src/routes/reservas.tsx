@@ -101,7 +101,7 @@ function ReservasPage() {
       arr.push(b);
       bySession.set(b.sessionId, arr);
     }
-    const occ = new Map<string, { confirmed: Booking[]; waitlist: Booking[]; capacity: number; free: number }>();
+    const occ = new Map<string, { confirmed: Booking[]; waitlist: Booking[]; offered: Booking[]; capacity: number; free: number }>();
     const mine = new Map<string, Booking>();
     for (const s of sessionsThisWeek) {
       const list = bySession.get(s.id) ?? [];
@@ -111,11 +111,14 @@ function ReservasPage() {
       const waitlist = list
         .filter((b) => b.status === "waitlist")
         .sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+      // Un lugar ofrecido a alguien de la lista de espera cuenta como ocupado mientras decide.
+      const offered = list.filter((b) => b.status === "offered");
       occ.set(s.id, {
         confirmed,
         waitlist,
+        offered,
         capacity: s.capacity,
-        free: Math.max(0, s.capacity - confirmed.length),
+        free: Math.max(0, s.capacity - confirmed.length - offered.length),
       });
       if (currentUser) {
         const own = list.find((b) => b.userId === currentUser.id);
@@ -247,7 +250,7 @@ function ReservasPage() {
                   past={hasSessionStarted(s)}
                   booked={
                     !isStaff && myBooking && myBooking.status !== "cancelled"
-                      ? (myBooking.status as "confirmed" | "waitlist")
+                      ? (myBooking.status as "confirmed" | "waitlist" | "offered")
                       : undefined
                   }
                 />
@@ -436,7 +439,7 @@ function MyUpcomingClasses({
   const items = useMemo(() => {
     return bookingsRepo
       .query({ userId })
-      .filter((b) => b.status === "confirmed" || b.status === "waitlist")
+      .filter((b) => b.status === "confirmed" || b.status === "waitlist" || b.status === "offered")
       .map((b) => ({ b, s: classSessionsRepo.getById(b.sessionId) }))
       .filter((x): x is { b: Booking; s: ClassSession } => !!x.s && x.s.status !== "cancelled" && !hasSessionStarted(x.s))
       .sort((a, b) => (a.s.date + a.s.startTime).localeCompare(b.s.date + b.s.startTime))
@@ -472,6 +475,7 @@ function MyUpcomingClasses({
                   <div className="text-xs text-muted-foreground first-letter:uppercase">
                     {formatLongDay(s.date)}
                     {b.status === "waitlist" && ` · en espera (#${b.position ?? "?"})`}
+                    {b.status === "offered" && " · ¡lugar libre! confírmalo arriba"}
                   </div>
                 </div>
                 <button

@@ -303,7 +303,7 @@ export function startCloudRefresh(): void {
   if (!isBrowser()) return;
   poll = setInterval(() => {
     if (document.visibilityState === "visible") void flush().then(() => pullTenant()).catch(() => {});
-  }, 60_000);
+  }, 30_000);
   document.addEventListener("visibilitychange", onVisible);
   window.addEventListener("beforeunload", () => void flush());
 }
