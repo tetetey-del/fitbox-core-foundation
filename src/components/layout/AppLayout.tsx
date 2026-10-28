@@ -12,6 +12,11 @@ import { PushPrompt } from "@/components/member/PushControls";
 import { registerServiceWorker } from "@/lib/cloud/push";
 import { Button } from "@/components/ui/button";
 import { scanExpiringMembershipsForTenant } from "@/lib/services/notifications.service";
+import { syncCycleWods } from "@/lib/services/wodCycle.service";
+import { notifyDataChanged } from "@/lib/data-bus";
+
+// El ciclo de programación se pone al día una vez por carga y por box.
+const cycleSynced = new Set<string>();
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const { ready, session, currentTenant, isImpersonating, logout } = useAuth();
@@ -29,6 +34,17 @@ export function AppLayout({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (currentTenant?.id) scanExpiringMembershipsForTenant(currentTenant.id);
   }, [currentTenant?.id]);
+
+  // Staff: deja puestos los WODs del ciclo de programación de las próximas semanas.
+  useEffect(() => {
+    if (!ready || !session || session.role === "member" || cycleSynced.has(session.tenantId)) return;
+    cycleSynced.add(session.tenantId);
+    try {
+      if (syncCycleWods() > 0) notifyDataChanged();
+    } catch {
+      /* nada */
+    }
+  }, [ready, session]);
 
   if (!ready) return <div className="min-h-dvh bg-background" />;
   if (!session || !currentTenant) return null;

@@ -75,6 +75,8 @@ export function saveWod(input: SaveWodInput): Wod {
     blocks: input.blocks,
     published: input.publish,
     publishedBy: input.publish ? s.userId : existing?.publishedBy,
+    // Editado a mano: deja de ser del ciclo de programación y el ciclo no lo vuelve a tocar.
+    cycleId: undefined,
   };
   let saved: Wod;
   if (existing) {

@@ -261,3 +261,9 @@ grant execute on function public.kf_get_invitation(text) to anon, authenticated;
 -- user_id = null para coach_notes: así el socio nunca la puede leer (no está en
 -- kf_member_readable y no es "suya"), aunque la nota sea sobre él. Solo el staff la ve y edita.
 --   when new.collection = 'coach_notes' then null
+
+-- ---------- Ciclo de programación (28/10) ----------
+-- Colección wod_cycles ({name, weeks, startDate, active, days{"semana-día": {title, blocks}}}).
+-- Solo staff (no está en kf_member_readable). La app del staff pone los WODs de las próximas
+-- 4 semanas en `wods` con cycleId e id fijo "cyc-<ciclo>-<fecha>"; los socios ven esos WODs
+-- como cualquier otro. Editar un día a mano le quita el cycleId.
