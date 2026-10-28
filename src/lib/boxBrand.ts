@@ -38,6 +38,49 @@ export function saveBoxBrand(brand: BoxBrand | null): void {
   applyBoxBrand(brand);
 }
 
+/**
+ * Cookie con lo mínimo de la marca, para que el servidor mande la página ya con el nombre y
+ * el ícono del box. Safari arma "Agregar a inicio" con lo que vino del servidor al cargar.
+ */
+export const BRAND_COOKIE = "kf_box";
+
+export interface BrandCookie {
+  s: string;
+  n: string;
+  i?: string;
+}
+
+export function encodeBrandCookie(brand: BoxBrand): string {
+  const c: BrandCookie = { s: brand.slug, n: brand.name, i: brand.appIcon?.["180"] };
+  return encodeURIComponent(JSON.stringify(c));
+}
+
+export function decodeBrandCookie(raw: string | undefined): BoxBrand | null {
+  if (!raw) return null;
+  try {
+    const c = JSON.parse(decodeURIComponent(raw)) as BrandCookie;
+    if (!c?.s || !c?.n) return null;
+    return { slug: c.s, name: c.n, appIcon: c.i ? { "180": c.i } : undefined };
+  } catch {
+    return null;
+  }
+}
+
+function writeBrandCookie(brand: BoxBrand | null) {
+  try {
+    document.cookie = brand
+      ? `${BRAND_COOKIE}=${encodeBrandCookie(brand)}; path=/; max-age=31536000; samesite=lax`
+      : `${BRAND_COOKIE}=; path=/; max-age=0; samesite=lax`;
+  } catch {
+    /* nada */
+  }
+}
+
+/** Manifest del box (lo arma la función de Supabase `kf-manifest`). */
+export function brandManifestUrl(slug: string, origin: string): string {
+  return `${SUPABASE_URL}/functions/v1/kf-manifest?box=${encodeURIComponent(slug)}&o=${encodeURIComponent(origin)}`;
+}
+
 function setLink(rel: string, href: string, extra?: Record<string, string>) {
   let el = document.head.querySelector<HTMLLinkElement>(`link[rel="${rel}"]`);
   if (!el) {
@@ -62,13 +105,14 @@ function setMeta(name: string, content: string) {
 /** Pone en la página el nombre y el ícono del box (o los de Kinflow si no hay box). */
 export function applyBoxBrand(brand: BoxBrand | null): void {
   if (typeof document === "undefined") return;
+  writeBrandCookie(brand);
   if (!brand) {
     setLink("manifest", "/manifest.webmanifest");
     setLink("apple-touch-icon", "/apple-touch-icon.png");
     setMeta("apple-mobile-web-app-title", "Kinflow");
     return;
   }
-  const manifest = `${SUPABASE_URL}/functions/v1/kf-manifest?box=${encodeURIComponent(brand.slug)}&o=${encodeURIComponent(window.location.origin)}`;
+  const manifest = brandManifestUrl(brand.slug, window.location.origin);
   setLink("manifest", manifest, { crossorigin: "anonymous" });
   setLink("apple-touch-icon", brand.appIcon?.["180"] ?? "/apple-touch-icon.png");
   setMeta("apple-mobile-web-app-title", brand.name);
