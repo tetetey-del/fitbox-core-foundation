@@ -226,8 +226,6 @@ export interface Booking extends BaseEntity {
   userId: string;
   status: BookingStatus;
   position?: number;
-  /** La apuntó el dueño a mano: al liberarse un lugar entra aunque no tenga plan ni créditos. */
-  addedByStaff?: boolean;
 }
 
 export interface CheckIn extends BaseEntity {

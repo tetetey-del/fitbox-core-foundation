@@ -163,7 +163,6 @@ export function bookSession(
       sessionId,
       userId,
       status: "confirmed",
-      ...(opts.bypassCredits ? { addedByStaff: true } : {}),
     });
     return { ok: true, booking };
   }
@@ -176,7 +175,6 @@ export function bookSession(
       userId,
       status: "waitlist",
       position,
-      ...(opts.bypassCredits ? { addedByStaff: true } : {}),
     });
     return { ok: true, booking };
   } finally {
@@ -244,12 +242,10 @@ function promoteNextFromWaitlist(sessionId: string): Booking | undefined {
   const occ = getSessionOccupancy(sessionId);
   const session = classSessionsRepo.getById(sessionId);
   for (const candidate of occ.waitlist) {
-    if (!candidate.addedByStaff) {
-      const check = inspectCredits(candidate.userId);
-      if (!check.hasMembership) continue;
-      if (check.needsCredit && !check.hasCredits) continue;
-      if (check.needsCredit) consumeCredit(candidate.userId);
-    }
+    const check = inspectCredits(candidate.userId);
+    if (!check.hasMembership) continue;
+    if (check.needsCredit && !check.hasCredits) continue;
+    if (check.needsCredit) consumeCredit(candidate.userId);
     const updated = bookingsRepo.update(candidate.id, {
       status: "confirmed",
       position: undefined,
@@ -344,8 +340,15 @@ export function cancelSession(sessionId: string): void {
 // ---- Alta manual de asistente (staff) ----
 
 export function addAttendee(sessionId: string, userId: string): BookResult {
-  // El staff apunta manualmente: se saltan las restricciones de créditos.
-  return bookSession(sessionId, userId, { bypassCredits: true });
+  // El dueño anota a alguien: se controlan su plan y sus créditos igual que si reservara él.
+  const res = bookSession(sessionId, userId);
+  if (!res.ok && res.reason === "Sin membresía activa") {
+    return { ok: false, reason: "Esa persona no tiene un plan activo. Asígnale un plan primero." };
+  }
+  if (!res.ok && res.reason === "Sin créditos disponibles este ciclo") {
+    return { ok: false, reason: "Esa persona no tiene créditos disponibles." };
+  }
+  return res;
 }
 
 export interface SessionForUser extends ClassSession {
