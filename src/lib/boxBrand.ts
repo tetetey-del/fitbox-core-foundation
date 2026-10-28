@@ -253,17 +253,20 @@ function analyzeLogo(img: HTMLImageElement): LogoInfo {
   // Fondo casi blanco → blanco puro (queda más limpio en la pantalla de inicio).
   const light = r > 225 && g > 225 && b > 225;
   const hex = (n: number) => n.toString(16).padStart(2, "0");
-  if (light && !transparent) {
-    // Se "blanquea" el fondo: el gris claro pasa a blanco y los colores se ajustan igual.
+  if (!transparent) {
+    // El fondo del logo (y sombras o marcos pegados al borde) se vuelve transparente, así el
+    // ícono puede llevar cualquier color de fondo. Si el fondo era claro, los colores del
+    // dibujo se ajustan para que el gris del fondo no los apague.
     for (let i = 0; i < px.length; i += 4) {
-      // Lo parecido al fondo (incluidas sombras suaves) queda blanco.
       if (dist(i) < 90 || (dropEdge && edge[i / 4])) {
-        px[i] = px[i + 1] = px[i + 2] = 255;
+        px[i + 3] = 0;
         continue;
       }
-      px[i] = Math.min(255, (px[i] * 255) / r);
-      px[i + 1] = Math.min(255, (px[i + 1] * 255) / g);
-      px[i + 2] = Math.min(255, (px[i + 2] * 255) / b);
+      if (light) {
+        px[i] = Math.min(255, (px[i] * 255) / r);
+        px[i + 1] = Math.min(255, (px[i + 1] * 255) / g);
+        px[i + 2] = Math.min(255, (px[i + 2] * 255) / b);
+      }
     }
     ctx.putImageData(imageData, 0, 0);
   }
@@ -273,23 +276,42 @@ function analyzeLogo(img: HTMLImageElement): LogoInfo {
     y: minY,
     w: maxX - minX + 1,
     h: maxY - minY + 1,
-    source: light && !transparent ? c : img,
+    source: transparent ? img : c,
   };
 }
 
 /**
- * Ícono cuadrado: se recortan los márgenes del logo, el fondo se pinta del color del fondo
- * del logo y el dibujo ocupa la mayor parte. El de 512 deja más margen porque Android
+ * Ícono cuadrado: se recortan los márgenes del logo, el fondo se pinta del color elegido
+ * (o del fondo del logo) y el dibujo ocupa la mayor parte. El de 512 deja más margen porque Android
  * puede recortarlo en círculo.
  */
-async function iconPng(img: HTMLImageElement, size: number, fill: number): Promise<Blob> {
+/** Ajustes del ícono que elige el box: tamaño del logo (1 = normal) y color de fondo. */
+export interface AppIconStyle {
+  scale?: number;
+  /** "auto" (el del logo) o un color #RRGGBB. */
+  bg?: string;
+}
+
+const MIN_SCALE = 0.6;
+const MAX_SCALE = 1.15;
+
+function sameStyle(a?: AppIconStyle, b?: AppIconStyle): boolean {
+  return (a?.scale ?? 1) === (b?.scale ?? 1) && (a?.bg ?? "auto") === (b?.bg ?? "auto");
+}
+export { sameStyle as sameAppIconStyle };
+
+async function iconPng(img: HTMLImageElement, size: number, style: AppIconStyle = {}): Promise<Blob> {
   const info = analyzeLogo(img);
+  const base = size === 512 ? 0.7 : 0.84;
+  const k = Math.min(MAX_SCALE, Math.max(MIN_SCALE, style.scale ?? 1));
+  // En el de 512 (Android lo puede recortar en círculo) no se pasa del 80 %.
+  const fill = Math.min(size === 512 ? 0.8 : 0.98, base * k);
   const canvas = document.createElement("canvas");
   canvas.width = size;
   canvas.height = size;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("No se pudo generar el ícono");
-  ctx.fillStyle = info.bg;
+  ctx.fillStyle = style.bg && /^#[0-9a-f]{6}$/i.test(style.bg) ? style.bg : info.bg;
   ctx.fillRect(0, 0, size, size);
   const box = size * fill;
   const scale = Math.min(box / info.w, box / info.h);
@@ -303,22 +325,26 @@ async function iconPng(img: HTMLImageElement, size: number, fill: number): Promi
 }
 
 /** Versión del diseño de los íconos: si cambia, se vuelven a generar al guardar la apariencia. */
-export const APP_ICON_VERSION = "3";
+export const APP_ICON_VERSION = "4";
 
 /** Ícono de prueba (para ver cómo queda sin subirlo). */
-export async function renderAppIcon(logoDataUrl: string, size: number): Promise<string> {
-  const blob = await iconPng(await loadImage(logoDataUrl), size, size === 512 ? 0.7 : 0.84);
+export async function renderAppIcon(logoDataUrl: string, size: number, style?: AppIconStyle): Promise<string> {
+  const blob = await iconPng(await loadImage(logoDataUrl), size, style);
   return URL.createObjectURL(blob);
 }
 
 /** Genera los íconos de la app desde el logo y los sube a Supabase. Devuelve sus URLs. */
-export async function uploadAppIcons(tenantId: string, logoDataUrl: string): Promise<Record<string, string>> {
+export async function uploadAppIcons(
+  tenantId: string,
+  logoDataUrl: string,
+  style?: AppIconStyle,
+): Promise<Record<string, string>> {
   const { sb } = await import("@/lib/cloud/client");
   const img = await loadImage(logoDataUrl);
   const version = Date.now();
   const out: Record<string, string> = {};
   for (const size of [180, 192, 512]) {
-    const blob = await iconPng(img, size, size === 512 ? 0.7 : 0.84);
+    const blob = await iconPng(img, size, style);
     const path = `${tenantId}/icon-${size}.png`;
     const { error } = await sb().storage.from("box-icons").upload(path, blob, {
       upsert: true,

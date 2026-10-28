@@ -12,7 +12,8 @@ import type { ThemeId } from "@/types";
 import { cn } from "@/lib/utils";
 import { MAX_LOGO_BYTES } from "@/lib/constants";
 import { compressImage, dataUrlBytes } from "@/lib/image";
-import { APP_ICON_VERSION, uploadAppIcons } from "@/lib/boxBrand";
+import { APP_ICON_VERSION, sameAppIconStyle, uploadAppIcons, type AppIconStyle } from "@/lib/boxBrand";
+import { AppIconEditor } from "./AppIconEditor";
 import { isCloudSession } from "@/lib/cloud/bookings";
 
 export function AppearanceSection() {
@@ -20,12 +21,14 @@ export function AppearanceSection() {
   const [themeId, setThemeId] = useState<ThemeId>(currentTenant?.themeId ?? DEFAULT_THEME_ID);
   const [brandColor, setBrandColor] = useState(currentTenant?.brandColor ?? "#14B8A6");
   const [logo, setLogo] = useState<string | undefined>(currentTenant?.logo);
+  const [iconStyle, setIconStyle] = useState<AppIconStyle>(currentTenant?.appIconStyle ?? {});
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setThemeId(currentTenant?.themeId ?? DEFAULT_THEME_ID);
     setBrandColor(currentTenant?.brandColor ?? "#14B8A6");
     setLogo(currentTenant?.logo);
+    setIconStyle(currentTenant?.appIconStyle ?? {});
   }, [currentTenant]);
 
   const onFile = async (file?: File | null) => {
@@ -37,6 +40,7 @@ export function AppearanceSection() {
         return;
       }
       setLogo(dataUrl);
+      setIconStyle({});
     } catch {
       toast.error("No se pudo procesar la imagen");
     }
@@ -49,14 +53,18 @@ export function AppearanceSection() {
     setSaving(true);
     let appIcon = currentTenant.appIcon;
     // Box real: con el logo se generan los íconos de la app que instalan los socios.
-    if (isCloudSession() && (logo !== currentTenant.logo || (logo && appIcon?.v !== APP_ICON_VERSION))) {
+    const iconChanged =
+      logo !== currentTenant.logo ||
+      !sameAppIconStyle(iconStyle, currentTenant.appIconStyle) ||
+      (logo && appIcon?.v !== APP_ICON_VERSION);
+    if (isCloudSession() && iconChanged) {
       try {
-        appIcon = logo ? await uploadAppIcons(currentTenant.id, logo) : undefined;
+        appIcon = logo ? await uploadAppIcons(currentTenant.id, logo, iconStyle) : undefined;
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "No se pudieron generar los íconos de la app");
       }
     }
-    tenantsRepo.update(currentTenant.id, { themeId, brandColor, logo, appIcon });
+    tenantsRepo.update(currentTenant.id, { themeId, brandColor, logo, appIcon, appIconStyle: iconStyle });
     applyTheme(themeId, brandColor);
     toast.success("Apariencia actualizada", {
       description: isCloudSession() && logo && appIcon ? "La app de tus socios ya usa tu logo." : undefined,
@@ -164,10 +172,20 @@ export function AppearanceSection() {
             )}
           </div>
           <p className="text-xs text-muted-foreground">
-            Máx. 300 KB. PNG o JPG, mejor cuadrado. Es también el ícono de la app que instalan tus socios.
+            Máx. 300 KB. PNG o JPG; mejor con fondo transparente. Es también el ícono de la app que instalan tus socios.
           </p>
         </div>
       </div>
+
+      {logo && (
+        <AppIconEditor
+          logo={logo}
+          style={iconStyle}
+          onChange={setIconStyle}
+          boxName={currentTenant?.name ?? "Tu box"}
+          brandColor={brandColor}
+        />
+      )}
 
       <Button onClick={save} disabled={saving}>{saving ? "Guardando…" : "Guardar apariencia"}</Button>
     </section>
