@@ -16,6 +16,7 @@ import { Route as ConfiguracionRouteImport } from './routes/configuracion'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as FeedRouteImport } from './routes/feed'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as MasRouteImport } from './routes/mas'
 import { Route as MembresiaRouteImport } from './routes/membresia'
 import { Route as MiCuentaRouteImport } from './routes/mi-cuenta'
 import { Route as PrsRouteImport } from './routes/prs'
@@ -68,6 +69,11 @@ const FeedRoute = FeedRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MasRoute = MasRouteImport.update({
+  id: '/mas',
+  path: '/mas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MembresiaRoute = MembresiaRouteImport.update({
@@ -169,6 +175,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/feed': typeof FeedRoute
   '/login': typeof LoginRoute
+  '/mas': typeof MasRoute
   '/membresia': typeof MembresiaRoute
   '/mi-cuenta': typeof MiCuentaRoute
   '/prs': typeof PrsRoute
@@ -196,6 +203,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/feed': typeof FeedRoute
   '/login': typeof LoginRoute
+  '/mas': typeof MasRoute
   '/membresia': typeof MembresiaRoute
   '/mi-cuenta': typeof MiCuentaRoute
   '/prs': typeof PrsRoute
@@ -224,6 +232,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/feed': typeof FeedRoute
   '/login': typeof LoginRoute
+  '/mas': typeof MasRoute
   '/membresia': typeof MembresiaRoute
   '/mi-cuenta': typeof MiCuentaRoute
   '/prs': typeof PrsRoute
@@ -253,6 +262,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/feed'
     | '/login'
+    | '/mas'
     | '/membresia'
     | '/mi-cuenta'
     | '/prs'
@@ -280,6 +290,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/feed'
     | '/login'
+    | '/mas'
     | '/membresia'
     | '/mi-cuenta'
     | '/prs'
@@ -307,6 +318,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/feed'
     | '/login'
+    | '/mas'
     | '/membresia'
     | '/mi-cuenta'
     | '/prs'
@@ -335,6 +347,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   FeedRoute: typeof FeedRoute
   LoginRoute: typeof LoginRoute
+  MasRoute: typeof MasRoute
   MembresiaRoute: typeof MembresiaRoute
   MiCuentaRoute: typeof MiCuentaRoute
   PrsRoute: typeof PrsRoute
@@ -404,6 +417,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mas': {
+      id: '/mas'
+      path: '/mas'
+      fullPath: '/mas'
+      preLoaderRoute: typeof MasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/membresia': {
@@ -543,6 +563,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   FeedRoute: FeedRoute,
   LoginRoute: LoginRoute,
+  MasRoute: MasRoute,
   MembresiaRoute: MembresiaRoute,
   MiCuentaRoute: MiCuentaRoute,
   PrsRoute: PrsRoute,

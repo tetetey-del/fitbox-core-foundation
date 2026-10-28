@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { lazy, Suspense, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
-import { Loader2, Award, Trophy, ClipboardList, ShoppingBag, LineChart, Sparkles, CalendarDays, LogOut, UserRound, IdCard, KeyRound, BellRing } from "lucide-react";
+import { Loader2, Award, LogOut, UserRound, IdCard, KeyRound, BellRing } from "lucide-react";
 import { PushSettings } from "@/components/member/PushControls";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -11,18 +11,12 @@ import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthError } from "@/lib/services/auth.service";
 import { updateUserById } from "@/lib/storage/repositories/users.repo";
-import { bookingsRepo } from "@/lib/storage/repositories/bookings.repo";
-import { classSessionsRepo } from "@/lib/storage/repositories/classSessions.repo";
 import { MEMBER_GOAL_LABEL, type MemberGoal } from "@/types";
 import { AvatarPicker } from "@/components/members/AvatarPicker";
 import { useModules } from "@/hooks/useModules";
-import { formatLongDay } from "@/lib/date";
-import { hasSessionStarted } from "@/lib/services/booking.service";
-import { classTemplatesRepo } from "@/lib/storage/repositories/classTemplates.repo";
 import { useDataVersion } from "@/lib/data-bus";
 import { missingOptionalData, needsProfileData, todayKey } from "@/lib/memberData";
 
-const ProgressPanel = lazy(() => import("@/components/health/ProgressPanel"));
 
 export const Route = createFileRoute("/mi-cuenta")({
   head: () => ({ meta: [{ title: "Mi cuenta — Kinflow" }] }),
@@ -33,109 +27,19 @@ function MyAccountPage() {
   const { session, currentUser, refresh, changePassword, logout } = useAuth();
   const modules = useModules();
   const navigate = useNavigate();
-  const [showProgress, setShowProgress] = useState(false);
   useDataVersion();
 
   if (!session || !currentUser) return null;
   const isMember = currentUser.role === "member";
 
-  const upcoming = bookingsRepo
-    .query({ userId: currentUser.id })
-    .filter((b) => b.status === "confirmed" || b.status === "waitlist" || b.status === "offered")
-    .map((b) => ({ b, s: classSessionsRepo.getById(b.sessionId) }))
-    .filter((x): x is { b: typeof x.b; s: NonNullable<typeof x.s> } => !!x.s)
-    .filter(({ s }) => s.status !== "cancelled" && !hasSessionStarted(s))
-    .sort((a, b) => (a.s.date + a.s.startTime).localeCompare(b.s.date + b.s.startTime))
-    .slice(0, 5);
-
-  // Cada sección aparece una sola vez: la membresía está en "Membresía" y las insignias en "Retos".
-  const more = [
-    modules.challenges && { to: "/retos", label: "Retos", hint: "Retos e insignias", icon: Award, color: "#F59E0B" },
-    modules.prs && { to: "/prs", label: "Mis marcas", hint: "PRs y benchmarks", icon: Trophy, color: "#A3E635" },
-    modules.programs && { to: "/rutinas", label: "Rutinas", hint: "Tus programas", icon: ClipboardList, color: "#38BDF8" },
-    modules.shop && { to: "/tienda", label: "Tienda", hint: "Pide y recoge en el box", icon: ShoppingBag, color: "#F472B6" },
-  ].filter(Boolean) as { to: string; label: string; hint: string; icon: typeof Award; color: string }[];
-
   return (
     <AppLayout>
-      <PageHeader title="Mi cuenta" description="Tu perfil, tus reservas y tus datos." />
+      <PageHeader title="Mi cuenta" description="Tu perfil, tus datos y tus avisos." />
 
       <div className="grid gap-6 max-w-3xl">
         <ProfileCard onSaved={refresh} />
 
-        <section className="rounded-lg border border-border bg-card p-5">
-          <div className="flex items-center justify-between mb-3">
-            <SectionTitle icon={CalendarDays}>Mis reservas</SectionTitle>
-            <Button asChild variant="ghost" size="sm">
-              <Link to="/reservas">Ver todas</Link>
-            </Button>
-          </div>
-          {upcoming.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No tienes reservas próximas.</p>
-          ) : (
-            <ul className="divide-y divide-border">
-              {upcoming.map(({ b, s }) => {
-                const tpl = classTemplatesRepo.getById(s.templateId);
-                return (
-                  <li key={b.id} className="flex items-center gap-3 py-2 text-sm">
-                    <span aria-hidden className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: tpl?.color ?? "var(--brand)" }} />
-                    <div className="min-w-0 flex-1">
-                      <div className="font-medium truncate">{tpl?.name ?? "Clase"} · {s.startTime}</div>
-                      <div className="text-xs text-muted-foreground first-letter:uppercase">
-                        {formatLongDay(s.date)}
-                        {b.status === "waitlist" && ` · en espera (#${b.position ?? "?"})`}
-                        {b.status === "offered" && " · ¡lugar libre! confírmalo arriba"}
-                      </div>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </section>
-
         {isMember && <MyDataCard onSaved={refresh} />}
-
-        {isMember && (more.length > 0 || modules.health) && (
-          <section>
-            <SectionTitle icon={Sparkles}>Más</SectionTitle>
-            <div className="mt-3 grid grid-cols-2 gap-3">
-              {more.map((m) => (
-                <Link
-                  key={m.to}
-                  to={m.to}
-                  className="rounded-xl border border-border bg-card p-4 transition-colors hover:bg-muted/40"
-                >
-                  <span className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ backgroundColor: `${m.color}22`, color: m.color }}>
-                    <m.icon className="h-5 w-5" strokeWidth={1.75} />
-                  </span>
-                  <div className="mt-3 text-sm font-semibold">{m.label}</div>
-                  <div className="text-xs text-muted-foreground">{m.hint}</div>
-                </Link>
-              ))}
-              {modules.health && (
-                <button
-                  type="button"
-                  onClick={() => setShowProgress((v) => !v)}
-                  className="rounded-xl border border-border bg-card p-4 text-left transition-colors hover:bg-muted/40"
-                >
-                  <span className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ backgroundColor: "#A78BFA22", color: "#A78BFA" }}>
-                    <LineChart className="h-5 w-5" strokeWidth={1.75} />
-                  </span>
-                  <div className="mt-3 text-sm font-semibold">Mi progreso</div>
-                  <div className="text-xs text-muted-foreground">{showProgress ? "Ocultar" : "Peso y medidas"}</div>
-                </button>
-              )}
-            </div>
-            {modules.health && showProgress && (
-              <div className="mt-4">
-                <Suspense fallback={<div className="text-sm text-muted-foreground p-6">Cargando…</div>}>
-                  <ProgressPanel userId={currentUser.id} tenantId={session.tenantId} canEdit />
-                </Suspense>
-              </div>
-            )}
-          </section>
-        )}
 
         {session.cloud && (
           <section className="rounded-lg border border-border bg-card p-5 space-y-3">

@@ -25,8 +25,8 @@ async function turnOn(setState: (s: PushState) => void, setBusy: (b: boolean) =>
   try {
     const s = await enablePush();
     setState(s);
-    if (s === "on") toast.success("¡Listo! Te avisaremos en el celular.");
-    else if (s === "denied") toast.error("Bloqueaste las notificaciones. Puedes activarlas en los ajustes del navegador o del celular.");
+    if (s === "on") toast.success("¡Listo! Te avisaremos en el móvil.");
+    else if (s === "denied") toast.error("Has bloqueado las notificaciones. Puedes activarlas en los ajustes del navegador o del móvil.");
   } catch {
     toast.error("No se pudieron activar las notificaciones. Inténtalo de nuevo.");
   } finally {
@@ -78,7 +78,7 @@ export function PushPrompt() {
           <BellRing className="h-4 w-4" strokeWidth={1.75} />
         </span>
         <div className="min-w-0 flex-1 space-y-2">
-          <div className="text-sm font-medium">¿Te avisamos en el celular?</div>
+          <div className="text-sm font-medium">¿Te avisamos en el móvil?</div>
           <p className="text-xs text-muted-foreground">
             Por ejemplo, cuando se libera un lugar en una clase en la que estás en lista de espera.
           </p>
@@ -101,7 +101,7 @@ export function PushPrompt() {
   );
 }
 
-/** Sección de Mi cuenta para activar o desactivar las notificaciones en este celular. */
+/** Sección de Mi cuenta para activar o desactivar las notificaciones en este móvil. */
 export function PushSettings() {
   const [state, setState] = usePushState();
   const [busy, setBusy] = useState(false);
@@ -129,7 +129,7 @@ export function PushSettings() {
       )}
       {state === "off" && (
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className="text-sm text-muted-foreground">Recibe en el celular los avisos de lista de espera y de clases canceladas.</span>
+          <span className="text-sm text-muted-foreground">Recibe en el móvil los avisos de lista de espera y de clases canceladas.</span>
           <Button size="sm" disabled={busy} onClick={() => turnOn(setState, setBusy)}>
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Activar avisos"}
           </Button>
@@ -137,7 +137,7 @@ export function PushSettings() {
       )}
       {state === "denied" && (
         <p className="text-sm text-muted-foreground">
-          Las notificaciones están bloqueadas. Actívalas en los ajustes del celular o del navegador para Kinflow.
+          Las notificaciones están bloqueadas. Actívalas en los ajustes del móvil o del navegador para Kinflow.
         </p>
       )}
       {state === "ios-needs-install" && <InstallHint />}

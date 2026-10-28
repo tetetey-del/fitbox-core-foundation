@@ -14,6 +14,7 @@ import {
   ClipboardList,
   ShoppingBag,
   BadgeCheck,
+  LayoutGrid,
 } from "lucide-react";
 import type { UserRole } from "@/types";
 import { useRole } from "@/hooks/useRole";
@@ -50,11 +51,12 @@ const STAFF_SECONDARY: NavItem[] = [
   { label: "Configuración", to: "/configuracion", icon: Settings, roles: ["admin"] },
 ];
 
-// Socio: solo tres secciones abajo. Retos, marcas, rutinas y tienda están en Mi cuenta (menú del avatar).
+// Socio: cuatro secciones abajo. Retos, marcas, rutinas y tienda están en "Más"; Mi cuenta, en el avatar.
 const MEMBER_PRIMARY: NavItem[] = [
   { label: "Feed", to: "/feed", icon: Newspaper, roles: ["member"], module: "feed" },
   { label: "Reservas", to: "/reservas", icon: CalendarDays, roles: ["member"], module: "reservas" },
   { label: "Membresía", to: "/membresia", icon: BadgeCheck, roles: ["member"] },
+  { label: "Más", to: "/mas", icon: LayoutGrid, roles: ["member"] },
 ];
 const MEMBER_SECONDARY: NavItem[] = [];
 
@@ -80,7 +82,7 @@ export function MobileNav() {
         aria-label="Navegación principal"
         className="md:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background pb-[env(safe-area-inset-bottom)]"
       >
-        <ul className={cn("grid h-16", isMember ? "grid-cols-3" : "grid-cols-4")}>
+        <ul className="grid h-16 grid-cols-4">
           {primary.map((item) => {
             const active = pathname === item.to;
             const Icon = item.icon;
