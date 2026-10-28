@@ -176,17 +176,72 @@ function analyzeLogo(img: HTMLImageElement): LogoInfo {
   }
   const px = imageData.data;
   const at = (x: number, y: number) => (y * W + x) * 4;
-  // Fondo: promedio de las 4 esquinas (si son transparentes, blanco).
-  const corners = [at(0, 0), at(W - 1, 0), at(0, H - 1), at(W - 1, H - 1)];
-  const transparent = corners.every((i) => px[i + 3] < 20);
-  const avg = (k: number) => Math.round(corners.reduce((a, i) => a + px[i + k], 0) / 4);
-  const [r, g, b] = transparent ? [255, 255, 255] : [avg(0), avg(1), avg(2)];
-  const isContent = (i: number) =>
-    transparent ? px[i + 3] > 40 : Math.abs(px[i] - r) + Math.abs(px[i + 1] - g) + Math.abs(px[i + 2] - b) > 60;
+  // Fondo: el color más repetido en todo el borde (las sombras o degradés no ganan).
+  const counts = new Map<string, { n: number; r: number; g: number; b: number; a: number }>();
+  const addEdge = (x: number, y: number) => {
+    const i = at(x, y);
+    const key = `${px[i] >> 4},${px[i + 1] >> 4},${px[i + 2] >> 4},${px[i + 3] >> 6}`;
+    const e = counts.get(key) ?? { n: 0, r: 0, g: 0, b: 0, a: 0 };
+    e.n++;
+    e.r += px[i];
+    e.g += px[i + 1];
+    e.b += px[i + 2];
+    e.a += px[i + 3];
+    counts.set(key, e);
+  };
+  for (let x = 0; x < W; x++) {
+    addEdge(x, 0);
+    addEdge(x, H - 1);
+  }
+  for (let y = 0; y < H; y++) {
+    addEdge(0, y);
+    addEdge(W - 1, y);
+  }
+  const top = [...counts.values()].sort((p1, p2) => p2.n - p1.n)[0];
+  const transparent = top.a / top.n < 20;
+  const [r, g, b] = transparent
+    ? [255, 255, 255]
+    : [Math.round(top.r / top.n), Math.round(top.g / top.n), Math.round(top.b / top.n)];
+  const dist = (i: number) => Math.abs(px[i] - r) + Math.abs(px[i + 1] - g) + Math.abs(px[i + 2] - b);
+  // Solo cuenta como dibujo lo que se distingue bien del fondo (no sombras suaves).
+  const isContent = (i: number) => (transparent ? px[i + 3] > 40 : dist(i) > 150);
+  // Lo que está pegado al borde de la imagen (sombras, marcos) se toma como fondo.
+  const N = W * H;
+  const content = new Uint8Array(N);
+  for (let k = 0; k < N; k++) content[k] = isContent(k * 4) ? 1 : 0;
+  const edge = new Uint8Array(N);
+  const stack: number[] = [];
+  const seed = (k: number) => {
+    if (content[k] && !edge[k]) {
+      edge[k] = 1;
+      stack.push(k);
+    }
+  };
+  for (let x = 0; x < W; x++) {
+    seed(x);
+    seed((H - 1) * W + x);
+  }
+  for (let y = 0; y < H; y++) {
+    seed(y * W);
+    seed(y * W + W - 1);
+  }
+  while (stack.length) {
+    const k = stack.pop()!;
+    const x = k % W;
+    if (x > 0) seed(k - 1);
+    if (x < W - 1) seed(k + 1);
+    if (k >= W) seed(k - W);
+    if (k < N - W) seed(k + W);
+  }
+  let inner = 0;
+  for (let k = 0; k < N; k++) if (content[k] && !edge[k]) inner++;
+  // Si todo el dibujo toca el borde (logo a sangre), no se descarta nada.
+  const dropEdge = inner > N * 0.01;
+  const isInk = (k: number) => content[k] === 1 && !(dropEdge && edge[k]);
   let minX = W, minY = H, maxX = -1, maxY = -1;
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
-      if (isContent(at(x, y))) {
+      if (isInk(y * W + x)) {
         if (x < minX) minX = x;
         if (x > maxX) maxX = x;
         if (y < minY) minY = y;
@@ -201,6 +256,11 @@ function analyzeLogo(img: HTMLImageElement): LogoInfo {
   if (light && !transparent) {
     // Se "blanquea" el fondo: el gris claro pasa a blanco y los colores se ajustan igual.
     for (let i = 0; i < px.length; i += 4) {
+      // Lo parecido al fondo (incluidas sombras suaves) queda blanco.
+      if (dist(i) < 90 || (dropEdge && edge[i / 4])) {
+        px[i] = px[i + 1] = px[i + 2] = 255;
+        continue;
+      }
       px[i] = Math.min(255, (px[i] * 255) / r);
       px[i + 1] = Math.min(255, (px[i + 1] * 255) / g);
       px[i + 2] = Math.min(255, (px[i + 2] * 255) / b);
@@ -243,7 +303,7 @@ async function iconPng(img: HTMLImageElement, size: number, fill: number): Promi
 }
 
 /** Versión del diseño de los íconos: si cambia, se vuelven a generar al guardar la apariencia. */
-export const APP_ICON_VERSION = "2";
+export const APP_ICON_VERSION = "3";
 
 /** Ícono de prueba (para ver cómo queda sin subirlo). */
 export async function renderAppIcon(logoDataUrl: string, size: number): Promise<string> {
