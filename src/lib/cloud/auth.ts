@@ -9,6 +9,7 @@ import { tenantsRepo } from "@/lib/storage/repositories/tenants.repo";
 import { exercisesRepoFor } from "@/lib/storage/repositories/exercises.repo";
 import { DEFAULT_EXERCISES } from "@/lib/services/prs.service";
 import { sb } from "./client";
+import { disablePush } from "./push";
 import { clearLocalTenant, flush, getCloudContext, pullTenant, setCloudContext, startCloudRefresh, stopCloudRefresh } from "./sync";
 
 function fail(code: AuthErrorCode, message?: string): never {
@@ -147,6 +148,8 @@ export async function cloudLogout(): Promise<void> {
   } catch {
     /* nada */
   }
+  // Este dispositivo deja de recibir avisos de esta cuenta.
+  await disablePush().catch(() => {});
   stopCloudRefresh();
   setCloudContext(null);
   if (c) clearLocalTenant(c.tenantId);

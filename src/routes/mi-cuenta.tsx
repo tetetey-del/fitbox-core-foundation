@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { lazy, Suspense, useState } from "react";
 import { toast } from "sonner";
-import { Loader2, Award, Trophy, ClipboardList, ShoppingBag, LineChart, Sparkles, CalendarDays, LogOut, UserRound, IdCard, KeyRound } from "lucide-react";
+import { Loader2, Award, Trophy, ClipboardList, ShoppingBag, LineChart, Sparkles, CalendarDays, LogOut, UserRound, IdCard, KeyRound, BellRing } from "lucide-react";
+import { PushSettings } from "@/components/member/PushControls";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -133,6 +134,13 @@ function MyAccountPage() {
                 </Suspense>
               </div>
             )}
+          </section>
+        )}
+
+        {session.cloud && (
+          <section className="rounded-lg border border-border bg-card p-5 space-y-3">
+            <SectionTitle icon={BellRing}>Notificaciones</SectionTitle>
+            <PushSettings />
           </section>
         )}
 
