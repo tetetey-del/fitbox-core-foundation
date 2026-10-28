@@ -264,6 +264,7 @@ function PlansSection() {
                     {" · "}
                     {PLAN_DURATION_LABEL[p.durationMonths ?? 1] ?? `${p.durationMonths} meses`}
                     {p.oncePerMember && " · 1 vez por persona"}
+                    {p.includesPrograms && " · Con entreno personalizado"}
                     {!p.active && " · Archivado"}
                   </div>
                 </TableCell>
@@ -338,6 +339,7 @@ function PlanDialog({
   const [credits, setCredits] = useState<number>(8);
   const [duration, setDuration] = useState<number>(1);
   const [oncePerMember, setOncePerMember] = useState(false);
+  const [includesPrograms, setIncludesPrograms] = useState(false);
   const [active, setActive] = useState(true);
 
   useEffect(() => {
@@ -348,6 +350,7 @@ function PlanDialog({
       setCredits(initial?.creditsPerMonth ?? 8);
       setDuration(initial?.durationMonths ?? 1);
       setOncePerMember(initial?.oncePerMember ?? false);
+      setIncludesPrograms(initial?.includesPrograms ?? false);
       setActive(initial?.active ?? true);
     }
   }, [open, initial]);
@@ -367,6 +370,7 @@ function PlanDialog({
       // Los planes por créditos son mensuales; los ilimitados pueden durar más.
       durationMonths: type === "credits" ? 1 : duration,
       oncePerMember,
+      includesPrograms,
       active,
     };
 
@@ -444,6 +448,15 @@ function PlanDialog({
             <Switch id="once" checked={oncePerMember} onCheckedChange={setOncePerMember} />
             <Label htmlFor="once" className="text-sm font-normal">
               Solo una vez por persona (por ejemplo, clase de prueba)
+            </Label>
+          </div>
+          <div className="flex items-start gap-2 pt-1">
+            <Switch id="programs" checked={includesPrograms} onCheckedChange={setIncludesPrograms} />
+            <Label htmlFor="programs" className="text-sm font-normal">
+              Incluye entreno personalizado
+              <span className="block text-xs text-muted-foreground">
+                Los socios con este plan ven Rutinas y se les pueden asignar (por ejemplo, un plan Premium).
+              </span>
             </Label>
           </div>
           <div className="flex items-center gap-2 pt-1">
