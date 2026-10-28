@@ -17,6 +17,8 @@ import { bootstrapDemoIfNeeded } from "@/lib/seed";
 import { Toaster } from "@/components/ui/sonner";
 import { CookieBanner } from "@/components/legal/CookieBanner";
 import { BoxBrandHead } from "@/components/brand/BoxBrandHead";
+import { brandManifestUrl } from "@/lib/boxBrand";
+import { getHeadBrand } from "@/lib/boxBrandHead";
 
 function NotFoundComponent() {
   return (
@@ -79,11 +81,16 @@ function ErrorComponent({ error, reset }: { error: unknown; reset: () => void })
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  head: () => ({
+  // Marca del box (si se entró por su link, invitación o sesión) para instalar la app con su nombre.
+  loader: () => getHeadBrand(),
+  head: ({ loaderData }) => {
+    const brand = loaderData?.brand ?? null;
+    const appName = brand?.name ?? "Kinflow";
+    return {
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { title: "Kinflow — Gestión para boxes y gimnasios" },
+      { title: brand ? brand.name : "Kinflow — Gestión para boxes y gimnasios" },
       {
         name: "description",
         content:
@@ -99,7 +106,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "theme-color", content: "#0E2A3A" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black" },
-      { name: "apple-mobile-web-app-title", content: "Kinflow" },
+      { name: "apple-mobile-web-app-title", content: appName },
+      { name: "application-name", content: appName },
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "twitter:title", content: "Kinflow — Gestión para boxes y gimnasios" },
       { name: "description", content: "Kinflow es el software todo-en-uno para boxes de CrossFit, Hyrox y gimnasios: reservas, socios, clases y PRs." },
@@ -113,8 +121,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "icon", href: "/icon-192.png", type: "image/png", sizes: "192x192" },
       { rel: "icon", href: "/icon-512.png", type: "image/png", sizes: "512x512" },
-      { rel: "apple-touch-icon", href: "/apple-touch-icon.png", sizes: "180x180" },
-      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: brand?.appIcon?.["180"] ?? "/apple-touch-icon.png", sizes: "180x180" },
+      brand
+        ? { rel: "manifest", href: brandManifestUrl(brand.slug, loaderData?.origin ?? ""), crossOrigin: "anonymous" }
+        : { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
@@ -122,7 +132,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
       },
     ],
-  }),
+    };
+  },
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
