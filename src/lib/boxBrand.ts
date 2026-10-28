@@ -147,27 +147,108 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
+/** Color de fondo del logo (esquinas) y recuadro donde está el dibujo, sin márgenes. */
+interface LogoInfo {
+  bg: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  /** Logo ya recortado; si el fondo era claro, con el fondo pasado a blanco puro. */
+  source: CanvasImageSource;
+}
+
+function analyzeLogo(img: HTMLImageElement): LogoInfo {
+  const W = img.naturalWidth;
+  const H = img.naturalHeight;
+  const full: LogoInfo = { bg: "#FFFFFF", x: 0, y: 0, w: W, h: H, source: img };
+  const c = document.createElement("canvas");
+  c.width = W;
+  c.height = H;
+  const ctx = c.getContext("2d", { willReadFrequently: true });
+  if (!ctx) return full;
+  ctx.drawImage(img, 0, 0);
+  let imageData: ImageData;
+  try {
+    imageData = ctx.getImageData(0, 0, W, H);
+  } catch {
+    return full;
+  }
+  const px = imageData.data;
+  const at = (x: number, y: number) => (y * W + x) * 4;
+  // Fondo: promedio de las 4 esquinas (si son transparentes, blanco).
+  const corners = [at(0, 0), at(W - 1, 0), at(0, H - 1), at(W - 1, H - 1)];
+  const transparent = corners.every((i) => px[i + 3] < 20);
+  const avg = (k: number) => Math.round(corners.reduce((a, i) => a + px[i + k], 0) / 4);
+  const [r, g, b] = transparent ? [255, 255, 255] : [avg(0), avg(1), avg(2)];
+  const isContent = (i: number) =>
+    transparent ? px[i + 3] > 40 : Math.abs(px[i] - r) + Math.abs(px[i + 1] - g) + Math.abs(px[i + 2] - b) > 60;
+  let minX = W, minY = H, maxX = -1, maxY = -1;
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      if (isContent(at(x, y))) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  if (maxX < 0) return full;
+  // Fondo casi blanco → blanco puro (queda más limpio en la pantalla de inicio).
+  const light = r > 225 && g > 225 && b > 225;
+  const hex = (n: number) => n.toString(16).padStart(2, "0");
+  if (light && !transparent) {
+    // Se "blanquea" el fondo: el gris claro pasa a blanco y los colores se ajustan igual.
+    for (let i = 0; i < px.length; i += 4) {
+      px[i] = Math.min(255, (px[i] * 255) / r);
+      px[i + 1] = Math.min(255, (px[i + 1] * 255) / g);
+      px[i + 2] = Math.min(255, (px[i + 2] * 255) / b);
+    }
+    ctx.putImageData(imageData, 0, 0);
+  }
+  return {
+    bg: light ? "#FFFFFF" : `#${hex(r)}${hex(g)}${hex(b)}`,
+    x: minX,
+    y: minY,
+    w: maxX - minX + 1,
+    h: maxY - minY + 1,
+    source: light && !transparent ? c : img,
+  };
+}
+
 /**
- * Ícono cuadrado con el logo centrado sobre fondo blanco (el móvil redondea las esquinas).
- * Deja margen para que Android pueda recortarlo en círculo sin cortar el logo.
+ * Ícono cuadrado: se recortan los márgenes del logo, el fondo se pinta del color del fondo
+ * del logo y el dibujo ocupa la mayor parte. El de 512 deja más margen porque Android
+ * puede recortarlo en círculo.
  */
-async function iconPng(img: HTMLImageElement, size: number): Promise<Blob> {
+async function iconPng(img: HTMLImageElement, size: number, fill: number): Promise<Blob> {
+  const info = analyzeLogo(img);
   const canvas = document.createElement("canvas");
   canvas.width = size;
   canvas.height = size;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("No se pudo generar el ícono");
-  ctx.fillStyle = "#FFFFFF";
+  ctx.fillStyle = info.bg;
   ctx.fillRect(0, 0, size, size);
-  const box = size * 0.72;
-  const scale = Math.min(box / img.naturalWidth, box / img.naturalHeight);
-  const w = img.naturalWidth * scale;
-  const h = img.naturalHeight * scale;
+  const box = size * fill;
+  const scale = Math.min(box / info.w, box / info.h);
+  const w = info.w * scale;
+  const h = info.h * scale;
   ctx.imageSmoothingQuality = "high";
-  ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+  ctx.drawImage(info.source, info.x, info.y, info.w, info.h, (size - w) / 2, (size - h) / 2, w, h);
   return new Promise((resolve, reject) =>
     canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("No se pudo generar el ícono"))), "image/png"),
   );
+}
+
+/** Versión del diseño de los íconos: si cambia, se vuelven a generar al guardar la apariencia. */
+export const APP_ICON_VERSION = "2";
+
+/** Ícono de prueba (para ver cómo queda sin subirlo). */
+export async function renderAppIcon(logoDataUrl: string, size: number): Promise<string> {
+  const blob = await iconPng(await loadImage(logoDataUrl), size, size === 512 ? 0.7 : 0.84);
+  return URL.createObjectURL(blob);
 }
 
 /** Genera los íconos de la app desde el logo y los sube a Supabase. Devuelve sus URLs. */
@@ -177,7 +258,7 @@ export async function uploadAppIcons(tenantId: string, logoDataUrl: string): Pro
   const version = Date.now();
   const out: Record<string, string> = {};
   for (const size of [180, 192, 512]) {
-    const blob = await iconPng(img, size);
+    const blob = await iconPng(img, size, size === 512 ? 0.7 : 0.84);
     const path = `${tenantId}/icon-${size}.png`;
     const { error } = await sb().storage.from("box-icons").upload(path, blob, {
       upsert: true,
@@ -187,5 +268,6 @@ export async function uploadAppIcons(tenantId: string, logoDataUrl: string): Pro
     if (error) throw new Error("No se pudieron guardar los íconos de la app");
     out[String(size)] = `${sb().storage.from("box-icons").getPublicUrl(path).data.publicUrl}?v=${version}`;
   }
+  out.v = APP_ICON_VERSION;
   return out;
 }
