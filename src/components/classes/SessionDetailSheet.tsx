@@ -59,6 +59,8 @@ export function SessionDetailSheet({
   if (!session || !occ || !currentUser) return null;
 
   const isStaff = currentUser.role === "admin" || currentUser.role === "coach";
+  // Apuntar o quitar socios (y cancelar la clase entera) es solo del dueño/administrador.
+  const isAdmin = currentUser.role === "admin";
 
   const alreadyBooked = new Set(
     [...occ.confirmed, ...occ.waitlist].map((b) => b.userId),
@@ -126,7 +128,7 @@ export function SessionDetailSheet({
           <OccupancyBar confirmed={occ.confirmed.length} capacity={occ.capacity} />
         </div>
 
-        {isStaff && (
+        {isAdmin && (
           <>
             <Separator className="my-5" />
             <AddAttendeeCombobox
@@ -144,6 +146,7 @@ export function SessionDetailSheet({
           confirmed={occ.confirmed}
           userById={userById}
           isStaff={isStaff}
+          canRemove={isAdmin}
           onCheckIn={handleCheckIn}
           onRemove={handleRemove}
         />
@@ -151,11 +154,11 @@ export function SessionDetailSheet({
         <WaitlistList
           waitlist={occ.waitlist}
           userById={userById}
-          isStaff={isStaff}
+          isStaff={isAdmin}
           onRemove={handleRemove}
         />
 
-        {isStaff && session.status !== "cancelled" && (
+        {isAdmin && session.status !== "cancelled" && (
           <>
             <Separator className="my-5" />
             <Button

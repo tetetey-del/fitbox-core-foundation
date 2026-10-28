@@ -199,6 +199,9 @@ export function cancelBooking(bookingId: string, actorRole: UserRole): CancelRes
   if (!session) return { ok: false, reason: "La sesión no existe" };
 
   const isStaff = actorRole === "admin" || actorRole === "coach";
+  if (actorRole === "coach") {
+    return { ok: false, reason: "Solo el dueño o administrador puede quitar reservas" };
+  }
   if (!isStaff && hasSessionStarted(session)) {
     return { ok: false, reason: "La clase ya empezó: ya no se puede cancelar" };
   }

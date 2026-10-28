@@ -209,3 +209,6 @@ grant execute on function public.kf_get_invitation(text) to anon, authenticated;
 -- kf_orders_before_insert    pedido nuevo de un socio: precio real, total, estado "pendiente" y descuento de stock.
 -- records_update: un socio no puede modificar pedidos (solo crearlos).
 -- kf_records_before: el dueño de program_progress es el socio de la asignación (program_assignments.userId).
+-- 28/10/2026 (kinflow_bookings_admin_only, kinflow_coach_no_bookings_write):
+-- apuntar o quitar a otras personas de una clase es solo del admin (dueño). Los coaches
+-- no escriben reservas directamente (kf_staff_can_write); sí marcan asistencia, clases, WODs, etc.
