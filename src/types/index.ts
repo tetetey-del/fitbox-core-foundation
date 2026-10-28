@@ -273,6 +273,8 @@ export interface MembershipPlan extends BaseEntity {
   durationMonths?: number;
   /** Si es true, cada persona puede tenerlo una sola vez (por ejemplo, la clase de prueba). */
   oncePerMember?: boolean;
+  /** Si es true, el plan incluye entreno personalizado: el socio ve Rutinas y se le pueden asignar. */
+  includesPrograms?: boolean;
   active: boolean;
 }
 

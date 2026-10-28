@@ -210,3 +210,10 @@ export function paymentsOf(userId: string): Payment[] {
     .query({ userId })
     .sort((a, b) => b.date.localeCompare(a.date));
 }
+
+
+/** true si el plan activo del socio incluye entreno personalizado (rutinas). */
+export function hasPersonalTraining(userId: string): boolean {
+  const m = getActiveMembership(userId);
+  return !!(m && getPlan(m.planId)?.includesPrograms);
+}

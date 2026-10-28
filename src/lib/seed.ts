@@ -29,7 +29,7 @@ const SEEDED_KEY = buildKey(null, "seeded");
 const DEMO_CLEARED_KEY = buildKey(null, "demo_cleared");
 /** Versión del gimnasio de demo. Si cambia, los navegadores con la demo vieja se vuelven a sembrar. */
 const DEMO_VERSION_KEY = buildKey(null, "demo_version");
-const DEMO_VERSION = 8;
+const DEMO_VERSION = 9;
 /** Boxes de demos anteriores que se borran al actualizar: FitBox (v1) y versiones previas de Chia (v2 a v6). */
 const OLD_DEMO_SLUGS = ["crossfit-norte", "box-sur", "chia-training"];
 const OLD_SUPERADMIN_EMAILS = ["isaac@fitbox.io"];
@@ -84,15 +84,15 @@ const CHIA = {
  * La clase individual suele cobrarse entre 15 y 20 €.
  * `priceMonthly` es el precio de cada período (6 meses en el semestral, 12 en el anual).
  */
-const CHIA_PLANS: Array<{ key: string; name: string; price: number; type: "credits" | "unlimited"; credits?: number; months?: number; perWeek: number; once?: boolean }> = [
+const CHIA_PLANS: Array<{ key: string; name: string; price: number; type: "credits" | "unlimited"; credits?: number; months?: number; perWeek: number; once?: boolean; programs?: boolean }> = [
   { key: "prueba", name: "Clase de prueba", price: 0, type: "credits", credits: 1, perWeek: 1, once: true },
   { key: "suelta", name: "Clase individual", price: 18, type: "credits", credits: 1, perWeek: 1 },
   { key: "8", name: "8 clases · 2 por semana", price: 69, type: "credits", credits: 8, perWeek: 2 },
   { key: "12", name: "12 clases · 3 por semana", price: 85, type: "credits", credits: 12, perWeek: 3 },
   { key: "16", name: "16 clases · 4 por semana", price: 95, type: "credits", credits: 16, perWeek: 4 },
-  { key: "libre", name: "Pase libre", price: 105, type: "unlimited", perWeek: 5 },
-  { key: "semestral", name: "Pase libre semestral (-10%)", price: 567, type: "unlimited", months: 6, perWeek: 5 },
-  { key: "anual", name: "Pase libre anual (-15%)", price: 1071, type: "unlimited", months: 12, perWeek: 5 },
+  { key: "libre", name: "Pase libre", price: 105, type: "unlimited", perWeek: 5, programs: true },
+  { key: "semestral", name: "Pase libre semestral (-10%)", price: 567, type: "unlimited", months: 6, perWeek: 5, programs: true },
+  { key: "anual", name: "Pase libre anual (-15%)", price: 1071, type: "unlimited", months: 12, perWeek: 5, programs: true },
 ];
 
 /** Socios de la demo: plan, horario preferido y hace cuánto renovaron. */
@@ -407,6 +407,7 @@ function seedClassesFor({ tenant, coaches, members }: SeedResult) {
         creditsPerMonth: p.credits,
         durationMonths: p.months ?? 1,
         oncePerMember: p.once ?? false,
+        includesPrograms: p.programs ?? false,
         active: true,
       }),
     );
@@ -789,7 +790,14 @@ function seedProgramsFor({ tenant, users }: SeedResult) {
       ],
     });
   }
-  const ana = users.find((u) => u.role === "member");
+  // La rutina de ejemplo va a un socio cuyo plan incluye entreno personalizado.
+  const withPrograms = new Set(
+    membershipPlansRepoFor(tenant.id).list().filter((p) => p.includesPrograms).map((p) => p.id),
+  );
+  const eligible = new Set(
+    membershipsRepoFor(tenant.id).list().filter((m) => m.status === "active" && withPrograms.has(m.planId)).map((m) => m.userId),
+  );
+  const ana = users.find((u) => u.role === "member" && eligible.has(u.id)) ?? users.find((u) => u.role === "member");
   if (ana) {
     const assignment = programAssignmentsRepoFor(tenant.id).create({
       tenantId: tenant.id, programId: prog.id, userId: ana.id, assignedBy: owner.id,

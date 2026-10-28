@@ -28,6 +28,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { useAuth } from "@/contexts/AuthContext";
+import { hasPersonalTraining } from "@/lib/services/membership.service";
 import { useDataVersion, notifyDataChanged } from "@/lib/data-bus";
 import { useRequireModule } from "@/hooks/useRequireModule";
 import {
@@ -62,7 +63,13 @@ function RutinasPage() {
   return (
     <AppLayout>
       <PageHeader title="Rutinas" description="Programas semanales para socios." />
-      {isStaff ? <StaffView /> : <MemberView userId={currentUser.id} />}
+      {isStaff ? (
+        <StaffView />
+      ) : hasPersonalTraining(currentUser.id) ? (
+        <MemberView userId={currentUser.id} />
+      ) : (
+        <EmptyState text="Tu plan no incluye entreno personalizado. Si te interesa, habla con tu box." />
+      )}
     </AppLayout>
   );
 }
@@ -115,6 +122,7 @@ function ProgramRow({ program, onEdit }: { program: Program; onEdit: () => void 
   const { tenantUsers, currentUser, currentTenant } = useAuth();
   const [assignOpen, setAssignOpen] = useState(false);
   const [pickedUser, setPickedUser] = useState<string>("");
+  const eligibleMembers = tenantUsers.filter((u) => u.role === "member" && hasPersonalTraining(u.id));
   const sessionsCount = listProgramSessions(program.id).length;
   const assignments = programAssignmentsRepo.query({ programId: program.id });
 
@@ -171,11 +179,16 @@ function ProgramRow({ program, onEdit }: { program: Program; onEdit: () => void 
               <Select value={pickedUser} onValueChange={setPickedUser}>
                 <SelectTrigger><SelectValue placeholder="Elige socio…" /></SelectTrigger>
                 <SelectContent>
-                  {tenantUsers.filter((u) => u.role === "member").map((u) => (
+                  {eligibleMembers.map((u) => (
                     <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                {eligibleMembers.length === 0
+                  ? "Ningún socio tiene un plan con entreno personalizado. Actívalo en Configuración → Planes y precios."
+                  : "Solo aparecen los socios cuyo plan incluye entreno personalizado."}
+              </p>
             </div>
           </div>
           <DialogFooter>

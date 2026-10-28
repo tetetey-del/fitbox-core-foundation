@@ -4,6 +4,7 @@ import { Award, ClipboardList, LineChart, ShoppingBag, Trophy } from "lucide-rea
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useModules } from "@/hooks/useModules";
+import { hasPersonalTraining } from "@/lib/services/membership.service";
 
 const ProgressPanel = lazy(() => import("@/components/health/ProgressPanel"));
 
@@ -34,7 +35,7 @@ function MorePage() {
       icon: Trophy,
       color: "#A3E635",
     },
-    modules.programs && {
+    modules.programs && currentUser && hasPersonalTraining(currentUser.id) && {
       to: "/rutinas",
       label: "Rutinas",
       hint: "Tus programas",

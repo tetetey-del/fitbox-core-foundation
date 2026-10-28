@@ -15,6 +15,7 @@ import { MEMBER_GOAL_LABEL, type MemberGoal } from "@/types";
 import { AvatarPicker } from "@/components/members/AvatarPicker";
 import { useModules } from "@/hooks/useModules";
 import { useDataVersion } from "@/lib/data-bus";
+import { monthlyAttendance, totalAttendance } from "@/components/members/memberDetail/attendance.helpers";
 import { missingOptionalData, needsProfileData, todayKey } from "@/lib/memberData";
 
 
@@ -163,6 +164,24 @@ function MyDataCard({ onSaved }: { onSaved: () => void }) {
   );
 }
 
+/** Clases hechas (check-ins que le dio el coach), en total y este mes. */
+function AttendanceStats({ userId }: { userId: string }) {
+  const total = totalAttendance(userId);
+  const month = monthlyAttendance(userId);
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      <div className="rounded-md border border-border p-3">
+        <div className="text-2xl font-semibold" style={{ color: "var(--brand)" }}>{total}</div>
+        <div className="text-xs text-muted-foreground">{total === 1 ? "clase hecha" : "clases hechas"}</div>
+      </div>
+      <div className="rounded-md border border-border p-3">
+        <div className="text-2xl font-semibold">{month}</div>
+        <div className="text-xs text-muted-foreground">este mes</div>
+      </div>
+    </div>
+  );
+}
+
 function ProfileCard({ onSaved }: { onSaved: () => void }) {
   const { session, currentUser } = useAuth();
   const modules = useModules();
@@ -195,6 +214,7 @@ function ProfileCard({ onSaved }: { onSaved: () => void }) {
     <div className="rounded-lg border border-border bg-card p-5 space-y-4">
       <SectionTitle icon={UserRound}>Mi perfil</SectionTitle>
       <AvatarPicker name={currentUser.name} value={currentUser.avatar} onChange={savePhoto} />
+      {currentUser.role === "member" && <AttendanceStats userId={currentUser.id} />}
       <FieldRow label="Nombre">
         <Input value={name} onChange={(e) => setName(e.target.value)} />
       </FieldRow>

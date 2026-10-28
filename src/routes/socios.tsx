@@ -46,6 +46,7 @@ import {
   MemberDetailDialog,
   lastAttendanceOf,
 } from "@/components/members/MemberDetailDialog";
+import { classesLabel, totalAttendance } from "@/components/members/memberDetail/attendance.helpers";
 import {
   InviteButton,
   InviteMemberDialog,
@@ -141,7 +142,7 @@ function SociosPage() {
               <TableHead>Plan</TableHead>
               <TableHead>Créditos</TableHead>
               <TableHead>Estado</TableHead>
-              <TableHead>Última asistencia</TableHead>
+              <TableHead>Asistencia</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -169,13 +170,19 @@ function SociosPage() {
                       <div className="min-w-0">
                         <div className="font-medium">{u.name}</div>
                         <div className="text-xs text-muted-foreground truncate">{u.email}</div>
+                        <div className="text-xs font-medium sm:hidden" style={{ color: "var(--brand)" }}>
+                          {classesLabel(totalAttendance(u.id))} hechas
+                        </div>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell className="text-muted-foreground">{plan?.name ?? "—"}</TableCell>
                   <TableCell><CreditsBadge userId={u.id} /></TableCell>
                   <TableCell><MembershipBadge status={status} /></TableCell>
-                  <TableCell className="text-muted-foreground text-sm">{last ?? "—"}</TableCell>
+                  <TableCell className="text-sm">
+                    <div className="font-medium">{classesLabel(totalAttendance(u.id))}</div>
+                    <div className="text-xs text-muted-foreground">{last ? `Última: ${last}` : "Sin asistencias"}</div>
+                  </TableCell>
                 </TableRow>
               );
             })}
