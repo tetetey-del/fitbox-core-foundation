@@ -44,7 +44,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="min-h-dvh flex flex-col bg-background text-foreground">
+    <div className="min-h-dvh flex flex-col bg-background text-foreground pt-[env(safe-area-inset-top)]">
       <ImpersonationBanner />
       <div className="flex flex-1 min-h-0">
         <Sidebar />
