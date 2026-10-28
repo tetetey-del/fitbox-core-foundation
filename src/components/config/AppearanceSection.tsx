@@ -12,7 +12,7 @@ import type { ThemeId } from "@/types";
 import { cn } from "@/lib/utils";
 import { MAX_LOGO_BYTES } from "@/lib/constants";
 import { compressImage, dataUrlBytes } from "@/lib/image";
-import { uploadAppIcons } from "@/lib/boxBrand";
+import { APP_ICON_VERSION, uploadAppIcons } from "@/lib/boxBrand";
 import { isCloudSession } from "@/lib/cloud/bookings";
 
 export function AppearanceSection() {
@@ -49,7 +49,7 @@ export function AppearanceSection() {
     setSaving(true);
     let appIcon = currentTenant.appIcon;
     // Box real: con el logo se generan los íconos de la app que instalan los socios.
-    if (isCloudSession() && (logo !== currentTenant.logo || (logo && !appIcon))) {
+    if (isCloudSession() && (logo !== currentTenant.logo || (logo && appIcon?.v !== APP_ICON_VERSION))) {
       try {
         appIcon = logo ? await uploadAppIcons(currentTenant.id, logo) : undefined;
       } catch (e) {
