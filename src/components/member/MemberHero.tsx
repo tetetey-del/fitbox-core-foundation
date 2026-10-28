@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { CalendarDays, Ticket } from "lucide-react";
+import { CalendarDays, Flame, Ticket } from "lucide-react";
+import { totalAttendance } from "@/components/members/memberDetail/attendance.helpers";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDataVersion } from "@/lib/data-bus";
 import { bookingsRepo } from "@/lib/storage/repositories/bookings.repo";
@@ -32,6 +33,7 @@ export function MemberHero() {
       : "Clases ilimitadas";
 
   const first = currentUser.name.split(" ")[0];
+  const done = totalAttendance(currentUser.id);
 
   return (
     <section
@@ -69,6 +71,15 @@ export function MemberHero() {
             <Ticket className="h-3.5 w-3.5" strokeWidth={2} />
             {credits}
           </Link>
+          {done > 0 && (
+            <Link
+              to="/mi-cuenta"
+              className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1.5 text-sm font-medium backdrop-blur-sm"
+            >
+              <Flame className="h-3.5 w-3.5" strokeWidth={2} />
+              {done} {done === 1 ? "clase hecha" : "clases hechas"}
+            </Link>
+          )}
         </div>
       </div>
     </section>

@@ -9,16 +9,21 @@ export function MemberAttendanceTab({ userId }: { userId: string }) {
   return (
     <section className="space-y-3">
       <h3 className="text-sm font-semibold">Actividad</h3>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         <div className="rounded-md border border-border bg-card p-3">
-          <div className="text-xs text-muted-foreground">Asistencias este mes</div>
-          <div className="text-2xl font-semibold mt-1">{monthly}</div>
+          <div className="text-xs text-muted-foreground">Clases hechas</div>
+          <div className="text-2xl font-semibold mt-1" style={{ color: "var(--brand)" }}>{history.length}</div>
         </div>
         <div className="rounded-md border border-border bg-card p-3">
+          <div className="text-xs text-muted-foreground">Este mes</div>
+          <div className="text-2xl font-semibold mt-1">{monthly}</div>
+        </div>
+        <div className="col-span-2 rounded-md border border-border bg-card p-3 sm:col-span-1">
           <div className="text-xs text-muted-foreground">Clase favorita</div>
           <div className="text-lg font-medium mt-1 truncate">{favorite ?? "—"}</div>
         </div>
       </div>
+      <p className="text-xs text-muted-foreground">Se cuenta cada clase en la que el coach le marcó el check-in.</p>
       {history.length > 0 && (
         <ul className="space-y-1">
           {history.slice(0, 6).map((h) => (
