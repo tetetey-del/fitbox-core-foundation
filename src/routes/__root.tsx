@@ -16,6 +16,7 @@ import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { bootstrapDemoIfNeeded } from "@/lib/seed";
 import { Toaster } from "@/components/ui/sonner";
 import { CookieBanner } from "@/components/legal/CookieBanner";
+import { BoxBrandHead } from "@/components/brand/BoxBrandHead";
 
 function NotFoundComponent() {
   return (
@@ -153,6 +154,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ThemeProvider>
+          <BoxBrandHead />
           <Outlet />
           <Toaster position="top-right" richColors />
           <CookieBanner />

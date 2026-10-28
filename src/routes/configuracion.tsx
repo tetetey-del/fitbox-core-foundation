@@ -51,6 +51,7 @@ import { currencySymbol, formatPlanPrice } from "@/lib/format";
 import { notifyDataChanged, useDataVersion } from "@/lib/data-bus";
 import { DataSection } from "@/components/config/DataSection";
 import { AppearanceSection } from "@/components/config/AppearanceSection";
+import { AppLinkSection } from "@/components/config/AppLinkSection";
 import { ModulesSection } from "@/components/config/ModulesSection";
 
 
@@ -165,6 +166,7 @@ function ConfigPage() {
           </section>
 
           <AppearanceSection />
+          <AppLinkSection />
           <ModulesSection />
           <PlansSection />
           <DataSection />

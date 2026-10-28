@@ -28,6 +28,7 @@ import { Route as RetosRouteImport } from './routes/retos'
 import { Route as RutinasRouteImport } from './routes/rutinas'
 import { Route as SociosRouteImport } from './routes/socios'
 import { Route as TiendaRouteImport } from './routes/tienda'
+import { Route as BSlugRouteImport } from './routes/b.$slug'
 import { Route as InvitacionCodeRouteImport } from './routes/invitacion.$code'
 import { Route as LegalAvisoLegalRouteImport } from './routes/legal.aviso-legal'
 import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
@@ -131,6 +132,11 @@ const TiendaRoute = TiendaRouteImport.update({
   path: '/tienda',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BSlugRoute = BSlugRouteImport.update({
+  id: '/b/$slug',
+  path: '/b/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InvitacionCodeRoute = InvitacionCodeRouteImport.update({
   id: '/invitacion/$code',
   path: '/invitacion/$code',
@@ -187,6 +193,7 @@ export interface FileRoutesByFullPath {
   '/rutinas': typeof RutinasRoute
   '/socios': typeof SociosRoute
   '/tienda': typeof TiendaRoute
+  '/b/$slug': typeof BSlugRoute
   '/invitacion/$code': typeof InvitacionCodeRoute
   '/legal/aviso-legal': typeof LegalAvisoLegalRoute
   '/legal/cookies': typeof LegalCookiesRoute
@@ -215,6 +222,7 @@ export interface FileRoutesByTo {
   '/rutinas': typeof RutinasRoute
   '/socios': typeof SociosRoute
   '/tienda': typeof TiendaRoute
+  '/b/$slug': typeof BSlugRoute
   '/invitacion/$code': typeof InvitacionCodeRoute
   '/legal/aviso-legal': typeof LegalAvisoLegalRoute
   '/legal/cookies': typeof LegalCookiesRoute
@@ -244,6 +252,7 @@ export interface FileRoutesById {
   '/rutinas': typeof RutinasRoute
   '/socios': typeof SociosRoute
   '/tienda': typeof TiendaRoute
+  '/b/$slug': typeof BSlugRoute
   '/invitacion/$code': typeof InvitacionCodeRoute
   '/legal/aviso-legal': typeof LegalAvisoLegalRoute
   '/legal/cookies': typeof LegalCookiesRoute
@@ -274,6 +283,7 @@ export interface FileRouteTypes {
     | '/rutinas'
     | '/socios'
     | '/tienda'
+    | '/b/$slug'
     | '/invitacion/$code'
     | '/legal/aviso-legal'
     | '/legal/cookies'
@@ -302,6 +312,7 @@ export interface FileRouteTypes {
     | '/rutinas'
     | '/socios'
     | '/tienda'
+    | '/b/$slug'
     | '/invitacion/$code'
     | '/legal/aviso-legal'
     | '/legal/cookies'
@@ -330,6 +341,7 @@ export interface FileRouteTypes {
     | '/rutinas'
     | '/socios'
     | '/tienda'
+    | '/b/$slug'
     | '/invitacion/$code'
     | '/legal/aviso-legal'
     | '/legal/cookies'
@@ -359,6 +371,7 @@ export interface RootRouteChildren {
   RutinasRoute: typeof RutinasRoute
   SociosRoute: typeof SociosRoute
   TiendaRoute: typeof TiendaRoute
+  BSlugRoute: typeof BSlugRoute
   InvitacionCodeRoute: typeof InvitacionCodeRoute
   LegalAvisoLegalRoute: typeof LegalAvisoLegalRoute
   LegalCookiesRoute: typeof LegalCookiesRoute
@@ -503,6 +516,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TiendaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/b/$slug': {
+      id: '/b/$slug'
+      path: '/b/$slug'
+      fullPath: '/b/$slug'
+      preLoaderRoute: typeof BSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/invitacion/$code': {
       id: '/invitacion/$code'
       path: '/invitacion/$code'
@@ -575,6 +595,7 @@ const rootRouteChildren: RootRouteChildren = {
   RutinasRoute: RutinasRoute,
   SociosRoute: SociosRoute,
   TiendaRoute: TiendaRoute,
+  BSlugRoute: BSlugRoute,
   InvitacionCodeRoute: InvitacionCodeRoute,
   LegalAvisoLegalRoute: LegalAvisoLegalRoute,
   LegalCookiesRoute: LegalCookiesRoute,
