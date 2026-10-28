@@ -174,7 +174,9 @@ export function WodEditor() {
       <div className="flex flex-wrap justify-end gap-2 pt-2 border-t border-border">
         {existing && (
           <span className="mr-auto text-xs text-muted-foreground self-center">
-            {existing.published ? "Publicado" : "Borrador"} · guardado
+            {existing.cycleId
+              ? "Del ciclo de programación · si lo cambias, solo cambia este día"
+              : `${existing.published ? "Publicado" : "Borrador"} · guardado`}
           </span>
         )}
         <Button variant="outline" onClick={() => doSave(false)}>

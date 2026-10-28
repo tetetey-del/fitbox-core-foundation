@@ -10,6 +10,7 @@ import { useDataVersion } from "@/lib/data-bus";
 import { classTemplatesRepo } from "@/lib/storage/repositories/classTemplates.repo";
 import type { ClassTemplate } from "@/types";
 import { WodEditor } from "@/components/wods/WodEditor";
+import { WodCycleManager } from "@/components/wods/WodCycleManager";
 import { TemplatesTable } from "@/components/classes/manage/TemplatesTable";
 import { TemplateFormDialog } from "@/components/classes/manage/TemplateFormDialog";
 import { RecurringSessionsDialog } from "@/components/classes/manage/RecurringSessionsDialog";
@@ -81,9 +82,7 @@ function ClasesPage() {
         </TabsContent>
 
         <TabsContent value="wod">
-          <div className="rounded-lg border border-border bg-card p-5 max-w-3xl">
-            <WodEditor />
-          </div>
+          <WodTabs />
         </TabsContent>
       </Tabs>
 
@@ -106,5 +105,28 @@ function ClasesPage() {
         coaches={coaches}
       />
     </AppLayout>
+  );
+}
+
+
+/** WOD: día por día o ciclo de programación que se repite. */
+function WodTabs() {
+  return (
+    <Tabs defaultValue="dia" className="max-w-3xl space-y-4">
+      <TabsList>
+        <TabsTrigger value="dia">WOD por día</TabsTrigger>
+        <TabsTrigger value="ciclo">Ciclo de programación</TabsTrigger>
+      </TabsList>
+      <TabsContent value="dia">
+        <div className="rounded-lg border border-border bg-card p-5">
+          <WodEditor />
+        </div>
+      </TabsContent>
+      <TabsContent value="ciclo">
+        <div className="rounded-lg border border-border bg-card p-5">
+          <WodCycleManager />
+        </div>
+      </TabsContent>
+    </Tabs>
   );
 }

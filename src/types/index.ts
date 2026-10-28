@@ -428,6 +428,28 @@ export interface Wod extends BaseEntity {
   blocks: WodBlock[];
   publishedBy?: string;
   published: boolean;
+  /** Si lo puso el ciclo de programación, su id (al editar el día a mano se quita). */
+  cycleId?: string;
+}
+
+/** Día de un ciclo de programación. */
+export interface WodCycleDay {
+  title: string;
+  blocks: WodBlock[];
+}
+
+/**
+ * Ciclo de programación: N semanas de WODs que se repiten. La semana 1 empieza el lunes
+ * de `startDate`; al terminar la última semana, vuelve a la 1.
+ */
+export interface WodCycle extends BaseEntity {
+  tenantId: string;
+  name: string;
+  weeks: number;
+  startDate: string;
+  active: boolean;
+  /** Clave "semana-día" (día 1 = lunes … 7 = domingo). */
+  days: Record<string, WodCycleDay>;
 }
 
 export const WOD_BLOCK_LABEL: Record<WodBlockType, string> = {
