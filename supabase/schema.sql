@@ -255,3 +255,9 @@ grant execute on function public.kf_get_invitation(text) to anon, authenticated;
 -- kf_get_invitation también devuelve slug y appIcon.
 -- Edge Function kf-manifest?box=<slug>&o=<origen>: manifest con nombre e íconos del box (Android).
 -- kf-push manda el ícono del box en la notificación.
+
+-- ---------- Notas de los coaches (28/10) ----------
+-- Colección coach_notes ({memberId, authorId, exerciseId?, text}). kf_records_before pone
+-- user_id = null para coach_notes: así el socio nunca la puede leer (no está en
+-- kf_member_readable y no es "suya"), aunque la nota sea sobre él. Solo el staff la ve y edita.
+--   when new.collection = 'coach_notes' then null

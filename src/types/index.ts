@@ -335,7 +335,8 @@ export type ExerciseCategory =
   | "olimpico"
   | "benchmark_wod"
   | "gimnastico"
-  | "cardio";
+  | "cardio"
+  | "otro";
 
 export type ExerciseUnit = "kg" | "tiempo" | "reps" | "metros";
 
@@ -345,6 +346,21 @@ export interface Exercise extends BaseEntity {
   category: ExerciseCategory;
   unit: ExerciseUnit;
   isCustom: boolean;
+  /** Otros nombres con los que se escribe en el WOD (ej. "Peso muerto" para Deadlift). */
+  aliases?: string[];
+}
+
+/**
+ * Nota de un coach sobre un socio (solo la ve el staff). Si lleva ejercicio, avisa al
+ * coach en las clases cuyo WOD tenga ese ejercicio.
+ */
+export interface CoachNote extends BaseEntity {
+  tenantId: string;
+  /** Socio sobre el que es la nota (no se usa `userId` para que el socio no pueda leerla). */
+  memberId: string;
+  authorId: string;
+  exerciseId?: string;
+  text: string;
 }
 
 export interface PersonalRecord extends BaseEntity {
@@ -363,6 +379,7 @@ export const EXERCISE_CATEGORY_LABEL: Record<ExerciseCategory, string> = {
   benchmark_wod: "Benchmark WODs",
   gimnastico: "Gimnásticos",
   cardio: "Cardio",
+  otro: "Otros",
 };
 
 export const EXERCISE_UNIT_LABEL: Record<ExerciseUnit, string> = {
