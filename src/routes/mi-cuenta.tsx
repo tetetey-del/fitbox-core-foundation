@@ -1,27 +1,23 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { lazy, Suspense, useState } from "react";
 import { toast } from "sonner";
-import { Loader2, Award } from "lucide-react";
+import { Loader2, Award, Trophy, ClipboardList, ShoppingBag, LineChart, Sparkles, CalendarDays, LogOut, UserRound, IdCard, KeyRound } from "lucide-react";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthError } from "@/lib/services/auth.service";
 import { updateUserById } from "@/lib/storage/repositories/users.repo";
 import { bookingsRepo } from "@/lib/storage/repositories/bookings.repo";
 import { classSessionsRepo } from "@/lib/storage/repositories/classSessions.repo";
-import { getActiveMembership, getPlan } from "@/lib/services/membership.service";
-import { getUserBadges } from "@/lib/services/challenges.service";
 import { MEMBER_GOAL_LABEL, type MemberGoal } from "@/types";
-import { MembershipBadge } from "@/components/members/MembershipBadge";
-import { CreditsBadge } from "@/components/members/CreditsBadge";
 import { AvatarPicker } from "@/components/members/AvatarPicker";
-import { formatDate } from "@/lib/date";
-import { toDateKey } from "@/lib/date";
 import { useModules } from "@/hooks/useModules";
+import { formatLongDay } from "@/lib/date";
+import { hasSessionStarted } from "@/lib/services/booking.service";
+import { classTemplatesRepo } from "@/lib/storage/repositories/classTemplates.repo";
 import { useDataVersion } from "@/lib/data-bus";
 import { missingOptionalData, needsProfileData, todayKey } from "@/lib/memberData";
 
@@ -33,123 +29,145 @@ export const Route = createFileRoute("/mi-cuenta")({
 });
 
 function MyAccountPage() {
-  const { session, currentUser, refresh, changePassword } = useAuth();
+  const { session, currentUser, refresh, changePassword, logout } = useAuth();
   const modules = useModules();
+  const navigate = useNavigate();
+  const [showProgress, setShowProgress] = useState(false);
   useDataVersion();
 
   if (!session || !currentUser) return null;
+  const isMember = currentUser.role === "member";
 
-  const membership = getActiveMembership(currentUser.id);
-  const plan = membership ? getPlan(membership.planId) : null;
-
-  const nowKey = toDateKey(new Date());
   const upcoming = bookingsRepo
     .query({ userId: currentUser.id })
-    .filter((b) => b.status === "confirmed" || b.status === "waitlist")
+    .filter((b) => b.status === "confirmed" || b.status === "waitlist" || b.status === "offered")
     .map((b) => ({ b, s: classSessionsRepo.getById(b.sessionId) }))
     .filter((x): x is { b: typeof x.b; s: NonNullable<typeof x.s> } => !!x.s)
-    .filter(({ s }) => s.date >= nowKey && s.status !== "cancelled")
+    .filter(({ s }) => s.status !== "cancelled" && !hasSessionStarted(s))
     .sort((a, b) => (a.s.date + a.s.startTime).localeCompare(b.s.date + b.s.startTime))
     .slice(0, 5);
 
-  const badges = modules.challenges ? getUserBadges(currentUser.id) : [];
+  // Cada sección aparece una sola vez: la membresía está en "Membresía" y las insignias en "Retos".
+  const more = [
+    modules.challenges && { to: "/retos", label: "Retos", hint: "Retos e insignias", icon: Award, color: "#F59E0B" },
+    modules.prs && { to: "/prs", label: "Mis marcas", hint: "PRs y benchmarks", icon: Trophy, color: "#A3E635" },
+    modules.programs && { to: "/rutinas", label: "Rutinas", hint: "Tus programas", icon: ClipboardList, color: "#38BDF8" },
+    modules.shop && { to: "/tienda", label: "Tienda", hint: "Pide y recoge en el box", icon: ShoppingBag, color: "#F472B6" },
+  ].filter(Boolean) as { to: string; label: string; hint: string; icon: typeof Award; color: string }[];
 
   return (
     <AppLayout>
-      <PageHeader title="Mi cuenta" description="Tus datos, tu membresía y tu progreso." />
+      <PageHeader title="Mi cuenta" description="Tu perfil, tus reservas y tus datos." />
 
-      <Tabs defaultValue="perfil" className="max-w-3xl">
-        <TabsList>
-          <TabsTrigger value="perfil">Perfil</TabsTrigger>
-          {modules.health && <TabsTrigger value="progreso">Progreso</TabsTrigger>}
-          <TabsTrigger value="seguridad">Seguridad</TabsTrigger>
-        </TabsList>
+      <div className="grid gap-6 max-w-3xl">
+        <ProfileCard onSaved={refresh} />
 
-        <TabsContent value="perfil" className="grid gap-6">
-          {currentUser.role === "member" && <MyDataCard onSaved={refresh} />}
-          <ProfileCard onSaved={refresh} />
-          <div className="rounded-lg border border-border bg-card p-5">
-            <h2 className="text-sm font-medium mb-3">Mi membresía</h2>
-            {membership && plan ? (
-              <div className="space-y-2 text-sm">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-medium">{plan.name}</span>
-                  <MembershipBadge status={membership.status === "active" ? "active" : "expired"} />
-                  <CreditsBadge userId={currentUser.id} />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Vigencia: {formatDate(membership.startDate)} → {formatDate(membership.endDate)}
-                </p>
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">Sin plan activo. Habla con tu box.</p>
-            )}
+        <section className="rounded-lg border border-border bg-card p-5">
+          <div className="flex items-center justify-between mb-3">
+            <SectionTitle icon={CalendarDays}>Mis reservas</SectionTitle>
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/reservas">Ver todas</Link>
+            </Button>
           </div>
-          <div className="rounded-lg border border-border bg-card p-5">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-medium">Próximas reservas</h2>
-              <Button asChild variant="ghost" size="sm">
-                <Link to="/reservas">Ver todas</Link>
-              </Button>
-            </div>
-            {upcoming.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No tienes reservas próximas.</p>
-            ) : (
-              <div className="divide-y divide-border">
-                {upcoming.map(({ b, s }) => (
-                  <div key={b.id} className="py-2 text-sm flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">{formatDate(s.date)} · {s.startTime}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {b.status === "waitlist" ? `Lista de espera · #${b.position ?? "?"}` : "Confirmada"}
+          {upcoming.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No tienes reservas próximas.</p>
+          ) : (
+            <ul className="divide-y divide-border">
+              {upcoming.map(({ b, s }) => {
+                const tpl = classTemplatesRepo.getById(s.templateId);
+                return (
+                  <li key={b.id} className="flex items-center gap-3 py-2 text-sm">
+                    <span aria-hidden className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: tpl?.color ?? "var(--brand)" }} />
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium truncate">{tpl?.name ?? "Clase"} · {s.startTime}</div>
+                      <div className="text-xs text-muted-foreground first-letter:uppercase">
+                        {formatLongDay(s.date)}
+                        {b.status === "waitlist" && ` · en espera (#${b.position ?? "?"})`}
+                        {b.status === "offered" && " · ¡lugar libre! confírmalo arriba"}
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          {modules.challenges && (
-            <div className="rounded-lg border border-border bg-card p-5">
-              <h2 className="text-sm font-medium mb-3 flex items-center gap-2">
-                <Award className="h-4 w-4" strokeWidth={1.5} /> Mis insignias
-              </h2>
-              {badges.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Completa retos para ganar insignias.</p>
-              ) : (
-                <div className="flex flex-wrap gap-3">
-                  {badges.map(({ challenge, completedAt }) => (
-                    <div key={challenge.id} className="rounded-md border border-border p-3 min-w-[140px] text-center">
-                      <div className="text-2xl">{challenge.badge}</div>
-                      <div className="text-sm font-medium mt-1">{challenge.title}</div>
-                      <div className="text-xs text-muted-foreground">{formatDate(completedAt.slice(0, 10))}</div>
-                    </div>
-                  ))}
-                </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
+
+        {isMember && <MyDataCard onSaved={refresh} />}
+
+        {isMember && (more.length > 0 || modules.health) && (
+          <section>
+            <SectionTitle icon={Sparkles}>Más</SectionTitle>
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              {more.map((m) => (
+                <Link
+                  key={m.to}
+                  to={m.to}
+                  className="rounded-xl border border-border bg-card p-4 transition-colors hover:bg-muted/40"
+                >
+                  <span className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ backgroundColor: `${m.color}22`, color: m.color }}>
+                    <m.icon className="h-5 w-5" strokeWidth={1.75} />
+                  </span>
+                  <div className="mt-3 text-sm font-semibold">{m.label}</div>
+                  <div className="text-xs text-muted-foreground">{m.hint}</div>
+                </Link>
+              ))}
+              {modules.health && (
+                <button
+                  type="button"
+                  onClick={() => setShowProgress((v) => !v)}
+                  className="rounded-xl border border-border bg-card p-4 text-left transition-colors hover:bg-muted/40"
+                >
+                  <span className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ backgroundColor: "#A78BFA22", color: "#A78BFA" }}>
+                    <LineChart className="h-5 w-5" strokeWidth={1.75} />
+                  </span>
+                  <div className="mt-3 text-sm font-semibold">Mi progreso</div>
+                  <div className="text-xs text-muted-foreground">{showProgress ? "Ocultar" : "Peso y medidas"}</div>
+                </button>
               )}
             </div>
-          )}
-        </TabsContent>
-
-        {modules.health && (
-          <TabsContent value="progreso">
-            <Suspense fallback={<div className="text-sm text-muted-foreground p-6">Cargando…</div>}>
-              <ProgressPanel userId={currentUser.id} tenantId={session.tenantId} canEdit />
-            </Suspense>
-          </TabsContent>
+            {modules.health && showProgress && (
+              <div className="mt-4">
+                <Suspense fallback={<div className="text-sm text-muted-foreground p-6">Cargando…</div>}>
+                  <ProgressPanel userId={currentUser.id} tenantId={session.tenantId} canEdit />
+                </Suspense>
+              </div>
+            )}
+          </section>
         )}
 
-        <TabsContent value="seguridad">
-          <ChangePasswordCard changePassword={changePassword} />
-        </TabsContent>
-      </Tabs>
-      <p className="mt-8 max-w-3xl text-xs text-muted-foreground">
-        Kinflow es la app que usa tu box para organizarse. Las clases, los cobros y tus datos los gestiona tu box:
-        cualquier consulta, escríbele a ellos.{" "}
-        <Link to="/legal/terminos" className="underline">Términos</Link> ·{" "}
-        <Link to="/legal/privacidad" className="underline">Privacidad</Link>
-      </p>
+        <ChangePasswordCard changePassword={changePassword} />
+
+        <Button
+          variant="outline"
+          className="w-full sm:w-auto"
+          onClick={() => {
+            logout();
+            navigate({ to: "/login" });
+          }}
+        >
+          <LogOut className="h-4 w-4 mr-2" strokeWidth={1.5} /> Cerrar sesión
+        </Button>
+
+        <p className="text-xs text-muted-foreground">
+          Kinflow es la app que usa tu box para organizarse. Las clases, los cobros y tus datos los gestiona tu box:
+          cualquier consulta, escríbele a ellos.{" "}
+          <Link to="/legal/terminos" className="underline">Términos</Link> ·{" "}
+          <Link to="/legal/privacidad" className="underline">Privacidad</Link>
+        </p>
+      </div>
     </AppLayout>
+  );
+}
+
+function SectionTitle({ icon: Icon, children }: { icon: typeof Award; children: React.ReactNode }) {
+  return (
+    <h2 className="flex items-center gap-2 text-sm font-semibold">
+      <span className="flex h-6 w-6 items-center justify-center rounded-md" style={{ backgroundColor: "color-mix(in srgb, var(--brand) 18%, transparent)", color: "var(--brand)" }}>
+        <Icon className="h-3.5 w-3.5" strokeWidth={2} />
+      </span>
+      {children}
+    </h2>
   );
 }
 
@@ -188,9 +206,9 @@ function MyDataCard({ onSaved }: { onSaved: () => void }) {
   };
 
   return (
-    <div className={`rounded-lg border bg-card p-5 space-y-4 ${pending ? "border-[#14B8A6]/60" : "border-border"}`}>
+    <div id="mis-datos" className={`scroll-mt-20 rounded-lg border bg-card p-5 space-y-4 ${pending ? "border-[var(--brand)]" : "border-border"}`}>
       <div>
-        <h2 className="text-sm font-medium">Mis datos</h2>
+        <SectionTitle icon={IdCard}>Mis datos</SectionTitle>
         <p className="text-xs text-muted-foreground mt-1">
           {pending
             ? "Completa tus datos para que tu box los tenga a mano. La fecha de nacimiento es obligatoria."
@@ -263,7 +281,7 @@ function ProfileCard({ onSaved }: { onSaved: () => void }) {
 
   return (
     <div className="rounded-lg border border-border bg-card p-5 space-y-4">
-      <h2 className="text-sm font-medium">Mi perfil</h2>
+      <SectionTitle icon={UserRound}>Mi perfil</SectionTitle>
       <AvatarPicker name={currentUser.name} value={currentUser.avatar} onChange={savePhoto} />
       <FieldRow label="Nombre">
         <Input value={name} onChange={(e) => setName(e.target.value)} />
@@ -275,7 +293,7 @@ function ProfileCard({ onSaved }: { onSaved: () => void }) {
               type="button"
               key={g}
               onClick={() => setGoal(g)}
-              className={`rounded-md border p-2 text-sm text-left transition-colors ${goal === g ? "border-[#14B8A6] bg-[#14B8A6]/5" : "border-border"}`}
+              className={`rounded-md border p-2 text-sm text-left transition-colors ${goal === g ? "border-[var(--brand)] bg-[color-mix(in_srgb,var(--brand)_10%,transparent)]" : "border-border"}`}
             >
               {MEMBER_GOAL_LABEL[g]}
             </button>
@@ -328,7 +346,7 @@ function ChangePasswordCard({
 
   return (
     <form onSubmit={submit} className="rounded-lg border border-border bg-card p-5 space-y-4">
-      <h2 className="text-sm font-medium">Cambiar contraseña</h2>
+      <SectionTitle icon={KeyRound}>Cambiar contraseña</SectionTitle>
       <div className="grid gap-3 sm:grid-cols-2">
         <FieldRow label="Contraseña actual">
           <Input type="password" value={curr} onChange={(e) => setCurr(e.target.value)} required autoComplete="current-password" />
