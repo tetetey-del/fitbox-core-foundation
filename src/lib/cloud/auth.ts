@@ -71,11 +71,14 @@ async function enterTenant(): Promise<Session> {
 /** Completa lo que la base no sabe crear sola (ajustes por defecto y ejercicios base). */
 function ensureTenantDefaults(tenantId: string): void {
   const tenant = tenantsRepo.getById(tenantId);
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "Europe/Madrid";
   if (tenant && !tenant.settings) {
     tenantsRepo.update(tenantId, {
       slug: tenant.slug && tenant.slug !== tenantId ? tenant.slug : `${slugify(tenant.name)}-${tenantId.slice(0, 4)}`,
-      settings: { cancellationWindowHours: DEFAULT_CANCELLATION_HOURS, enabledModules: DEFAULT_MODULES, currency: "EUR" },
+      settings: { cancellationWindowHours: DEFAULT_CANCELLATION_HOURS, enabledModules: DEFAULT_MODULES, currency: "EUR", timezone },
     });
+  } else if (tenant?.settings && !tenant.settings.timezone) {
+    tenantsRepo.update(tenantId, { settings: { ...tenant.settings, timezone } });
   }
   const ex = exercisesRepoFor(tenantId);
   if (ex.list().length === 0) {

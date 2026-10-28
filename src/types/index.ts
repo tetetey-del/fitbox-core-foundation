@@ -59,6 +59,8 @@ export interface TenantSettings {
   enabledModules?: TenantModules;
   /** Moneda en la que el box cobra. Por defecto, euros. */
   currency?: CurrencyCode;
+  /** Zona horaria del box (para saber cuándo empieza cada clase). Por defecto, la del navegador del dueño. */
+  timezone?: string;
   /** Si los socios ven el WOD del día. Por defecto, visible. */
   wodVisibility?: WodVisibility;
 }

@@ -26,6 +26,7 @@ import { notifyDataChanged, useDataVersion } from "@/lib/data-bus";
 import { AttendeesList } from "./sessionDetail/AttendeesList";
 import { WaitlistList } from "./sessionDetail/WaitlistList";
 import { AddAttendeeCombobox } from "./sessionDetail/AddAttendeeCombobox";
+import { cloudBookSession, cloudCancelBooking, isCloudSession } from "@/lib/cloud/bookings";
 
 interface Props {
   open: boolean;
@@ -58,6 +59,8 @@ export function SessionDetailSheet({
   if (!session || !occ || !currentUser) return null;
 
   const isStaff = currentUser.role === "admin" || currentUser.role === "coach";
+  // Apuntar o quitar socios (y cancelar la clase entera) es solo del dueño/administrador.
+  const isAdmin = currentUser.role === "admin";
 
   const alreadyBooked = new Set(
     [...occ.confirmed, ...occ.waitlist].map((b) => b.userId),
@@ -74,8 +77,8 @@ export function SessionDetailSheet({
     notifyDataChanged();
   };
 
-  const handleRemove = (bookingId: string) => {
-    const res = cancelBooking(bookingId, currentUser.role);
+  const handleRemove = async (bookingId: string) => {
+    const res = isCloudSession() ? await cloudCancelBooking(bookingId) : cancelBooking(bookingId, currentUser.role);
     if (!res.ok) toast.error(res.reason ?? "No se pudo quitar");
     else {
       toast.success("Reserva eliminada");
@@ -84,9 +87,9 @@ export function SessionDetailSheet({
     notifyDataChanged();
   };
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!addUserId) return;
-    const res = addAttendee(session.id, addUserId);
+    const res = isCloudSession() ? await cloudBookSession(session.id, addUserId) : addAttendee(session.id, addUserId);
     if (!res.ok) toast.error(res.reason ?? "No se pudo añadir");
     else toast.success("Asistente añadido");
     setAddUserId("");
@@ -125,7 +128,7 @@ export function SessionDetailSheet({
           <OccupancyBar confirmed={occ.confirmed.length} capacity={occ.capacity} />
         </div>
 
-        {isStaff && (
+        {isAdmin && (
           <>
             <Separator className="my-5" />
             <AddAttendeeCombobox
@@ -143,6 +146,7 @@ export function SessionDetailSheet({
           confirmed={occ.confirmed}
           userById={userById}
           isStaff={isStaff}
+          canRemove={isAdmin}
           onCheckIn={handleCheckIn}
           onRemove={handleRemove}
         />
@@ -150,11 +154,11 @@ export function SessionDetailSheet({
         <WaitlistList
           waitlist={occ.waitlist}
           userById={userById}
-          isStaff={isStaff}
+          isStaff={isAdmin}
           onRemove={handleRemove}
         />
 
-        {isStaff && session.status !== "cancelled" && (
+        {isAdmin && session.status !== "cancelled" && (
           <>
             <Separator className="my-5" />
             <Button

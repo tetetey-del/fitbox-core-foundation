@@ -8,12 +8,14 @@ interface Props {
   confirmed: Booking[];
   userById: Map<string, User>;
   isStaff: boolean;
+  /** Solo el dueño/administrador puede quitar asistentes. */
+  canRemove?: boolean;
   onCheckIn: (bookingId: string) => void;
   onRemove: (bookingId: string) => void;
 }
 
 /** Lista de asistentes confirmados de una sesión, con acciones de check-in/quitar. */
-export function AttendeesList({ confirmed, userById, isStaff, onCheckIn, onRemove }: Props) {
+export function AttendeesList({ confirmed, userById, isStaff, canRemove = false, onCheckIn, onRemove }: Props) {
   return (
     <section className="space-y-2">
       <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -53,7 +55,7 @@ export function AttendeesList({ confirmed, userById, isStaff, onCheckIn, onRemov
                     >
                       <Check className="h-3.5 w-3.5" strokeWidth={1.5} />
                     </Button>
-                    <Button
+                    {canRemove && <Button
                       size="icon"
                       variant="ghost"
                       onClick={() => onRemove(b.id)}
@@ -61,7 +63,7 @@ export function AttendeesList({ confirmed, userById, isStaff, onCheckIn, onRemov
                       className="h-8 w-8 text-muted-foreground hover:text-destructive"
                     >
                       <Trash2 className="h-3.5 w-3.5" strokeWidth={1.5} />
-                    </Button>
+                    </Button>}
                   </div>
                 )}
               </li>

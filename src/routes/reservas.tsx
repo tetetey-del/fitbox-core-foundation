@@ -45,6 +45,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { WodViewer } from "@/components/wods/WodViewer";
+import { cloudBookSession, cloudCancelBooking, isCloudSession } from "@/lib/cloud/bookings";
 
 export const Route = createFileRoute("/reservas")({ component: ReservasPage });
 
@@ -171,13 +172,14 @@ function ReservasPage() {
     return `Recuerda que puedes cancelar sin penalización hasta ${h === 1 ? "1 hora" : `${h} horas`} antes.`;
   };
 
-  const confirmPending = () => {
+  const confirmPending = async () => {
     if (!pending || !currentUser) return;
     const s = pending.session;
     setPending(null);
     const existing = getUserBooking(s.id, currentUser.id);
+    const cloud = isCloudSession();
     if (existing) {
-      const res = cancelBooking(existing.id, currentUser.role);
+      const res = cloud ? await cloudCancelBooking(existing.id) : cancelBooking(existing.id, currentUser.role);
       if (!res.ok) toast.error(res.reason ?? "No se pudo cancelar");
       else {
         toast.success("Reserva cancelada");
@@ -185,7 +187,7 @@ function ReservasPage() {
           toast.info("Alguien de la lista de espera ha pasado a confirmado");
       }
     } else {
-      const res = bookSession(s.id, currentUser.id);
+      const res = cloud ? await cloudBookSession(s.id) : bookSession(s.id, currentUser.id);
       if (!res.ok) toast.error(res.reason ?? "No se pudo reservar");
       else if (res.booking?.status === "waitlist")
         toast("Añadido a lista de espera", {

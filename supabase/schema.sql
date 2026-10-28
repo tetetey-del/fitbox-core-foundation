@@ -190,3 +190,25 @@ revoke execute on function public.kf_role(uuid), public.kf_is_staff(uuid), publi
 grant execute on function public.kf_role(uuid), public.kf_is_staff(uuid), public.kf_app_user(uuid),
   public.kf_my_tenants(), public.kf_directory(uuid) to authenticated;
 grant execute on function public.kf_get_invitation(text) to anon, authenticated;
+
+-- =========================================================
+-- Etapa 2 (28/10/2026): reservas en el servidor y tienda
+-- Migraciones: kinflow_bookings_rpc, kinflow_orders_stock, kinflow_orders_stock_only_new,
+-- kinflow_program_progress_owner.
+-- =========================================================
+-- kf_tenant_tz(t)            zona horaria del box (settings.timezone, por defecto Europe/Madrid)
+-- kf_session_start(t, s)     inicio real de una clase según esa zona
+-- kf_active_membership(t,u)  membresía activa hoy y su plan
+-- kf_book_session(t, session, user?)  reserva (socio: a sí mismo, con créditos; staff: a cualquiera, sin créditos).
+--     Reglas: clase existente y no cancelada, que no haya empezado, sin reserva previa, una por actividad y día,
+--     membresía activa y créditos; con cupo → confirmada (descuenta 1 crédito), sin cupo → lista de espera.
+--     Bloqueo por clase (pg_advisory_xact_lock) para no pasarse del cupo.
+-- kf_cancel_booking(t, booking)  cancela (socio: solo las suyas y antes de que empiece la clase).
+--     Si es tarde (menos que settings.cancellationWindowHours, 1 h por defecto) no devuelve el crédito.
+--     Borra el check-in, pasa a confirmado al primero de la lista de espera con créditos (y le avisa) y renumera.
+-- kf_orders_before_insert    pedido nuevo de un socio: precio real, total, estado "pendiente" y descuento de stock.
+-- records_update: un socio no puede modificar pedidos (solo crearlos).
+-- kf_records_before: el dueño de program_progress es el socio de la asignación (program_assignments.userId).
+-- 28/10/2026 (kinflow_bookings_admin_only, kinflow_coach_no_bookings_write):
+-- apuntar o quitar a otras personas de una clase es solo del admin (dueño). Los coaches
+-- no escriben reservas directamente (kf_staff_can_write); sí marcan asistencia, clases, WODs, etc.

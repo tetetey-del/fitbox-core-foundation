@@ -80,6 +80,7 @@ function diffArrays(prev: unknown, next: unknown): { upserts: Row[]; deletes: st
 function onWrite(key: string, prev: unknown, next: unknown): void {
   if (!ctx) return;
   if (key === TENANTS_KEY) {
+    if (ctx.role !== "admin") return; // solo el admin puede cambiar los datos del box
     const find = (list: unknown) => (Array.isArray(list) ? (list as Row[]).find((t) => t.id === ctx!.tenantId) : undefined);
     const a = find(prev);
     const b = find(next);
@@ -93,13 +94,52 @@ function onWrite(key: string, prev: unknown, next: unknown): void {
   if (!key.startsWith(prefix)) return;
   const collection = key.slice(prefix.length);
   if (LOCAL_ONLY.has(collection)) return;
-  const { upserts, deletes } = diffArrays(prev, next);
+  let { upserts, deletes } = diffArrays(prev, next);
+  if (ctx.role === "member") {
+    // Mismas reglas que la base (RLS): lo que la base rechazaría no se sube.
+    const before = new Map((Array.isArray(prev) ? (prev as Row[]) : []).map((r) => [r.id, r]));
+    upserts = upserts.filter((r) => memberMayWrite(collection, r, before.has(r.id)));
+    deletes = deletes.filter((id) => MEMBER_DELETABLE.has(collection) && isOwn(collection, before.get(id)));
+  }
   for (const data of upserts) {
     const clean = collection === "users" ? (({ passwordHash: _p, ...rest }) => rest)(data as Row & { passwordHash?: string }) : data;
     queue.set(`${collection}:${data.id}`, { kind: "upsert", collection, id: data.id, data: clean as Row });
   }
   for (const id of deletes) queue.set(`${collection}:${id}`, { kind: "delete", collection, id });
   if (upserts.length || deletes.length) schedule();
+}
+
+// ---------- Qué puede escribir un socio (espejo de las políticas RLS) ----------
+
+const MEMBER_WRITABLE = new Set([
+  "users", "personal_records", "body_metrics", "orders", "notifications",
+  "program_assignments", "program_progress", "challenge_participants",
+]);
+const MEMBER_DELETABLE = new Set(["personal_records", "body_metrics", "program_progress"]);
+
+function readLocal(collection: string): Row[] {
+  if (!ctx || !isBrowser()) return [];
+  try {
+    return JSON.parse(window.localStorage.getItem(buildKey(ctx.tenantId, collection)) ?? "[]") as Row[];
+  } catch {
+    return [];
+  }
+}
+
+function isOwn(collection: string, row: Row | undefined): boolean {
+  if (!ctx || !row) return false;
+  if (collection === "users") return row.id === ctx.appUserId;
+  if (collection === "program_progress") {
+    const a = readLocal("program_assignments").find((x) => x.id === row.assignmentId);
+    return !!a && a.userId === ctx.appUserId;
+  }
+  return row.userId === ctx.appUserId;
+}
+
+function memberMayWrite(collection: string, row: Row, existed: boolean): boolean {
+  if (!MEMBER_WRITABLE.has(collection) || !isOwn(collection, row)) return false;
+  if (collection === "orders" && existed) return false; // los pedidos solo los cambia el staff
+  return true;
 }
 
 function schedule() {
