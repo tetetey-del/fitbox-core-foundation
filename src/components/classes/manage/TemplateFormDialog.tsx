@@ -19,7 +19,9 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { classTemplatesRepo } from "@/lib/storage/repositories/classTemplates.repo";
 import { notifyDataChanged } from "@/lib/data-bus";
-import type { ClassTemplate, ClassType, User } from "@/types";
+import type { ClassSession, ClassTemplate, ClassType, User } from "@/types";
+import { classSessionsRepo } from "@/lib/storage/repositories/classSessions.repo";
+import { toDateKey } from "@/lib/date";
 import { CLASS_TYPE_LABEL } from "@/types";
 import { ClassFieldRow } from "./ClassFieldRow";
 
@@ -28,6 +30,34 @@ interface Props {
   onOpenChange: (o: boolean) => void;
   initial: ClassTemplate | null;
   coaches: Pick<User, "id" | "name">[];
+}
+
+/**
+ * Cambios de aforo, duración o coach de una plantilla: se aplican también a las clases
+ * futuras ya programadas de esa plantilla (las pasadas y canceladas no se tocan).
+ * El coach solo se cambia en las clases que tenían el coach de antes.
+ */
+function applyToUpcomingSessions(
+  before: ClassTemplate,
+  after: { defaultCapacity: number; durationMinutes: number; defaultCoachId?: string },
+): number {
+  const capacityChanged = before.defaultCapacity !== after.defaultCapacity;
+  const durationChanged = before.durationMinutes !== after.durationMinutes;
+  const coachChanged = (before.defaultCoachId ?? "") !== (after.defaultCoachId ?? "");
+  if (!capacityChanged && !durationChanged && !coachChanged) return 0;
+  const today = toDateKey(new Date());
+  let count = 0;
+  for (const s of classSessionsRepo.list()) {
+    if (s.templateId !== before.id || s.date < today || s.status === "cancelled") continue;
+    const patch: Partial<ClassSession> = {};
+    if (capacityChanged && s.capacity !== after.defaultCapacity) patch.capacity = after.defaultCapacity;
+    if (durationChanged && s.durationMinutes !== after.durationMinutes) patch.durationMinutes = after.durationMinutes;
+    if (coachChanged && (s.coachId ?? "") === (before.defaultCoachId ?? "")) patch.coachId = after.defaultCoachId;
+    if (Object.keys(patch).length === 0) continue;
+    classSessionsRepo.update(s.id, patch);
+    count++;
+  }
+  return count;
 }
 
 /** Diálogo de creación/edición de una plantilla de clase. */
@@ -64,7 +94,12 @@ export function TemplateFormDialog({ open, onOpenChange, initial, coaches }: Pro
     };
     if (initial) {
       classTemplatesRepo.update(initial.id, payload);
-      toast.success("Plantilla actualizada");
+      const updated = applyToUpcomingSessions(initial, payload);
+      toast.success("Plantilla actualizada", {
+        description: updated > 0
+          ? `También se actualizaron ${updated} ${updated === 1 ? "clase ya programada" : "clases ya programadas"}.`
+          : undefined,
+      });
     } else {
       classTemplatesRepo.create({ ...payload, tenantId: currentTenant.id });
       toast.success("Plantilla creada");
@@ -124,6 +159,12 @@ export function TemplateFormDialog({ open, onOpenChange, initial, coaches }: Pro
               />
             </ClassFieldRow>
           </div>
+          {initial && (
+            <p className="-mt-1 text-xs text-muted-foreground">
+              Si cambias el aforo, la duración o el coach, también se cambia en las clases de esta plantilla que ya
+              están programadas de hoy en adelante.
+            </p>
+          )}
           <ClassFieldRow label="Color">
             <div className="flex items-center gap-3">
               <input
