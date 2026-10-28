@@ -15,18 +15,19 @@ interface DefaultExercise {
   name: string;
   category: ExerciseCategory;
   unit: ExerciseUnit;
+  aliases?: string[];
 }
 
 export const DEFAULT_EXERCISES: DefaultExercise[] = [
   // Fuerza
-  { name: "Back Squat", category: "fuerza", unit: "kg" },
-  { name: "Front Squat", category: "fuerza", unit: "kg" },
-  { name: "Deadlift", category: "fuerza", unit: "kg" },
-  { name: "Bench Press", category: "fuerza", unit: "kg" },
-  { name: "Strict Press", category: "fuerza", unit: "kg" },
+  { name: "Back Squat", category: "fuerza", unit: "kg", aliases: ["Sentadilla trasera"] },
+  { name: "Front Squat", category: "fuerza", unit: "kg", aliases: ["Sentadilla frontal"] },
+  { name: "Deadlift", category: "fuerza", unit: "kg", aliases: ["Peso muerto", "DL"] },
+  { name: "Bench Press", category: "fuerza", unit: "kg", aliases: ["Press de banca", "Press banca"] },
+  { name: "Strict Press", category: "fuerza", unit: "kg", aliases: ["Press estricto", "Press militar", "Shoulder Press"] },
   // Olímpicos
-  { name: "Clean & Jerk", category: "olimpico", unit: "kg" },
-  { name: "Snatch", category: "olimpico", unit: "kg" },
+  { name: "Clean & Jerk", category: "olimpico", unit: "kg", aliases: ["Clean and Jerk", "C&J", "Dos tiempos"] },
+  { name: "Snatch", category: "olimpico", unit: "kg", aliases: ["Arranque"] },
   // Benchmark WODs
   { name: "Fran", category: "benchmark_wod", unit: "tiempo" },
   { name: "Grace", category: "benchmark_wod", unit: "tiempo" },
@@ -34,16 +35,111 @@ export const DEFAULT_EXERCISES: DefaultExercise[] = [
   { name: "Murph", category: "benchmark_wod", unit: "tiempo" },
   { name: "Cindy", category: "benchmark_wod", unit: "reps" },
   // Gimnásticos
-  { name: "Pull-ups max", category: "gimnastico", unit: "reps" },
-  { name: "HSPU max", category: "gimnastico", unit: "reps" },
+  { name: "Pull-ups max", category: "gimnastico", unit: "reps", aliases: ["Pull-ups", "Pull-up", "Dominadas"] },
+  { name: "HSPU max", category: "gimnastico", unit: "reps", aliases: ["HSPU", "Handstand Push-ups", "Flexiones de pino"] },
   // Cardio
-  { name: "Run 5K", category: "cardio", unit: "tiempo" },
+  { name: "Run 5K", category: "cardio", unit: "tiempo", aliases: ["5K"] },
 ];
 
 export function seedDefaultExercisesFor(tenantId: string): Exercise[] {
   const repo = exercisesRepoFor(tenantId);
   return DEFAULT_EXERCISES.map((d) =>
     repo.create({ tenantId, isCustom: false, ...d }),
+  );
+}
+
+// ---- Editar el catálogo (staff) ----
+
+export interface ExerciseInput {
+  name: string;
+  category: ExerciseCategory;
+  unit: ExerciseUnit;
+  aliases?: string[];
+}
+
+function cleanAliases(list: string[] | undefined, name: string): string[] {
+  const seen = new Set([normalizeText(name)]);
+  const out: string[] = [];
+  for (const a of list ?? []) {
+    const t = a.trim();
+    const k = normalizeText(t);
+    if (t && !seen.has(k)) {
+      seen.add(k);
+      out.push(t);
+    }
+  }
+  return out;
+}
+
+/** Busca otro ejercicio con el mismo nombre (sin importar mayúsculas ni acentos). */
+export function exerciseNameTaken(name: string, exceptId?: string): boolean {
+  const k = normalizeText(name);
+  return exercisesRepo.list().some((e) => e.id !== exceptId && normalizeText(e.name) === k);
+}
+
+export function createExercise(tenantId: string, input: ExerciseInput): Exercise {
+  const name = input.name.trim();
+  return exercisesRepo.create({
+    tenantId,
+    name,
+    category: input.category,
+    unit: input.unit,
+    aliases: cleanAliases(input.aliases, name),
+    isCustom: true,
+  });
+}
+
+export function updateExercise(id: string, input: ExerciseInput): Exercise | null {
+  const name = input.name.trim();
+  return exercisesRepo.update(id, {
+    name,
+    category: input.category,
+    unit: input.unit,
+    aliases: cleanAliases(input.aliases, name),
+  });
+}
+
+/** Cuántas marcas tiene registradas un ejercicio (para avisar antes de borrarlo). */
+export function exercisePRCount(exerciseId: string): number {
+  return personalRecordsRepo.query({ exerciseId }).length;
+}
+
+/** Borra el ejercicio y sus marcas. */
+export function deleteExercise(id: string): void {
+  personalRecordsRepo.query({ exerciseId: id }).forEach((pr) => personalRecordsRepo.remove(pr.id));
+  exercisesRepo.remove(id);
+}
+
+// ---- Encontrar ejercicios en un texto (WOD) ----
+
+/** Minúsculas, sin acentos y sin signos, para comparar nombres. */
+export function normalizeText(t: string): string {
+  return t
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+/** Otros nombres de los ejercicios base, para boxes creados antes de que existieran. */
+const BUILTIN_ALIASES = new Map(DEFAULT_EXERCISES.map((d) => [normalizeText(d.name), d.aliases ?? []]));
+
+/** Todos los nombres con los que se puede escribir un ejercicio. */
+export function exerciseKeywords(ex: Exercise): string[] {
+  const names = [ex.name, ...(ex.aliases ?? []), ...(BUILTIN_ALIASES.get(normalizeText(ex.name)) ?? [])];
+  // "Pull-ups max" también se reconoce como "Pull-ups".
+  names.push(ex.name.replace(/\s+max$/i, ""));
+  return [...new Set(names.map(normalizeText).filter((k) => k.length >= 2))];
+}
+
+/** Ejercicios que aparecen en un texto (por nombre u otro nombre; admite plural con "s"). */
+export function findExercisesInText(text: string, exercises: Exercise[]): Exercise[] {
+  const t = ` ${normalizeText(text)} `;
+  if (!t.trim()) return [];
+  return exercises.filter((ex) =>
+    exerciseKeywords(ex).some((k) => t.includes(` ${k} `) || t.includes(` ${k}s `) || t.includes(` ${k}es `)),
   );
 }
 

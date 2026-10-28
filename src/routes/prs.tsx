@@ -26,20 +26,15 @@ import { PRCard } from "@/components/prs/PRCard";
 import { PRFormDialog } from "@/components/prs/PRFormDialog";
 import { LeaderboardTable } from "@/components/prs/LeaderboardTable";
 import { ExerciseDetailDialog } from "@/components/prs/ExerciseDetailDialog";
+import { ExercisesManager, EXERCISE_CATEGORY_ORDER } from "@/components/prs/ExercisesManager";
 
 export const Route = createFileRoute("/prs")({ component: PRsPage });
 
-const CATEGORY_ORDER: ExerciseCategory[] = [
-  "fuerza",
-  "olimpico",
-  "benchmark_wod",
-  "gimnastico",
-  "cardio",
-];
+const CATEGORY_ORDER: ExerciseCategory[] = EXERCISE_CATEGORY_ORDER;
 
 function PRsPage() {
   useRequireModule("prs");
-  const { currentUser, tenantUsers } = useAuth();
+  const { currentUser, tenantUsers, session } = useAuth();
   useDataVersion();
 
   const exercises = useMemo<Exercise[]>(
@@ -109,6 +104,7 @@ function PRsPage() {
         <TabsList>
           <TabsTrigger value="mis-prs">{isStaff ? "Marcas" : "Mis PRs"}</TabsTrigger>
           <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
+          {isStaff && <TabsTrigger value="ejercicios">Ejercicios</TabsTrigger>}
         </TabsList>
 
         <TabsContent value="mis-prs" className="mt-6">
@@ -186,6 +182,11 @@ function PRsPage() {
             />
           )}
         </TabsContent>
+        {isStaff && session && (
+          <TabsContent value="ejercicios" className="mt-6">
+            <ExercisesManager tenantId={session.tenantId} exercises={exercises} />
+          </TabsContent>
+        )}
       </Tabs>
 
       <PRFormDialog

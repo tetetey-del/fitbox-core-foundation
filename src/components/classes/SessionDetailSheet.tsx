@@ -24,6 +24,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { notifyDataChanged, useDataVersion } from "@/lib/data-bus";
 import { AttendeesList } from "./sessionDetail/AttendeesList";
+import { classAlerts } from "@/lib/services/coachNotes.service";
 import { WaitlistList } from "./sessionDetail/WaitlistList";
 import { AddAttendeeCombobox } from "./sessionDetail/AddAttendeeCombobox";
 import { cloudBookSession, cloudCancelBooking, isCloudSession } from "@/lib/cloud/bookings";
@@ -61,6 +62,8 @@ export function SessionDetailSheet({
   const isStaff = currentUser.role === "admin" || currentUser.role === "coach";
   // Apuntar o quitar socios (y cancelar la clase entera) es solo del dueño/administrador.
   const isAdmin = currentUser.role === "admin";
+
+  const alerts = isStaff ? classAlerts(session.date, occ.confirmed.map((b) => b.userId)) : undefined;
 
   const alreadyBooked = new Set(
     [...occ.confirmed, ...occ.waitlist].map((b) => b.userId),
@@ -149,6 +152,7 @@ export function SessionDetailSheet({
           canRemove={isAdmin}
           onCheckIn={handleCheckIn}
           onRemove={handleRemove}
+          alerts={alerts}
         />
 
         <WaitlistList

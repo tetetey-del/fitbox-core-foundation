@@ -19,6 +19,7 @@ import { MemberProfileTab } from "./memberDetail/MemberProfileTab";
 import { MemberMembershipTab } from "./memberDetail/MemberMembershipTab";
 import { MemberPaymentsTab } from "./memberDetail/MemberPaymentsTab";
 import { MemberAttendanceTab } from "./memberDetail/MemberAttendanceTab";
+import { MemberNotesTab } from "./memberDetail/MemberNotesTab";
 import { UserAvatar } from "@/components/members/UserAvatar";
 
 // Re-export para no romper importadores existentes.
@@ -62,6 +63,8 @@ export function MemberDetailDialog({ open, onOpenChange, user }: Props) {
           </DialogHeader>
 
           <MemberProfileTab user={user} />
+          <Separator />
+          <MemberNotesTab memberId={user.id} />
           <Separator />
           <MemberMembershipTab userId={user.id} onAssign={() => setAssigning(true)} />
           <Separator />
