@@ -163,6 +163,7 @@ export function bookSession(
       sessionId,
       userId,
       status: "confirmed",
+      ...(opts.bypassCredits ? { addedByStaff: true } : {}),
     });
     return { ok: true, booking };
   }
@@ -175,6 +176,7 @@ export function bookSession(
       userId,
       status: "waitlist",
       position,
+      ...(opts.bypassCredits ? { addedByStaff: true } : {}),
     });
     return { ok: true, booking };
   } finally {
@@ -242,10 +244,12 @@ function promoteNextFromWaitlist(sessionId: string): Booking | undefined {
   const occ = getSessionOccupancy(sessionId);
   const session = classSessionsRepo.getById(sessionId);
   for (const candidate of occ.waitlist) {
-    const check = inspectCredits(candidate.userId);
-    if (!check.hasMembership) continue;
-    if (check.needsCredit && !check.hasCredits) continue;
-    if (check.needsCredit) consumeCredit(candidate.userId);
+    if (!candidate.addedByStaff) {
+      const check = inspectCredits(candidate.userId);
+      if (!check.hasMembership) continue;
+      if (check.needsCredit && !check.hasCredits) continue;
+      if (check.needsCredit) consumeCredit(candidate.userId);
+    }
     const updated = bookingsRepo.update(candidate.id, {
       status: "confirmed",
       position: undefined,

@@ -13,6 +13,7 @@ import { sessionStore } from "@/lib/storage/session";
 import { cloudAttach, cloudAuthUserId, cloudChangePassword, cloudEnterIfSignedIn, cloudLogout, cloudResume } from "@/lib/cloud/auth";
 import { cloudEnabled, sb } from "@/lib/cloud/client";
 import { onCloudSync } from "@/lib/cloud/sync";
+import { notificationsRepoFor } from "@/lib/storage/repositories/notifications.repo";
 import { tenantsRepo } from "@/lib/storage/repositories/tenants.repo";
 import { setActiveCurrency } from "@/lib/format";
 import { listUsersOfTenant } from "@/lib/storage/repositories/users.repo";
@@ -56,6 +57,30 @@ interface AuthContextValue {
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
+
+/**
+ * Boxes reales: cuando llega un aviso nuevo desde el servidor (por ejemplo, "¡Has pasado de
+ * lista de espera!"), se muestra un cartel en pantalla además del número en la campanita.
+ * La primera vez solo se anotan los que ya había (salvo los de los últimos 10 minutos).
+ */
+const seenNotifications = new Set<string>();
+let notificationsPrimed = false;
+function announceNewNotifications(): void {
+  const s = sessionStore.read();
+  if (!s?.cloud) return;
+  const mine = notificationsRepoFor(s.tenantId)
+    .query({ userId: s.userId })
+    .filter((n) => !n.read);
+  const recent = Date.now() - 10 * 60_000;
+  for (const n of mine) {
+    if (seenNotifications.has(n.id)) continue;
+    seenNotifications.add(n.id);
+    if (notificationsPrimed || new Date(n.createdAt).getTime() > recent) {
+      toast(n.title, { description: n.body, duration: 8000 });
+    }
+  }
+  notificationsPrimed = true;
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
@@ -110,7 +135,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }).data.subscription;
     }
     const off = onCloudSync((e) => {
-      if (e.type === "pulled") refresh();
+      if (e.type === "pulled") {
+        announceNewNotifications();
+        refresh();
+      }
       else toast.error(e.message);
     });
     return () => {
