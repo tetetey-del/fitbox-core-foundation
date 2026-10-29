@@ -43,6 +43,7 @@ import { ORDER_STATUS_LABEL, PRODUCT_CATEGORY_LABEL } from "@/types";
 import { compressImage, dataUrlBytes } from "@/lib/image";
 import { formatDate } from "@/lib/date";
 import { currencySymbol, formatMoney } from "@/lib/format";
+import { NumberInput } from "@/components/ui/number-input";
 
 export const Route = createFileRoute("/tienda")({
   head: () => ({ meta: [{ title: "Tienda — Kinflow" }] }),
@@ -476,7 +477,7 @@ function ProductForm({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Precio ({currencySymbol()})</Label>
-              <Input type="number" min={0} step="0.01" value={price} onChange={(e) => setPrice(Number(e.target.value))} />
+              <NumberInput min={0} step="0.01" value={price} onChange={(e) => setPrice(Number(e.target.value))} />
             </div>
             <div>
               <Label>Categoría</Label>
@@ -493,7 +494,7 @@ function ProductForm({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Stock (vacío = ilimitado)</Label>
-              <Input type="number" min={0} value={stock} onChange={(e) => setStock(e.target.value)} />
+              <NumberInput min={0} value={stock} onChange={(e) => setStock(e.target.value)} />
             </div>
             <div>
               <Label>Estado</Label>

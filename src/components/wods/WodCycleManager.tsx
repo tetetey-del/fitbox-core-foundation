@@ -34,6 +34,7 @@ import {
   mondayOf,
   saveCycle,
 } from "@/lib/services/wodCycle.service";
+import { NumberInput } from "@/components/ui/number-input";
 
 const BLOCK_ORDER: WodBlockType[] = ["calentamiento", "fuerza", "metcon", "accesorio"];
 
@@ -139,8 +140,7 @@ function CycleEditor({ cycle, onDone }: { cycle: WodCycle | null; onDone: () => 
         </div>
         <div className="space-y-1.5">
           <Label className="text-xs text-muted-foreground">Dura (semanas)</Label>
-          <Input
-            type="number"
+          <NumberInput
             min={1}
             max={MAX_CYCLE_WEEKS}
             value={weeks}

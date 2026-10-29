@@ -16,6 +16,7 @@ import {
   series,
   type MetricKey,
 } from "@/lib/services/health.service";
+import { NumberInput } from "@/components/ui/number-input";
 
 const MetricChart = lazy(() => import("./MetricChart"));
 
@@ -87,15 +88,15 @@ export default function ProgressPanel({ userId, tenantId, canEdit }: Props) {
             </div>
             <div>
               <Label className="text-xs">Peso (kg)</Label>
-              <Input type="number" step="0.1" value={weight} onChange={(e) => setWeight(e.target.value)} />
+              <NumberInput step="0.1" value={weight} onChange={(e) => setWeight(e.target.value)} />
             </div>
             <div>
               <Label className="text-xs">% graso</Label>
-              <Input type="number" step="0.1" value={fat} onChange={(e) => setFat(e.target.value)} />
+              <NumberInput step="0.1" value={fat} onChange={(e) => setFat(e.target.value)} />
             </div>
             <div>
               <Label className="text-xs">FC reposo</Label>
-              <Input type="number" value={hr} onChange={(e) => setHr(e.target.value)} />
+              <NumberInput value={hr} onChange={(e) => setHr(e.target.value)} />
             </div>
           </div>
           <div>

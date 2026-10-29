@@ -1,4 +1,5 @@
 import { Input } from "@/components/ui/input";
+import { NumberInput } from "@/components/ui/number-input";
 
 export interface DraftPlan {
   name: string;
@@ -24,16 +25,15 @@ export function StepPlans({ plans, onUpdate }: Props) {
           </div>
           <div>
             <MiniLabel>Precio/mes</MiniLabel>
-            <Input
-              type="number"
+            <NumberInput
+              decimal
               value={p.price}
               onChange={(e) => onUpdate(i, { price: Number(e.target.value) })}
             />
           </div>
           <div>
             <MiniLabel>Créditos</MiniLabel>
-            <Input
-              type="number"
+            <NumberInput
               value={p.credits}
               disabled={p.type === "unlimited"}
               onChange={(e) => onUpdate(i, { credits: Number(e.target.value) })}

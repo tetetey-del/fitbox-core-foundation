@@ -21,6 +21,7 @@ import { notifyDataChanged } from "@/lib/data-bus";
 import { addDays, DAY_LABELS, toDateKey } from "@/lib/date";
 import type { ClassTemplate, User } from "@/types";
 import { ClassFieldRow } from "./ClassFieldRow";
+import { NumberInput } from "@/components/ui/number-input";
 
 interface Props {
   open: boolean;
@@ -135,8 +136,7 @@ export function RecurringSessionsDialog({ open, onOpenChange, templates, coaches
               <Input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
             </ClassFieldRow>
             <ClassFieldRow label="Aforo">
-              <Input
-                type="number"
+              <NumberInput
                 min={1}
                 value={capacity}
                 onChange={(e) => setCapacity(Number(e.target.value))}
