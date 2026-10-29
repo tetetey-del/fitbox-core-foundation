@@ -9,6 +9,7 @@ import { classSessionsRepo } from "@/lib/storage/repositories/classSessions.repo
 import { toDateKey, formatDate, daysBetween, parseDateKey } from "@/lib/date";
 import { FeedWidget } from "@/components/dashboard/FeedWidget";
 import { OwnerDashboard } from "@/components/dashboard/OwnerDashboard";
+import { GettingStarted } from "@/components/dashboard/GettingStarted";
 import { CoachOrOwnerToday } from "@/components/dashboard/CoachOrOwnerToday";
 import { MemberDashboard } from "@/components/dashboard/MemberDashboard";
 import {
@@ -50,6 +51,12 @@ function DashboardPage() {
         title={`Hola, ${currentUser?.name.split(" ")[0] ?? ""}`}
         description={`Panel de ${currentTenant?.name}`}
       />
+
+      {isAdmin && (
+        <div className="mb-6 max-w-2xl">
+          <GettingStarted />
+        </div>
+      )}
 
       {modules.feed && (
         <div className="mb-6 max-w-2xl">

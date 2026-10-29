@@ -215,7 +215,7 @@ function PlansSection() {
   const [creating, setCreating] = useState(false);
 
   return (
-    <section className="space-y-4 rounded-lg border border-border bg-card p-6">
+    <section id="planes" className="scroll-mt-20 space-y-4 rounded-lg border border-border bg-card p-6">
       <div className="flex items-start justify-between">
         <div>
           <h2 className="text-base font-semibold">Planes y precios</h2>

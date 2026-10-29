@@ -13,6 +13,8 @@ import { buildKey, get } from "@/lib/storage/db";
 import { sessionStore } from "@/lib/storage/session";
 import { cloudEnabled } from "@/lib/cloud/client";
 import { cloudEnterIfSignedIn } from "@/lib/cloud/auth";
+import { membershipPlansRepo } from "@/lib/storage/repositories/membershipPlans.repo";
+import { classTemplatesRepo } from "@/lib/storage/repositories/classTemplates.repo";
 import { readBoxBrand, saveBoxBrand, type BoxBrand } from "@/lib/boxBrand";
 
 const SEEDED_KEY = buildKey(null, "seeded");
@@ -67,7 +69,12 @@ function LoginPage() {
         }
         sessionStore.write(s);
         _setSession(s);
-        navigate({ to: s.role === "member" ? "/onboarding/member" : defaultRouteFor(s.role) });
+        // Dueño de un box recién creado (sin planes ni clases): al asistente de primeros pasos.
+        const newBox =
+          s.role === "admin" && membershipPlansRepo.list().length === 0 && classTemplatesRepo.list().length === 0;
+        navigate({
+          to: s.role === "member" ? "/onboarding/member" : newBox ? "/onboarding/owner" : defaultRouteFor(s.role),
+        });
       })
       .catch((err) => setError(err instanceof AuthError ? err.message : null))
       .finally(() => !cancelled && setLoading(false));

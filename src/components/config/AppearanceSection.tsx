@@ -75,7 +75,7 @@ export function AppearanceSection() {
   };
 
   return (
-    <section className="space-y-4 rounded-lg border border-border bg-card p-6">
+    <section id="apariencia" className="scroll-mt-20 space-y-4 rounded-lg border border-border bg-card p-6">
       <div>
         <h2 className="text-base font-semibold">Apariencia</h2>
         <p className="text-sm text-muted-foreground">
