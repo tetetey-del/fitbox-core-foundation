@@ -398,6 +398,35 @@ export function cancelSession(sessionId: string): void {
   });
 }
 
+/** true si la clase tiene alguien anotado, en espera o con un lugar ofrecido. */
+export function sessionHasPeople(sessionId: string): boolean {
+  return bookingsRepo.query({ sessionId }).some((b) => b.status !== "cancelled");
+}
+
+/**
+ * Quita varias clases de una vez (solo admin). Las que no tienen a nadie se borran;
+ * las que tienen gente se cancelan (devuelve créditos y avisa a cada socio).
+ */
+export function removeSessions(sessionIds: string[]): { deleted: number; cancelled: number } {
+  let deleted = 0;
+  let cancelled = 0;
+  for (const id of sessionIds) {
+    const session = classSessionsRepo.getById(id);
+    if (!session) continue;
+    if (sessionHasPeople(id)) {
+      if (session.status !== "cancelled") {
+        cancelSession(id);
+        cancelled++;
+      }
+    } else {
+      bookingsRepo.query({ sessionId: id }).forEach((b) => bookingsRepo.remove(b.id));
+      classSessionsRepo.remove(id);
+      deleted++;
+    }
+  }
+  return { deleted, cancelled };
+}
+
 // ---- Alta manual de asistente (staff) ----
 
 export function addAttendee(sessionId: string, userId: string): BookResult {
