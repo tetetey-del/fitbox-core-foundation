@@ -22,7 +22,7 @@ export interface GenerateOptions {
 
 export interface GenerateResult {
   created: ClassSession[];
-  skipped: ClassSession[]; // sesiones ya existentes al mismo horario ese día
+  skipped: ClassSession[]; // sesiones de la misma plantilla ya existentes a esa hora ese día
 }
 
 /**
@@ -52,7 +52,9 @@ export function generateRecurringSessions(opts: GenerateOptions): GenerateResult
     if (opts.weekdays.includes(isoWeekday)) {
       const date = toDateKey(cursor);
       const clash = existing.find(
-        (s) => s.date === date && s.startTime === opts.startTime && s.status !== "cancelled",
+        // Solo se omite si ya hay una clase de la MISMA plantilla a esa hora: dos clases
+        // distintas pueden coincidir (por ejemplo, CrossFit y Movilidad en salas distintas).
+        (s) => s.date === date && s.startTime === opts.startTime && s.templateId === opts.templateId && s.status !== "cancelled",
       );
       if (clash) {
         skipped.push(clash);
