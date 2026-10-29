@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Copy, Loader2, RefreshCw, Trash2, UserPlus } from "lucide-react";
+import { Copy, Loader2, MessageCircle, RefreshCw, Trash2, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,6 +32,19 @@ import {
 } from "@/lib/services/invitations.service";
 import { membershipPlansRepoFor } from "@/lib/storage/repositories/membershipPlans.repo";
 
+/** Teléfono para WhatsApp: solo dígitos; si es un móvil español de 9 cifras, se le agrega el 34. */
+function waPhone(phone: string): string {
+  const d = phone.replace(/\D/g, "").replace(/^00/, "");
+  return d.length === 9 && /^[67]/.test(d) ? `34${d}` : d;
+}
+
+/** Abre WhatsApp con el mensaje de invitación (al número indicado, o eligiendo el contacto). */
+export function whatsappInviteUrl(boxName: string, link: string, phone?: string): string {
+  const text = `¡Hola! Te invito a la app de ${boxName} para reservar tus clases y ver el WOD. Crea tu cuenta aquí: ${link}`;
+  const to = phone ? waPhone(phone) : "";
+  return `https://wa.me/${to}?text=${encodeURIComponent(text)}`;
+}
+
 const STATUS_LABEL: Record<InvitationStatus, string> = {
   pending: "Pendiente",
   accepted: "Aceptada",
@@ -56,6 +69,7 @@ export function InviteMemberDialog({
   const { currentTenant, session } = useAuth();
   const [role, setRole] = useState<"coach" | "member">("member");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [planId, setPlanId] = useState<string>("");
   const [created, setCreated] = useState<Invitation | null>(null);
 
@@ -67,6 +81,7 @@ export function InviteMemberDialog({
   useEffect(() => {
     if (!open) {
       setEmail("");
+      setPhone("");
       setRole("member");
       setPlanId("");
       setCreated(null);
@@ -116,6 +131,16 @@ export function InviteMemberDialog({
               <Label className="text-xs text-muted-foreground">Email (opcional)</Label>
               <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Móvil (opcional, para mandarla por WhatsApp)</Label>
+              <Input
+                type="tel"
+                inputMode="tel"
+                placeholder="600 123 456"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+            </div>
             {role === "member" && plans.length > 0 && (
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">Plan preasignado (opcional)</Label>
@@ -154,9 +179,19 @@ export function InviteMemberDialog({
           ) : (
             <>
               <Button variant="ghost" onClick={() => onOpenChange(false)}>Cerrar</Button>
-              <Button onClick={copyLink}>
+              <Button variant="outline" onClick={copyLink}>
                 <Copy className="h-4 w-4 mr-2" strokeWidth={1.5} />
                 Copiar enlace
+              </Button>
+              <Button asChild className="bg-[#25D366] text-white hover:bg-[#1eb957]">
+                <a
+                  href={whatsappInviteUrl(currentTenant?.name ?? "tu box", buildInvitationLink(created.code), phone || undefined)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <MessageCircle className="h-4 w-4 mr-2" strokeWidth={1.75} />
+                  Enviar por WhatsApp
+                </a>
               </Button>
             </>
           )}
@@ -168,6 +203,7 @@ export function InviteMemberDialog({
 
 export function PendingInvitations({ tenantId }: { tenantId: string }) {
   useDataVersion();
+  const { currentTenant } = useAuth();
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -219,6 +255,15 @@ export function PendingInvitations({ tenantId }: { tenantId: string }) {
                 <>
                   <Button size="sm" variant="ghost" onClick={() => copy(i.code)} aria-label="Copiar enlace">
                     <Copy className="h-3.5 w-3.5" strokeWidth={1.5} />
+                  </Button>
+                  <Button size="sm" variant="ghost" asChild aria-label="Enviar por WhatsApp">
+                    <a
+                      href={whatsappInviteUrl(currentTenant?.name ?? "tu box", buildInvitationLink(i.code))}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <MessageCircle className="h-3.5 w-3.5 text-[#25D366]" strokeWidth={1.75} />
+                    </a>
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => regen(i.id)} aria-label="Regenerar" disabled={loading}>
                     {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" strokeWidth={1.5} />}
