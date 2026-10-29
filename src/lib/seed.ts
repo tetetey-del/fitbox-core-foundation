@@ -221,6 +221,19 @@ export function bootstrapDemoIfNeeded(): void {
   void seedAsync();
 }
 
+/**
+ * Para la página /demo: deja el box de ejemplo listo (aunque se hubiera borrado antes)
+ * y espera a que termine de crearse, así se puede entrar enseguida.
+ */
+export async function ensureDemoReady(): Promise<void> {
+  if (get<boolean>(DEMO_CLEARED_KEY, false)) remove(DEMO_CLEARED_KEY);
+  const seeded = get<boolean>(SEEDED_KEY, false);
+  const version = get<number>(DEMO_VERSION_KEY, seeded ? 1 : 0);
+  if (seeded && version >= DEMO_VERSION) return;
+  if (seeded) removeOldDemo();
+  await seedAsync();
+}
+
 /** Borra los boxes de la demo anterior sin tocar boxes creados por la persona. */
 function removeOldDemo(): void {
   const old = tenantsRepo.list().filter((t) => OLD_DEMO_SLUGS.includes(t.slug));

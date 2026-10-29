@@ -14,6 +14,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ClasesRouteImport } from './routes/clases'
 import { Route as ConfiguracionRouteImport } from './routes/configuracion'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as DemoRouteImport } from './routes/demo'
 import { Route as FeedRouteImport } from './routes/feed'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MasRouteImport } from './routes/mas'
@@ -61,6 +62,11 @@ const ConfiguracionRoute = ConfiguracionRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoRoute = DemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeedRoute = FeedRouteImport.update({
@@ -185,6 +191,7 @@ export interface FileRoutesByFullPath {
   '/clases': typeof ClasesRoute
   '/configuracion': typeof ConfiguracionRoute
   '/dashboard': typeof DashboardRoute
+  '/demo': typeof DemoRoute
   '/feed': typeof FeedRoute
   '/login': typeof LoginRoute
   '/mas': typeof MasRoute
@@ -215,6 +222,7 @@ export interface FileRoutesByTo {
   '/clases': typeof ClasesRoute
   '/configuracion': typeof ConfiguracionRoute
   '/dashboard': typeof DashboardRoute
+  '/demo': typeof DemoRoute
   '/feed': typeof FeedRoute
   '/login': typeof LoginRoute
   '/mas': typeof MasRoute
@@ -246,6 +254,7 @@ export interface FileRoutesById {
   '/clases': typeof ClasesRoute
   '/configuracion': typeof ConfiguracionRoute
   '/dashboard': typeof DashboardRoute
+  '/demo': typeof DemoRoute
   '/feed': typeof FeedRoute
   '/login': typeof LoginRoute
   '/mas': typeof MasRoute
@@ -278,6 +287,7 @@ export interface FileRouteTypes {
     | '/clases'
     | '/configuracion'
     | '/dashboard'
+    | '/demo'
     | '/feed'
     | '/login'
     | '/mas'
@@ -308,6 +318,7 @@ export interface FileRouteTypes {
     | '/clases'
     | '/configuracion'
     | '/dashboard'
+    | '/demo'
     | '/feed'
     | '/login'
     | '/mas'
@@ -338,6 +349,7 @@ export interface FileRouteTypes {
     | '/clases'
     | '/configuracion'
     | '/dashboard'
+    | '/demo'
     | '/feed'
     | '/login'
     | '/mas'
@@ -369,6 +381,7 @@ export interface RootRouteChildren {
   ClasesRoute: typeof ClasesRoute
   ConfiguracionRoute: typeof ConfiguracionRoute
   DashboardRoute: typeof DashboardRoute
+  DemoRoute: typeof DemoRoute
   FeedRoute: typeof FeedRoute
   LoginRoute: typeof LoginRoute
   MasRoute: typeof MasRoute
@@ -429,6 +442,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/feed': {
@@ -601,6 +621,7 @@ const rootRouteChildren: RootRouteChildren = {
   ClasesRoute: ClasesRoute,
   ConfiguracionRoute: ConfiguracionRoute,
   DashboardRoute: DashboardRoute,
+  DemoRoute: DemoRoute,
   FeedRoute: FeedRoute,
   LoginRoute: LoginRoute,
   MasRoute: MasRoute,

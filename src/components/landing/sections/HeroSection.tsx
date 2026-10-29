@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, PlayCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "../animations";
 import { useT } from "../i18n";
 
 /** Sección hero con headline, CTA y mockup animado. */
-export function HeroSection({ onCreate, onEnter }: { onCreate: () => void; onEnter: () => void }) {
+export function HeroSection({ onCreate, onDemo }: { onCreate: () => void; onDemo: () => void }) {
   const t = useT().hero;
   return (
     <section className="relative overflow-hidden border-b border-border/60">
@@ -44,8 +44,9 @@ export function HeroSection({ onCreate, onEnter }: { onCreate: () => void; onEnt
                 {t.create}
                 <ArrowRight className="h-4 w-4 ml-1" strokeWidth={1.5} />
               </Button>
-              <Button variant="outline" className="h-11 px-6" onClick={onEnter}>
-                {t.login}
+              <Button variant="outline" className="h-11 px-6" onClick={onDemo}>
+                <PlayCircle className="h-4 w-4 mr-1.5" strokeWidth={1.5} />
+                {t.demo}
               </Button>
             </div>
           </Reveal>

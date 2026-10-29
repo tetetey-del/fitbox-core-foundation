@@ -1,15 +1,12 @@
 import { KinflowMark } from "@/components/brand/KinflowLogo";
 import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthError } from "@/lib/services/auth.service";
-import { tenantsRepo } from "@/lib/storage/repositories/tenants.repo";
-import { listUsersOfTenant } from "@/lib/storage/repositories/users.repo";
-import { buildKey, get } from "@/lib/storage/db";
 import { sessionStore } from "@/lib/storage/session";
 import { cloudEnabled } from "@/lib/cloud/client";
 import { cloudEnterIfSignedIn } from "@/lib/cloud/auth";
@@ -17,7 +14,6 @@ import { membershipPlansRepo } from "@/lib/storage/repositories/membershipPlans.
 import { classTemplatesRepo } from "@/lib/storage/repositories/classTemplates.repo";
 import { readBoxBrand, saveBoxBrand, type BoxBrand } from "@/lib/boxBrand";
 
-const SEEDED_KEY = buildKey(null, "seeded");
 
 interface LoginSearch { redirect?: string; confirmado?: boolean }
 
@@ -144,7 +140,7 @@ function LoginPage() {
         <Link to="/recuperar" className="hover:text-foreground">¿Olvidaste tu contraseña?</Link>
         {!brand && <Link to="/registro" className="hover:text-foreground">Crear cuenta</Link>}
       </div>
-      {brand ? (
+      {brand && (
         <button
           type="button"
           onClick={() => {
@@ -155,8 +151,6 @@ function LoginPage() {
         >
           ¿No eres de {brand.name}?
         </button>
-      ) : (
-        <DemoAccountsPanel />
       )}
     </AuthShell>
   );
@@ -165,45 +159,6 @@ function LoginPage() {
 function defaultRouteFor(role: string): string {
   if (role === "member") return "/feed";
   return "/dashboard";
-}
-
-function DemoAccountsPanel() {
-  // Aplazamos la lectura de localStorage a después del montaje para evitar
-  // mismatch de hidratación SSR (el servidor no tiene localStorage).
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  const demoUsers = useMemo(() => {
-    if (!mounted) return [];
-    const seeded = get<boolean>(SEEDED_KEY, false);
-    if (!seeded) return [];
-    return tenantsRepo
-      .list()
-      .flatMap((t) => listUsersOfTenant(t.id).map((u) => ({ ...u, tenantName: t.name })))
-      .filter((u) => u.passwordHash) // solo los que tienen password
-      .slice(0, 8);
-  }, [mounted]);
-
-  if (!mounted || demoUsers.length === 0) return null;
-
-
-  return (
-    <div className="mt-6 rounded-md border border-dashed border-border p-3 text-xs">
-      <div className="font-medium text-foreground mb-1.5">Cuentas de prueba</div>
-      <p className="text-muted-foreground mb-2">
-        Contraseña común: <code className="font-mono">demo1234</code>
-      </p>
-      <ul className="space-y-1 max-h-40 overflow-y-auto">
-        {demoUsers.map((u) => (
-          <li key={u.id} className="flex justify-between gap-2 truncate">
-            <span className="text-muted-foreground truncate">
-              {u.tenantName} · {u.role === "admin" ? "dueño/a" : u.role === "coach" ? "coach" : "socio/a"}
-            </span>
-            <span className="font-mono text-foreground truncate">{u.email}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
 }
 
 // -------- Helpers compartidos --------

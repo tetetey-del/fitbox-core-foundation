@@ -21,13 +21,14 @@ export function LandingPage() {
   const navigate = useNavigate();
   const goRegister = () => navigate({ to: "/registro" });
   const goLogin = () => navigate({ to: "/login" });
+  const goDemo = () => navigate({ to: "/demo" });
 
   return (
     <LangProvider>
     <div className="min-h-dvh bg-background text-foreground flex flex-col overflow-x-hidden">
       <TopNav onEnter={goLogin} onCreate={goRegister} />
       <main className="flex-1">
-        <HeroSection onCreate={goRegister} onEnter={goLogin} />
+        <HeroSection onCreate={goRegister} onDemo={goDemo} />
         <SocialProofSection />
         <FeaturesSection />
         <HowItWorksSection />
