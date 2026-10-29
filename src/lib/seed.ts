@@ -29,7 +29,7 @@ const SEEDED_KEY = buildKey(null, "seeded");
 const DEMO_CLEARED_KEY = buildKey(null, "demo_cleared");
 /** Versión del gimnasio de demo. Si cambia, los navegadores con la demo vieja se vuelven a sembrar. */
 const DEMO_VERSION_KEY = buildKey(null, "demo_version");
-const DEMO_VERSION = 9;
+const DEMO_VERSION = 10;
 /** Boxes de demos anteriores que se borran al actualizar: FitBox (v1) y versiones previas de Chia (v2 a v6). */
 const OLD_DEMO_SLUGS = ["crossfit-norte", "box-sur", "chia-training"];
 const OLD_SUPERADMIN_EMAILS = ["isaac@fitbox.io"];
@@ -71,7 +71,7 @@ const CHIA = {
   // La demo usa los colores de Kinflow; cada box elige los suyos en Configuración → Apariencia.
   brandColor: "#14B8A6",
   themeId: "flow" as ThemeId,
-  owner: { name: "Celeste Teyssedou", email: "celeste@kinflow.app" },
+  owner: { name: "Marta Vidal", email: "marta@kinflow.app" },
   coaches: [
     { key: "lucas", name: "Lucas", email: "lucas@kinflow.app" },
     { key: "ana", name: "Ana", email: "ana@kinflow.app" },
@@ -109,23 +109,23 @@ interface ChiaMemberDef {
 
 const CHIA_MEMBERS: ChiaMemberDef[] = [
   { name: "Sofía Martínez", email: "sofia@kinflow.app", plan: "12", times: ["19:00", "18:00"], startedDaysAgo: 24, method: "transferencia" },
-  { name: "Martín Gómez", email: "martin@kinflow.app", plan: "libre", times: ["07:00", "06:00"], startedDaysAgo: 10, method: "transferencia" },
-  { name: "Valentina López", email: "valentina@kinflow.app", plan: "8", times: ["08:00", "17:00"], startedDaysAgo: 27, method: "efectivo" },
-  { name: "Juan Pablo Ríos", email: "juanpablo@kinflow.app", plan: "semestral", times: ["18:00", "20:00"], startedDaysAgo: 60, method: "transferencia" },
-  { name: "Camila Fernández", email: "camila@kinflow.app", plan: "16", times: ["09:00", "10:00"], startedDaysAgo: 14, method: "tarjeta" },
+  { name: "Pablo Gómez", email: "pablo@kinflow.app", plan: "libre", times: ["07:00", "06:00"], startedDaysAgo: 10, method: "transferencia" },
+  { name: "Laura López", email: "laura@kinflow.app", plan: "8", times: ["08:00", "17:00"], startedDaysAgo: 27, method: "efectivo" },
+  { name: "Álvaro Ríos", email: "alvaro@kinflow.app", plan: "semestral", times: ["18:00", "20:00"], startedDaysAgo: 60, method: "transferencia" },
+  { name: "Carmen Fernández", email: "carmen@kinflow.app", plan: "16", times: ["09:00", "10:00"], startedDaysAgo: 14, method: "tarjeta" },
   { name: "Tomás Herrera", email: "tomas@kinflow.app", plan: "anual", times: ["06:00", "12:00"], startedDaysAgo: 120, method: "transferencia" },
-  { name: "Lucía Benítez", email: "lucia@kinflow.app", plan: "12", times: ["17:00", "19:00"], startedDaysAgo: 5, method: "efectivo" },
-  { name: "Nicolás Sosa", email: "nicolas@kinflow.app", plan: "libre", times: ["19:00", "20:00"], startedDaysAgo: 18, method: "tarjeta" },
-  { name: "Florencia Acosta", email: "florencia@kinflow.app", plan: "8", times: ["10:00", "09:00"], startedDaysAgo: 2, method: "transferencia" },
-  { name: "Agustín Molina", email: "agustin@kinflow.app", plan: "16", times: ["07:00", "18:00"], startedDaysAgo: 21, method: "transferencia" },
-  { name: "Micaela Castro", email: "micaela@kinflow.app", plan: "12", times: ["08:00", "17:00"], startedDaysAgo: 29, method: "efectivo" },
-  { name: "Federico Ruiz", email: "federico@kinflow.app", plan: "libre", times: ["12:00", "18:00"], startedDaysAgo: 8, method: "tarjeta" },
-  { name: "Rocío Paz", email: "rocio@kinflow.app", plan: "prueba", times: ["19:00"], startedDaysAgo: 1, method: "efectivo", joinedDaysAgo: 1 },
-  { name: "Gastón Vera", email: "gaston@kinflow.app", plan: "suelta", times: ["12:00"], startedDaysAgo: 3, method: "efectivo", joinedDaysAgo: 3 },
+  { name: "Lucía Serra", email: "lucia@kinflow.app", plan: "12", times: ["17:00", "19:00"], startedDaysAgo: 5, method: "efectivo" },
+  { name: "Sergio Sastre", email: "sergio@kinflow.app", plan: "libre", times: ["19:00", "20:00"], startedDaysAgo: 18, method: "tarjeta" },
+  { name: "Irene Pons", email: "irene@kinflow.app", plan: "8", times: ["10:00", "09:00"], startedDaysAgo: 2, method: "transferencia" },
+  { name: "Adrián Molina", email: "adrian@kinflow.app", plan: "16", times: ["07:00", "18:00"], startedDaysAgo: 21, method: "transferencia" },
+  { name: "Marina Castro", email: "marina@kinflow.app", plan: "12", times: ["08:00", "17:00"], startedDaysAgo: 29, method: "efectivo" },
+  { name: "David Ruiz", email: "david@kinflow.app", plan: "libre", times: ["12:00", "18:00"], startedDaysAgo: 8, method: "tarjeta" },
+  { name: "Rocío Bauzà", email: "rocio@kinflow.app", plan: "prueba", times: ["19:00"], startedDaysAgo: 1, method: "efectivo", joinedDaysAgo: 1 },
+  { name: "Hugo Vera", email: "hugo@kinflow.app", plan: "suelta", times: ["12:00"], startedDaysAgo: 3, method: "efectivo", joinedDaysAgo: 3 },
 ];
 
-const FIRST_NAMES = ["Juli", "Mateo", "Carolina", "Santiago", "Rocío", "Facundo", "Paz", "Ignacio", "Milagros", "Gonzalo", "Antonella", "Joaquín", "Brenda", "Matías", "Victoria", "Lautaro", "Daniela", "Franco", "Josefina", "Ezequiel", "Carla", "Emiliano", "Belén", "Ramiro", "Aldana", "Bruno", "Celina", "Maximiliano", "Lourdes", "Diego"];
-const LAST_NAMES = ["Pereyra", "Quiroga", "Vega", "Romero", "Suárez", "Aguirre", "Medina", "Navarro", "Paz", "Ojeda", "Cabrera", "Domínguez", "Giménez", "Luna", "Ibarra", "Correa", "Ledesma", "Villalba", "Godoy", "Bustos"];
+const FIRST_NAMES = ["Julia", "Mateo", "Carolina", "Alejandro", "Elena", "Daniel", "Nuria", "Ignacio", "Andrea", "Gonzalo", "Cristina", "Joaquín", "Silvia", "Marcos", "Victoria", "Raúl", "Paula", "Rubén", "Alba", "Iván", "Carla", "Óscar", "Beatriz", "Jorge", "Noelia", "Bruno", "Marta", "Miguel", "Lorena", "Diego"];
+const LAST_NAMES = ["Pérez", "García", "Vega", "Romero", "Suárez", "Moreno", "Medina", "Navarro", "Torres", "Ortega", "Cabrera", "Domínguez", "Gil", "Ramos", "Vidal", "Serra", "Ferrer", "Rosselló", "Mas", "Bosch"];
 const CLASS_TIMES = ["06:00", "07:00", "08:00", "09:00", "10:00", "12:00", "17:00", "18:00", "18:00", "19:00", "19:00", "20:00"];
 const PLAN_MIX = ["8", "8", "12", "12", "12", "16", "16", "libre", "libre", "semestral", "anual", "12"];
 const METHODS: PaymentMethod[] = ["transferencia", "transferencia", "efectivo", "tarjeta"];
@@ -262,10 +262,13 @@ function removeOldDemo(): void {
 async function seedAsync(): Promise<void> {
   const demoHash = await hashPassword("demo1234");
 
-  // Super admin de la plataforma (vos, como dueña de Kinflow)
+  // Super admin de la plataforma (la dueña de Kinflow)
+  // Navegadores con la demo vieja: el admin de la plataforma ya no lleva un nombre real.
+  const oldAdmin = superAdminsStore.list().find((a) => a.email === "admin@kinflow.app" && a.name !== "Equipo Kinflow");
+  if (oldAdmin) superAdminsStore.update(oldAdmin.id, { name: "Equipo Kinflow" });
   if (!superAdminsStore.list().some((a) => a.email === "admin@kinflow.app")) {
     superAdminsStore.create({
-      name: "Celeste · Kinflow",
+      name: "Equipo Kinflow",
       email: "admin@kinflow.app",
       passwordHash: demoHash,
     });
@@ -373,12 +376,12 @@ function seedFeedFor({ tenant, owner }: SeedResult) {
   const today = new Date();
 
   const items: Array<{ type: PostType; title: string; content: string; pinned?: boolean; daysAgo: number }> = [
-    { type: "aviso", title: "¡Bienvenidos a la app de Chia!", content: "Desde ahora reservás tus clases, ves tus marcas y te enterás de todo desde acá. Instalala en el celu: menú del navegador → Agregar a pantalla de inicio. ¡Nos vemos en el box!", pinned: true, daysAgo: 0 },
-    { type: "aviso", title: "Feriado del lunes: horario especial", content: "El lunes abrimos de 9 a 13 con CrossFit a las 9, Funcional a las 10 y Open Box de 11 a 13. El martes volvemos al horario de siempre.", daysAgo: 1 },
-    { type: "aviso", title: "Nuevo Open Box de mediodía", content: "Sumamos Open Box de 12 a 14 de lunes a viernes para que entrenes a tu ritmo. Reservá tu lugar desde la app.", daysAgo: 3 },
-    { type: "consejo", title: "Movilidad: 10 minutos que cambian tu sentadilla", content: "1) 2 min de tobillo contra la pared. 2) 2 min de 90/90 de cadera. 3) 2 min de sentadilla profunda con apoyo. 4) 2 min de apertura torácica. 5) 2 min de hombros con banda. Hacelo antes de cada clase de Halterofilia.", daysAgo: 5 },
-    { type: "receta", title: "Licuado post entreno", content: "300 ml de leche, 1 banana, 2 cucharadas de avena, 1 cucharada de mantequilla de maní y canela. Licuá y tomalo dentro de la media hora después del WOD.", daysAgo: 8 },
-    { type: "wod", title: "Benchmark del mes: Cindy", content: "AMRAP 20 min: 5 pull-ups, 10 push-ups, 15 air squats. Anotá tus rondas en la app para el ranking del mes.", daysAgo: 12 },
+    { type: "aviso", title: "¡Bienvenidos a la app de Chia!", content: "Desde ahora reservas tus clases, ves tus marcas y te enteras de todo desde aquí. Instálala en el móvil: menú del navegador → Añadir a pantalla de inicio. ¡Nos vemos en el box!", pinned: true, daysAgo: 0 },
+    { type: "aviso", title: "Festivo del lunes: horario especial", content: "El lunes abrimos de 9 a 13 con CrossFit a las 9, Funcional a las 10 y Open Box de 11 a 13. El martes volvemos al horario de siempre.", daysAgo: 1 },
+    { type: "aviso", title: "Nuevo Open Box de mediodía", content: "Añadimos Open Box de 12 a 14 de lunes a viernes para que entrenes a tu ritmo. Reserva tu plaza desde la app.", daysAgo: 3 },
+    { type: "consejo", title: "Movilidad: 10 minutos que cambian tu sentadilla", content: "1) 2 min de tobillo contra la pared. 2) 2 min de 90/90 de cadera. 3) 2 min de sentadilla profunda con apoyo. 4) 2 min de apertura torácica. 5) 2 min de hombros con banda. Hazlo antes de cada clase de Halterofilia.", daysAgo: 5 },
+    { type: "receta", title: "Batido post entreno", content: "300 ml de leche, 1 plátano, 2 cucharadas de avena, 1 cucharada de crema de cacahuete y canela. Bátelo y tómatelo en la media hora después del WOD.", daysAgo: 8 },
+    { type: "wod", title: "Benchmark del mes: Cindy", content: "AMRAP 20 min: 5 pull-ups, 10 push-ups, 15 air squats. Apunta tus rondas en la app para el ranking del mes.", daysAgo: 12 },
   ];
 
   items.forEach((it) => {
@@ -737,7 +740,7 @@ function seedChallengesFor({ tenant, members }: SeedResult) {
   const c1 = chRepo.create({
     tenantId: tenant.id,
     title: "12 clases este mes",
-    description: "Vení al box 12 veces durante el reto y llevate la insignia.",
+    description: "Ven al box 12 veces durante el reto y llévate la insignia.",
     type: "attendance",
     goal: 12,
     startDate: start,
@@ -750,7 +753,7 @@ function seedChallengesFor({ tenant, members }: SeedResult) {
     const c2 = chRepo.create({
       tenantId: tenant.id,
       title: "Baja tu Fran",
-      description: "Registrá tu mejor Fran, RX o escalado, durante el reto.",
+      description: "Registra tu mejor Fran, RX o escalado, durante el reto.",
       type: "benchmark",
       goal: fran.id,
       startDate: start,
@@ -835,12 +838,12 @@ function sessionsRepoFor_seed_helper(tenantId: string, programId: string) {
 function seedShopFor({ tenant, members }: SeedResult) {
   const pRepo = productsRepoFor(tenant.id);
   const items = [
-    { name: "Remera Chia", description: "Remera técnica con logo, talles S a XL.", price: 25, category: "ropa" as const, stock: 30 },
+    { name: "Camiseta Chia", description: "Camiseta técnica con logo, tallas S a XL.", price: 25, category: "ropa" as const, stock: 30 },
     { name: "Muñequeras", description: "Par de muñequeras negras.", price: 12, category: "accesorios" as const, stock: 20 },
     { name: "Magnesio líquido", description: "Frasco de 250 ml.", price: 9, category: "accesorios" as const, stock: 15 },
     { name: "Proteína whey 1 kg", description: "Sabor chocolate.", price: 35, category: "suplementacion" as const, stock: 10 },
     { name: "Botella 750 ml", description: "Botella de acero inoxidable.", price: 15, category: "accesorios" as const, stock: 8 },
-    { name: "Buzo Chia", description: "Buzo negro con logo bordado.", price: 45, category: "ropa" as const, stock: 12 },
+    { name: "Sudadera Chia", description: "Sudadera negra con logo bordado.", price: 45, category: "ropa" as const, stock: 12 },
   ];
   const created = items.map((it) => pRepo.create({ tenantId: tenant.id, ...it, imageUrl: undefined, active: true }));
   const [ana, diego] = members;
