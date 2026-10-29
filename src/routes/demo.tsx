@@ -17,7 +17,7 @@ const DEMO_PASSWORD = "demo1234";
 const ROLES = [
   {
     id: "owner",
-    email: "celeste@kinflow.app",
+    email: "marta@kinflow.app",
     title: "Como dueño del box",
     desc: "Panel, socios y cuotas, clases y WOD, pagos, tienda y configuración.",
     icon: Store,

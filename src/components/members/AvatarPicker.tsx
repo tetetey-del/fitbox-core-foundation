@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { UserAvatar } from "./UserAvatar";
 import { photoToAvatarDataUrl } from "@/lib/image";
 
-/** Foto de perfil con botón para subir/cambiar (desde la galería o la cámara del celu) y quitar. */
+/** Foto de perfil con botón para subir/cambiar (desde la galería o la cámara del móvil) y quitar. */
 export function AvatarPicker({
   name,
   value,
