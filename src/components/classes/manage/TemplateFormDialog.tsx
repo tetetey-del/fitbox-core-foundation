@@ -24,6 +24,7 @@ import { classSessionsRepo } from "@/lib/storage/repositories/classSessions.repo
 import { toDateKey } from "@/lib/date";
 import { CLASS_TYPE_LABEL } from "@/types";
 import { ClassFieldRow } from "./ClassFieldRow";
+import { NumberInput } from "@/components/ui/number-input";
 
 interface Props {
   open: boolean;
@@ -142,8 +143,7 @@ export function TemplateFormDialog({ open, onOpenChange, initial, coaches }: Pro
           </div>
           <div className="grid grid-cols-2 gap-3">
             <ClassFieldRow label="Duración (min)">
-              <Input
-                type="number"
+              <NumberInput
                 min={15}
                 step={15}
                 value={duration}
@@ -151,8 +151,7 @@ export function TemplateFormDialog({ open, onOpenChange, initial, coaches }: Pro
               />
             </ClassFieldRow>
             <ClassFieldRow label="Aforo">
-              <Input
-                type="number"
+              <NumberInput
                 min={1}
                 value={capacity}
                 onChange={(e) => setCapacity(Number(e.target.value))}

@@ -24,6 +24,7 @@ import { PAYMENT_METHOD_LABEL } from "@/types";
 import { toDateKey } from "@/lib/date";
 import { registerPayment } from "@/lib/services/membership.service";
 import { notifyDataChanged } from "@/lib/data-bus";
+import { NumberInput } from "@/components/ui/number-input";
 
 interface Props {
   open: boolean;
@@ -79,8 +80,7 @@ export function PaymentDialog({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Importe ({currencySymbol()})</Label>
-              <Input
-                type="number"
+              <NumberInput
                 min={0}
                 step="0.01"
                 value={amount}

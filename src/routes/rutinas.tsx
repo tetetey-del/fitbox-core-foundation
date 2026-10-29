@@ -48,6 +48,7 @@ import { programsRepo, programAssignmentsRepo, programProgressRepo } from "@/lib
 import type { Program, ProgramSession, WodBlock, WodBlockType } from "@/types";
 import { PROGRAM_LEVEL_LABEL, WOD_BLOCK_LABEL } from "@/types";
 import { DAY_LABELS } from "@/lib/date";
+import { NumberInput } from "@/components/ui/number-input";
 
 export const Route = createFileRoute("/rutinas")({
   head: () => ({ meta: [{ title: "Rutinas — Kinflow" }] }),
@@ -479,7 +480,7 @@ function ProgramEditorDialog({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Semanas</Label>
-              <Input type="number" min={1} value={weeks} onChange={(e) => setWeeks(Number(e.target.value))} />
+              <NumberInput min={1} value={weeks} onChange={(e) => setWeeks(Number(e.target.value))} />
             </div>
             <div>
               <Label>Nivel</Label>
@@ -585,7 +586,7 @@ function SessionEditor({
         </div>
         <div>
           <Label className="text-xs">Día</Label>
-          <Input type="number" min={1} max={7} value={day} onChange={(e) => setDay(Number(e.target.value))} />
+          <NumberInput min={1} max={7} value={day} onChange={(e) => setDay(Number(e.target.value))} />
         </div>
       </div>
       {blocks.map((b, i) => (

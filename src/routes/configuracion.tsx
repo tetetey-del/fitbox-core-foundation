@@ -53,6 +53,7 @@ import { DataSection } from "@/components/config/DataSection";
 import { AppearanceSection } from "@/components/config/AppearanceSection";
 import { AppLinkSection } from "@/components/config/AppLinkSection";
 import { ModulesSection } from "@/components/config/ModulesSection";
+import { NumberInput } from "@/components/ui/number-input";
 
 
 export const Route = createFileRoute("/configuracion")({ component: ConfigPage });
@@ -126,8 +127,7 @@ function ConfigPage() {
                 <Label className="text-xs text-muted-foreground">
                   Cancelar sin cargo hasta (horas antes de la clase)
                 </Label>
-                <Input
-                  type="number"
+                <NumberInput
                   min={0}
                   value={cancellationWindow}
                   onChange={(e) => setCancellationWindow(Number(e.target.value))}
@@ -408,14 +408,12 @@ function PlanDialog({
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">
-                Precio por período ({currencySymbol()}, 0 = gratis)
-              </Label>
-              <Input
-                type="number"
+              <Label className="text-xs text-muted-foreground">Precio ({currencySymbol()})</Label>
+              <NumberInput
                 min={0}
                 step="0.01"
                 value={price}
+                placeholder="0 = gratis"
                 onChange={(e) => setPrice(Number(e.target.value))}
               />
             </div>
@@ -436,8 +434,7 @@ function PlanDialog({
           {type === "credits" && (
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Créditos por mes</Label>
-              <Input
-                type="number"
+              <NumberInput
                 min={1}
                 value={credits}
                 onChange={(e) => setCredits(Number(e.target.value))}

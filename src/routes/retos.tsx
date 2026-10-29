@@ -38,6 +38,7 @@ import {
 import type { Challenge } from "@/types";
 import { toDateKey, addDays, formatDate } from "@/lib/date";
 import { formatPrValue } from "@/lib/format";
+import { NumberInput } from "@/components/ui/number-input";
 
 export const Route = createFileRoute("/retos")({
   head: () => ({ meta: [{ title: "Retos — Kinflow" }] }),
@@ -358,8 +359,7 @@ function ChallengeFormDialog({
           {type === "attendance" ? (
             <div>
               <Label>Meta de asistencias</Label>
-              <Input
-                type="number"
+              <NumberInput
                 min={1}
                 value={attendGoal}
                 onChange={(e) => setAttendGoal(Number(e.target.value))}
