@@ -4,6 +4,7 @@
  * la landing pública de aceptación, y crear el usuario + membresía en la
  * aceptación. Marca invitaciones caducadas como tal.
  */
+import { publicOrigin } from "@/config/app";
 import type { Invitation, InvitationStatus } from "@/types";
 import {
   invitationsRepoFor,
@@ -153,7 +154,7 @@ export async function acceptInvitation(input: AcceptInvitationInput) {
 
 export function buildInvitationLink(code: string): string {
   if (typeof window === "undefined") return `/invitacion/${code}`;
-  return `${window.location.origin}/invitacion/${code}`;
+  return `${publicOrigin()}/invitacion/${code}`;
 }
 
 /** Marca automáticamente como expiradas las invitaciones vencidas de un tenant. */
