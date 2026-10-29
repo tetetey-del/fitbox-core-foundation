@@ -39,13 +39,16 @@ export function RecurringSessionsDialog({ open, onOpenChange, templates, coaches
   const [coachId, setCoachId] = useState<string>("");
   const [capacity, setCapacity] = useState<number>(12);
 
+  // Solo al abrir el diálogo se elige la primera plantilla. Antes se reiniciaba cada vez que
+  // llegaban datos nuevos y terminaba generando sesiones de la primera plantilla.
   useEffect(() => {
     if (open && templates[0]) {
       setTemplateId(templates[0].id);
       setCapacity(templates[0].defaultCapacity);
       setCoachId(templates[0].defaultCoachId ?? "");
     }
-  }, [open, templates]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   useEffect(() => {
     const t = templates.find((x) => x.id === templateId);
@@ -77,10 +80,10 @@ export function RecurringSessionsDialog({ open, onOpenChange, templates, coaches
       capacity,
       durationMinutes: t.durationMinutes,
     });
-    toast.success(`${res.created.length} sesiones creadas`, {
+    toast.success(`${res.created.length} sesiones de ${t.name} creadas`, {
       description:
         res.skipped.length > 0
-          ? `${res.skipped.length} omitidas por coincidir con otras existentes`
+          ? `${res.skipped.length} omitidas: ya había una clase de ${t.name} ese día a esa hora`
           : undefined,
     });
     notifyDataChanged();
