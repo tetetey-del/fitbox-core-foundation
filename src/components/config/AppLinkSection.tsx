@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { tenantsRepo } from "@/lib/storage/repositories/tenants.repo";
 import { notifyDataChanged } from "@/lib/data-bus";
 import { boxLink, cleanSlug } from "@/lib/boxBrand";
+import { markLinkShared } from "@/components/dashboard/GettingStarted";
 import { isCloudSession } from "@/lib/cloud/bookings";
 import { sb } from "@/lib/cloud/client";
 import { BoxIcon } from "@/routes/login";
@@ -27,6 +28,7 @@ export function AppLinkSection() {
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(link);
+      markLinkShared(currentTenant.id);
       toast.success("Link copiado");
     } catch {
       toast.error("No se pudo copiar. Selecciónalo y cópialo a mano.");
@@ -51,7 +53,7 @@ export function AppLinkSection() {
   };
 
   return (
-    <section className="space-y-4 rounded-lg border border-border bg-card p-6">
+    <section id="link-app" className="scroll-mt-20 space-y-4 rounded-lg border border-border bg-card p-6">
       <div>
         <h2 className="flex items-center gap-2 text-base font-semibold">
           <Smartphone className="h-4 w-4" strokeWidth={1.75} style={{ color: "var(--brand)" }} />

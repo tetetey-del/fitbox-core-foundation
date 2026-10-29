@@ -33,7 +33,12 @@ function ClasesPage() {
   const templates = classTemplatesRepo.list();
   const coaches = tenantUsers.filter((u) => u.role === "coach" || u.role === "admin");
 
+  // Se puede abrir directo en una pestaña con #sesiones o #wod (por ejemplo, desde "Primeros pasos").
   const [tab, setTab] = useState<string>("plantillas");
+  useEffect(() => {
+    const h = window.location.hash.replace("#", "");
+    if (h === "wod" || h === "sesiones") setTab(h);
+  }, []);
   const [editing, setEditing] = useState<ClassTemplate | null>(null);
   const [creating, setCreating] = useState(false);
   const [generating, setGenerating] = useState(false);
