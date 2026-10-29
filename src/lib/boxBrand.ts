@@ -7,6 +7,7 @@
  * - iPhone usa `apple-touch-icon` y `apple-mobile-web-app-title` (se cambian acá).
  * - Android usa el manifest, que arma la función de Supabase `kf-manifest` para cada box.
  */
+import { publicOrigin } from "@/config/app";
 
 export interface BoxBrand {
   slug: string;
@@ -121,8 +122,7 @@ export function applyBoxBrand(brand: BoxBrand | null): void {
 
 /** Link que el box comparte con sus socios. */
 export function boxLink(slug: string): string {
-  const origin = typeof window === "undefined" ? "https://kinflowapp.vercel.app" : window.location.origin;
-  return `${origin}/b/${slug}`;
+  return `${publicOrigin()}/b/${slug}`;
 }
 
 /** Dirección válida: minúsculas, números y guiones (3 a 40 caracteres). */

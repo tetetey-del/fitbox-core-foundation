@@ -14,7 +14,7 @@ export const Route = createFileRoute("/b/$slug")({
 });
 
 /**
- * Link propio de cada box: kinflowapp.vercel.app/b/<dirección>.
+ * Link propio de cada box: kinflow.es/b/<dirección>.
  * Quien entra por acá ve el logo y el nombre del box, y si instala la app queda con su marca.
  */
 function BoxLandingPage() {
