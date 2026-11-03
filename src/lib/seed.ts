@@ -31,7 +31,7 @@ const DEMO_CLEARED_KEY = buildKey(null, "demo_cleared");
 const DEMO_VERSION_KEY = buildKey(null, "demo_version");
 const DEMO_VERSION = 10;
 /** Boxes de demos anteriores que se borran al actualizar: FitBox (v1) y versiones previas de Chia (v2 a v6). */
-const OLD_DEMO_SLUGS = ["crossfit-norte", "box-sur", "chia-training"];
+const OLD_DEMO_SLUGS = ["crossfit-norte", "box-sur", "chia-training", "ritmo-crossfit", "bora-crossfit"];
 const OLD_SUPERADMIN_EMAILS = ["isaac@fitbox.io"];
 
 export interface SeedResult {
@@ -137,13 +137,14 @@ function chiaMemberDefs(): ChiaMemberDef[] {
   const pick = <T,>(list: T[]) => list[Math.floor(rnd() * list.length)];
   const extra: ChiaMemberDef[] = [];
   for (let i = 0; i < EXTRA_MEMBERS; i++) {
-    const first = FIRST_NAMES[i % FIRST_NAMES.length];
-    const last = LAST_NAMES[(i * 7 + 3) % LAST_NAMES.length];
-    const plan = pick(PLAN_MIX);
-    const months = CHIA_PLANS.find((p) => p.key === plan)?.months ?? 1;
-    const t1 = pick(CLASS_TIMES);
-    let t2 = pick(CLASS_TIMES);
-    if (t2 === t1) t2 = CLASS_TIMES[(CLASS_TIMES.indexOf(t1) + 1) % CLASS_TIMES.length];
+    const first = P.firstNames[i % P.firstNames.length];
+    const last = P.lastNames[(i * 7 + 3) % P.lastNames.length];
+    const plan = pick(P.planMix ?? PLAN_MIX);
+    const months = P.plans.find((p) => p.key === plan)?.months ?? 1;
+    const times = P.classTimes ?? CLASS_TIMES;
+    const t1 = pick(times);
+    let t2 = pick(times);
+    if (t2 === t1) t2 = times[(times.indexOf(t1) + 1) % times.length];
     extra.push({
       name: `${first} ${last}`,
       email: `${slugify(first)}.${slugify(last)}${i}@ejemplo.com`,
@@ -154,43 +155,297 @@ function chiaMemberDefs(): ChiaMemberDef[] {
       joinedDaysAgo: rnd() < 0.08 ? Math.floor(rnd() * 20) : 30 + Math.floor(rnd() * 700),
     });
   }
-  return [...CHIA_MEMBERS.map((m, i) => ({ ...m, joinedDaysAgo: m.joinedDaysAgo ?? 40 + i * 37 })), ...extra];
+  return [...P.members.map((m, i) => ({ ...m, joinedDaysAgo: m.joinedDaysAgo ?? 40 + i * 37 })), ...extra];
 }
 
 const DEMO_STREETS = ["C/ Sindicat", "C/ Blanquerna", "Av. Argentina", "C/ Fábrica", "C/ Manacor", "Passeig Mallorca", "C/ Aragó", "C/ Pere Garau"];
 const DEMO_EMERGENCY = ["Graciela (madre)", "Jorge (padre)", "Pablo (pareja)", "Laura (hermana)", "Diego (hermano)", "Marta (pareja)"];
 
+type DemoPost = { type: PostType; title: string; content: string; pinned?: boolean; daysAgo: number };
+type DemoProduct = { name: string; description: string; price: number; category: "ropa" | "accesorios" | "suplementacion"; stock: number };
+type DemoPlan = (typeof CHIA_PLANS)[number];
+
+/** Versión de la demo por país: textos, nombres, precios y moneda. La app es la misma. */
+interface DemoProfile {
+  country: "es" | "ar";
+  name: string;
+  brandColor: string;
+  themeId: ThemeId;
+  currency: "EUR" | "ARS";
+  timezone: string;
+  owner: { name: string; email: string };
+  coaches: { key: string; name: string; email: string }[];
+  plans: DemoPlan[];
+  members: ChiaMemberDef[];
+  firstNames: string[];
+  lastNames: string[];
+  streets: string[];
+  city: string;
+  emergency: string[];
+  phone: (i: number, variant: number) => string;
+  idDoc: (i: number) => string;
+  posts: DemoPost[];
+  shop: DemoProduct[];
+  challenges: { attendance: { title: string; description: string }; fran: { title: string; description: string } };
+  /** Horarios y planes para los socios generados (si no, los de España). */
+  classTimes?: string[];
+  planMix?: string[];
+  /** Plantillas y horario propios del box (si no, el horario estándar de la demo). */
+  templates?: DemoTemplate[];
+  weekday?: (d: number) => DemoSlot[];
+  saturday?: DemoSlot[];
+}
+
+type DemoTemplate = {
+  key: string;
+  name: string;
+  type: ClassTemplate["type"];
+  durationMinutes: number;
+  defaultCapacity: number;
+  color: string;
+  /** Índice del coach (0, 1, 2) que da la clase por defecto. */
+  coach?: number;
+};
+type DemoSlot = { time: string; tpl: string; coach?: number; minutes?: number };
+
+const ES_POSTS: DemoPost[] = [
+  { type: "aviso", title: "¡Bienvenidos a la app de Chia!", content: "Desde ahora reservas tus clases, ves tus marcas y te enteras de todo desde aquí. Instálala en el móvil: menú del navegador → Añadir a pantalla de inicio. ¡Nos vemos en el box!", pinned: true, daysAgo: 0 },
+  { type: "aviso", title: "Festivo del lunes: horario especial", content: "El lunes abrimos de 9 a 13 con CrossFit a las 9, Funcional a las 10 y Open Box de 11 a 13. El martes volvemos al horario de siempre.", daysAgo: 1 },
+  { type: "aviso", title: "Nuevo Open Box de mediodía", content: "Añadimos Open Box de 12 a 14 de lunes a viernes para que entrenes a tu ritmo. Reserva tu plaza desde la app.", daysAgo: 3 },
+  { type: "consejo", title: "Movilidad: 10 minutos que cambian tu sentadilla", content: "1) 2 min de tobillo contra la pared. 2) 2 min de 90/90 de cadera. 3) 2 min de sentadilla profunda con apoyo. 4) 2 min de apertura torácica. 5) 2 min de hombros con banda. Hazlo antes de cada clase de Halterofilia.", daysAgo: 5 },
+  { type: "receta", title: "Batido post entreno", content: "300 ml de leche, 1 plátano, 2 cucharadas de avena, 1 cucharada de crema de cacahuete y canela. Bátelo y tómatelo en la media hora después del WOD.", daysAgo: 8 },
+  { type: "wod", title: "Benchmark del mes: Cindy", content: "AMRAP 20 min: 5 pull-ups, 10 push-ups, 15 air squats. Apunta tus rondas en la app para el ranking del mes.", daysAgo: 12 },
+];
+const ES_SHOP: DemoProduct[] = [
+  { name: "Camiseta Chia", description: "Camiseta técnica con logo, tallas S a XL.", price: 25, category: "ropa", stock: 30 },
+  { name: "Muñequeras", description: "Par de muñequeras negras.", price: 12, category: "accesorios", stock: 20 },
+  { name: "Magnesio líquido", description: "Frasco de 250 ml.", price: 9, category: "accesorios", stock: 15 },
+  { name: "Proteína whey 1 kg", description: "Sabor chocolate.", price: 35, category: "suplementacion", stock: 10 },
+  { name: "Botella 750 ml", description: "Botella de acero inoxidable.", price: 15, category: "accesorios", stock: 8 },
+  { name: "Sudadera Chia", description: "Sudadera negra con logo bordado.", price: 45, category: "ropa", stock: 12 },
+];
+const DEMO_ES: DemoProfile = {
+  country: "es",
+  name: CHIA.name,
+  brandColor: CHIA.brandColor,
+  themeId: CHIA.themeId,
+  currency: "EUR",
+  timezone: "Europe/Madrid",
+  owner: CHIA.owner,
+  coaches: CHIA.coaches,
+  plans: CHIA_PLANS,
+  members: CHIA_MEMBERS,
+  firstNames: FIRST_NAMES,
+  lastNames: LAST_NAMES,
+  streets: DEMO_STREETS,
+  city: "Palma",
+  emergency: DEMO_EMERGENCY,
+  phone: (i, v) =>
+    v === 0
+      ? `+34 6${String(10 + ((i * 37) % 89)).padStart(2, "0")} ${String(100 + ((i * 53) % 899))} ${String(100 + ((i * 71) % 899))}`
+      : `+34 6${String(20 + ((i * 13) % 79))} ${String(200 + ((i * 17) % 799))} ${String(300 + ((i * 19) % 699))}`,
+  idDoc: (i) => {
+    const letters = "TRWAGMYFPDXBNJZSQVHLCKE";
+    const num = 40000000 + i * 1234567;
+    return `${num}${letters[num % 23]}`;
+  },
+  posts: ES_POSTS,
+  shop: ES_SHOP,
+  challenges: {
+    attendance: { title: "12 clases este mes", description: "Ven al box 12 veces durante el reto y llévate la insignia." },
+    fran: { title: "Baja tu Fran", description: "Registra tu mejor Fran, RX o escalado, durante el reto." },
+  },
+};
+
+// ---- Demo de Argentina: Ritmo CrossFit (en pesos, con "vos"). Precios de referencia de Córdoba, fines de 2026. ----
+
+const DEMO_AR: DemoProfile = {
+  country: "ar",
+  name: "Ritmo CrossFit",
+  brandColor: "#14B8A6",
+  themeId: "flow" as ThemeId,
+  currency: "ARS",
+  timezone: "America/Argentina/Cordoba",
+  owner: { name: "Valeria Sosa", email: "valeria.ar@kinflow.app" },
+  coaches: [
+    { key: "lucas", name: "Nico", email: "nico.ar@kinflow.app" },
+    { key: "ana", name: "Flor", email: "flor.ar@kinflow.app" },
+    { key: "paula", name: "Juli", email: "juli.ar@kinflow.app" },
+  ],
+  plans: [
+    { key: "prueba", name: "Clase de prueba", price: 0, type: "credits", credits: 1, perWeek: 1, once: true },
+    { key: "suelta", name: "Clase suelta", price: 8000, type: "credits", credits: 1, perWeek: 1 },
+    { key: "8", name: "8 clases · 2 por semana", price: 30000, type: "credits", credits: 8, perWeek: 2 },
+    { key: "12", name: "12 clases · 3 por semana", price: 36000, type: "credits", credits: 12, perWeek: 3 },
+    { key: "16", name: "16 clases · 4 por semana", price: 41000, type: "credits", credits: 16, perWeek: 4 },
+    { key: "libre", name: "Pase libre", price: 46000, type: "unlimited", perWeek: 5, programs: true },
+    { key: "semestral", name: "Pase libre semestral (-10%)", price: 248400, type: "unlimited", months: 6, perWeek: 5, programs: true },
+    { key: "anual", name: "Pase libre anual (-15%)", price: 469200, type: "unlimited", months: 12, perWeek: 5, programs: true },
+  ],
+  members: [
+    { name: "Sofía Romero", email: "sofi.ar@kinflow.app", plan: "12", times: ["19:00", "18:00"], startedDaysAgo: 24, method: "transferencia" },
+    { name: "Martín Gómez", email: "martin.ar@kinflow.app", plan: "libre", times: ["07:00", "06:00"], startedDaysAgo: 10, method: "transferencia" },
+    { name: "Valentina López", email: "valen.ar@kinflow.app", plan: "8", times: ["08:00", "17:00"], startedDaysAgo: 27, method: "efectivo" },
+    { name: "Juan Pablo Ríos", email: "juanpi.ar@kinflow.app", plan: "semestral", times: ["18:00", "20:00"], startedDaysAgo: 60, method: "transferencia" },
+    { name: "Camila Fernández", email: "cami.ar@kinflow.app", plan: "16", times: ["09:00", "10:00"], startedDaysAgo: 14, method: "tarjeta" },
+    { name: "Tomás Herrera", email: "tomas.ar@kinflow.app", plan: "anual", times: ["06:00", "12:00"], startedDaysAgo: 120, method: "transferencia" },
+    { name: "Lucía Benítez", email: "lucia.ar@kinflow.app", plan: "12", times: ["17:00", "19:00"], startedDaysAgo: 5, method: "efectivo" },
+    { name: "Facundo Acosta", email: "facu.ar@kinflow.app", plan: "libre", times: ["19:00", "20:00"], startedDaysAgo: 18, method: "tarjeta" },
+    { name: "Florencia Paz", email: "flopaz.ar@kinflow.app", plan: "8", times: ["10:00", "09:00"], startedDaysAgo: 2, method: "transferencia" },
+    { name: "Agustín Molina", email: "agus.ar@kinflow.app", plan: "16", times: ["07:00", "18:00"], startedDaysAgo: 21, method: "transferencia" },
+    { name: "Micaela Castro", email: "mica.ar@kinflow.app", plan: "12", times: ["08:00", "17:00"], startedDaysAgo: 29, method: "efectivo" },
+    { name: "Federico Ruiz", email: "fede.ar@kinflow.app", plan: "libre", times: ["12:00", "18:00"], startedDaysAgo: 8, method: "tarjeta" },
+    { name: "Rocío Vera", email: "rocio.ar@kinflow.app", plan: "prueba", times: ["19:00"], startedDaysAgo: 1, method: "efectivo", joinedDaysAgo: 1 },
+    { name: "Gastón Medina", email: "gaston.ar@kinflow.app", plan: "suelta", times: ["12:00"], startedDaysAgo: 3, method: "efectivo", joinedDaysAgo: 3 },
+  ],
+  firstNames: ["Juli", "Mateo", "Carolina", "Santiago", "Rocío", "Facundo", "Paz", "Ignacio", "Milagros", "Gonzalo", "Antonella", "Joaquín", "Brenda", "Matías", "Victoria", "Lautaro", "Daniela", "Franco", "Josefina", "Ezequiel", "Carla", "Emiliano", "Belén", "Ramiro", "Aldana", "Bruno", "Celina", "Maximiliano", "Lourdes", "Diego"],
+  lastNames: ["Pereyra", "Quiroga", "Vega", "Romero", "Suárez", "Aguirre", "Medina", "Navarro", "Paz", "Ojeda", "Cabrera", "Domínguez", "Giménez", "Luna", "Ibarra", "Correa", "Ledesma", "Villalba", "Godoy", "Bustos"],
+  streets: ["Bv. San Juan", "Av. Colón", "Obispo Trejo", "Av. Hipólito Yrigoyen", "Belgrano", "Independencia", "Av. Vélez Sarsfield", "Rondeau"],
+  city: "Córdoba",
+  emergency: ["Graciela (mamá)", "Jorge (papá)", "Pablo (pareja)", "Laura (hermana)", "Diego (hermano)", "Marta (pareja)"],
+  phone: (i, v) =>
+    v === 0
+      ? `+54 9 351 ${String(400 + ((i * 53) % 599))}-${String(1000 + ((i * 71) % 8999))}`
+      : `+54 9 351 ${String(500 + ((i * 17) % 499))}-${String(2000 + ((i * 19) % 7999))}`,
+  idDoc: (i) => String(30000000 + i * 1234567),
+  posts: [
+    { type: "aviso", title: "¡Bienvenidos a la app de Ritmo!", content: "Desde ahora reservás tus clases, ves tus marcas y te enterás de todo desde acá. Instalala en el celu: menú del navegador → Agregar a pantalla de inicio. ¡Nos vemos en el box!", pinned: true, daysAgo: 0 },
+    { type: "aviso", title: "Feriado del lunes: horario especial", content: "El lunes abrimos de 9 a 13 con CrossFit a las 9, Funcional a las 10 y Open Box de 11 a 13. El martes volvemos al horario de siempre.", daysAgo: 1 },
+    { type: "aviso", title: "Nuevo Open Box al mediodía", content: "Sumamos Open Box de 12 a 14 de lunes a viernes para que entrenes a tu ritmo. Reservá tu lugar desde la app.", daysAgo: 3 },
+    { type: "consejo", title: "Movilidad: 10 minutos que cambian tu sentadilla", content: "1) 2 min de tobillo contra la pared. 2) 2 min de 90/90 de cadera. 3) 2 min de sentadilla profunda con apoyo. 4) 2 min de apertura torácica. 5) 2 min de hombros con banda. Hacelo antes de cada clase de Halterofilia.", daysAgo: 5 },
+    { type: "receta", title: "Licuado post entreno", content: "300 ml de leche, 1 banana, 2 cucharadas de avena, 1 cucharada de mantequilla de maní y canela. Licuá y tomalo dentro de la media hora después del WOD.", daysAgo: 8 },
+    { type: "wod", title: "Benchmark del mes: Cindy", content: "AMRAP 20 min: 5 pull-ups, 10 push-ups, 15 air squats. Anotá tus rondas en la app para el ranking del mes.", daysAgo: 12 },
+  ],
+  shop: [
+    { name: "Remera Ritmo", description: "Remera técnica con logo, talles S a XL.", price: 25000, category: "ropa", stock: 30 },
+    { name: "Muñequeras", description: "Par de muñequeras negras.", price: 9000, category: "accesorios", stock: 20 },
+    { name: "Magnesio líquido", description: "Frasco de 250 ml.", price: 7000, category: "accesorios", stock: 15 },
+    { name: "Proteína whey 1 kg", description: "Sabor chocolate.", price: 45000, category: "suplementacion", stock: 10 },
+    { name: "Botella 750 ml", description: "Botella de acero inoxidable.", price: 12000, category: "accesorios", stock: 8 },
+    { name: "Buzo Ritmo", description: "Buzo negro con logo bordado.", price: 45000, category: "ropa", stock: 12 },
+  ],
+  challenges: {
+    attendance: { title: "12 clases este mes", description: "Vení al box 12 veces durante el reto y llevate la insignia." },
+    fran: { title: "Bajá tu Fran", description: "Registrá tu mejor Fran, RX o escalado, durante el reto." },
+  },
+};
+
+// ---- Demo personalizada para BORA (General Pico, La Pampa): sus clases, horarios, planes y color. ----
+
+const BORA_TIME: Record<string, string> = {
+  "06:00": "13:00", "07:00": "14:00", "08:00": "15:00", "09:00": "16:00", "10:00": "18:00",
+  "12:00": "13:00", "17:00": "17:00", "18:00": "18:00", "19:00": "19:00", "20:00": "20:00",
+};
+const BORA_PLAN: Record<string, string> = {
+  prueba: "prueba", suelta: "prueba", "8": "8", "12": "12", "16": "libre", libre: "libre", semestral: "libre", anual: "online",
+};
+
+const DEMO_BORA: DemoProfile = {
+  ...DEMO_AR,
+  name: "BORA CrossFit",
+  brandColor: "#DDDE00",
+  themeId: "dark-carbon" as ThemeId,
+  timezone: "America/Argentina/Buenos_Aires",
+  owner: { name: "Pau", email: "pau.bora@kinflow.app" },
+  coaches: [
+    { key: "lucas", name: "Nico", email: "nico.bora@kinflow.app" },
+    { key: "ana", name: "Flor", email: "flor.bora@kinflow.app" },
+    { key: "paula", name: "Juli", email: "juli.bora@kinflow.app" },
+  ],
+  plans: [
+    { key: "prueba", name: "Clase de prueba", price: 0, type: "credits", credits: 1, perWeek: 1, once: true },
+    { key: "8", name: "2 veces por semana", price: 28000, type: "credits", credits: 8, perWeek: 2 },
+    { key: "12", name: "3 veces por semana", price: 34000, type: "credits", credits: 12, perWeek: 3 },
+    { key: "libre", name: "Libre", price: 40000, type: "unlimited", perWeek: 5, programs: true },
+    { key: "online", name: "Plan personalizado online", price: 22000, type: "credits", credits: 0, perWeek: 0, programs: true },
+  ],
+  members: DEMO_AR.members.map((m) => ({
+    ...m,
+    email: m.email.replace(".ar@", ".bora@"),
+    plan: BORA_PLAN[m.plan] ?? "12",
+    times: m.times.map((t) => BORA_TIME[t] ?? "19:00"),
+  })),
+  classTimes: ["13:00", "14:00", "15:00", "16:00", "18:00", "18:00", "19:00", "19:00", "20:00", "21:00"],
+  planMix: ["8", "8", "12", "12", "12", "12", "libre", "libre", "libre", "online"],
+  streets: ["Calle 105", "Calle 24", "Calle 22", "Calle 15", "Calle 20", "Av. San Martín", "Calle 9", "Calle 17"],
+  city: "General Pico",
+  phone: (i, v) =>
+    v === 0
+      ? `+54 9 2302 ${String(40 + ((i * 53) % 59))}-${String(1000 + ((i * 71) % 8999))}`
+      : `+54 9 2302 ${String(50 + ((i * 17) % 49))}-${String(2000 + ((i * 19) % 7999))}`,
+  posts: [
+    { type: "aviso", title: "¡Bienvenidos a la app de BORA!", content: "Desde ahora reservás tus clases, ves tus marcas y te enterás de todo desde acá. Instalala en el celu: menú del navegador → Agregar a pantalla de inicio. ¡Nos vemos en el box!", pinned: true, daysAgo: 0 },
+    { type: "aviso", title: "BORA cumple 10 años 🎉", content: "Lo festejamos con un WOD por equipos, música y algo rico después. Anotate en recepción o avisanos por WhatsApp. ¡Traé a quien quieras!", pinned: true, daysAgo: 1 },
+    { type: "aviso", title: "Adultos: martes y jueves a las 10", content: "Entrenamiento adaptado, seguro y acompañado. Si tenés familiares o amigos que quieren arrancar, esta es la clase ideal.", daysAgo: 3 },
+    { type: "aviso", title: "Open Box", content: "De lunes a viernes a las 17 y los sábados a las 10, el box está a tu disposición para entrenar a tu ritmo. Reservá tu lugar desde la app.", daysAgo: 4 },
+    { type: "consejo", title: "Movilidad: 10 minutos que cambian tu sentadilla", content: "1) 2 min de tobillo contra la pared. 2) 2 min de 90/90 de cadera. 3) 2 min de sentadilla profunda con apoyo. 4) 2 min de apertura torácica. 5) 2 min de hombros con banda. Hacelo antes de cada clase.", daysAgo: 6 },
+    { type: "wod", title: "Benchmark del mes: Cindy", content: "AMRAP 20 min: 5 pull-ups, 10 push-ups, 15 air squats. Anotá tus rondas en la app para el ranking del mes.", daysAgo: 12 },
+  ],
+  shop: [
+    { name: "Remera BORA 10 años", description: "Remera técnica edición aniversario, talles S a XL.", price: 25000, category: "ropa", stock: 30 },
+    { name: "Buzo BORA", description: "Buzo negro con logo bordado.", price: 45000, category: "ropa", stock: 12 },
+    { name: "Muñequeras", description: "Par de muñequeras negras.", price: 9000, category: "accesorios", stock: 20 },
+    { name: "Magnesio líquido", description: "Frasco de 250 ml.", price: 7000, category: "accesorios", stock: 15 },
+    { name: "Proteína whey 1 kg", description: "Sabor chocolate.", price: 45000, category: "suplementacion", stock: 10 },
+    { name: "Botella 750 ml", description: "Botella de acero inoxidable.", price: 12000, category: "accesorios", stock: 8 },
+  ],
+  templates: [
+    { key: "crossfit", name: "CrossFit", type: "wod", durationMinutes: 60, defaultCapacity: 15, color: "#DDDE00", coach: 0 },
+    { key: "funcional", name: "Funcional", type: "funcional", durationMinutes: 60, defaultCapacity: 15, color: "#A3E635", coach: 2 },
+    { key: "adultos", name: "Adultos", type: "otro", durationMinutes: 60, defaultCapacity: 10, color: "#38BDF8", coach: 2 },
+    { key: "openbox", name: "Open Box", type: "open_box", durationMinutes: 60, defaultCapacity: 15, color: "#94A3B8" },
+  ],
+  // Horario de BORA: L a V de 13 a 21 (Adultos martes y jueves a las 10) y sábados Open Box a las 10.
+  weekday: (d) => [
+    ...(d === 1 || d === 3 ? [{ time: "10:00", tpl: "adultos", coach: 2 }] : []),
+    { time: "13:00", tpl: "crossfit", coach: 1 },
+    { time: "14:00", tpl: "crossfit", coach: 1 },
+    { time: "15:00", tpl: "funcional", coach: 2 },
+    { time: "16:00", tpl: "crossfit", coach: 0 },
+    { time: "17:00", tpl: "openbox" },
+    { time: "18:00", tpl: "crossfit", coach: 0 },
+    { time: "19:00", tpl: "crossfit", coach: 1 },
+    { time: "20:00", tpl: "crossfit", coach: 0 },
+    { time: "21:00", tpl: "crossfit", coach: 1 },
+  ],
+  saturday: [{ time: "10:00", tpl: "openbox" }],
+};
+
+/** Perfiles de demo por clave (para las páginas /demo, /demo/ar y /demo/bora). */
+export type DemoKey = "es" | "ar" | "bora";
+
+/** Perfil de la demo que se está armando (España por defecto). */
+let P: DemoProfile = DEMO_ES;
+
 /** Datos de ficha inventados pero coherentes para el socio número i. */
 function demoProfile(i: number, named: boolean): UserProfile {
-  const phone = `+34 6${String(10 + ((i * 37) % 89)).padStart(2, "0")} ${String(100 + ((i * 53) % 899))} ${String(100 + ((i * 71) % 899))}`;
+  const phone = P.phone(i, 0);
   if (i === 0) return { phone };
   const year = 1975 + ((i * 7) % 30);
   const month = String(1 + ((i * 5) % 12)).padStart(2, "0");
   const day = String(1 + ((i * 11) % 28)).padStart(2, "0");
   const base: UserProfile = { phone, birthDate: `${year}-${month}-${day}` };
   if (!named) return base;
-  const letters = "TRWAGMYFPDXBNJZSQVHLCKE";
-  const num = 40000000 + i * 1234567;
   return {
     ...base,
-    dni: `${num}${letters[num % 23]}`,
-    address: `${DEMO_STREETS[i % DEMO_STREETS.length]} ${3 + ((i * 9) % 60)}, Palma`,
-    emergencyName: DEMO_EMERGENCY[i % DEMO_EMERGENCY.length],
-    emergencyPhone: `+34 6${String(20 + ((i * 13) % 79))} ${String(200 + ((i * 17) % 799))} ${String(300 + ((i * 19) % 699))}`,
+    dni: P.idDoc(i),
+    address: `${P.streets[i % P.streets.length]} ${3 + ((i * 9) % 60)}, ${P.city}`,
+    emergencyName: P.emergency[i % P.emergency.length],
+    emergencyPhone: P.phone(i, 1),
   };
 }
 
 function createChiaTenant(): SeedResult {
   const tenant = tenantsRepo.create({
-    name: CHIA.name,
-    slug: slugify(CHIA.name),
-    brandColor: CHIA.brandColor,
-    themeId: CHIA.themeId,
+    name: P.name,
+    slug: slugify(P.name),
+    brandColor: P.brandColor,
+    themeId: P.themeId,
     status: "active",
-    settings: { cancellationWindowHours: 1, enabledModules: DEFAULT_MODULES, currency: "EUR" },
+    settings: { cancellationWindowHours: 1, enabledModules: DEFAULT_MODULES, currency: P.currency, timezone: P.timezone },
   });
-  const owner = createUserInTenant(tenant.id, { ...CHIA.owner, role: "admin" });
-  const coaches = CHIA.coaches.map((c) => createUserInTenant(tenant.id, { name: c.name, email: c.email, role: "coach" }));
+  const owner = createUserInTenant(tenant.id, { ...P.owner, role: "admin" });
+  const coaches = P.coaches.map((c) => createUserInTenant(tenant.id, { name: c.name, email: c.email, role: "coach" }));
   const defs = chiaMemberDefs();
   const members = defs.map((m) => createUserInTenant(tenant.id, { name: m.name, email: m.email, role: "member" }));
   // Fecha de alta realista: la mayoría son socios de hace meses.
@@ -259,22 +514,11 @@ function removeOldDemo(): void {
   }
 }
 
-async function seedAsync(): Promise<void> {
-  const demoHash = await hashPassword("demo1234");
-
-  // Super admin de la plataforma (la dueña de Kinflow)
-  // Navegadores con la demo vieja: el admin de la plataforma ya no lleva un nombre real.
-  const oldAdmin = superAdminsStore.list().find((a) => a.email === "admin@kinflow.app" && a.name !== "Equipo Kinflow");
-  if (oldAdmin) superAdminsStore.update(oldAdmin.id, { name: "Equipo Kinflow" });
-  if (!superAdminsStore.list().some((a) => a.email === "admin@kinflow.app")) {
-    superAdminsStore.create({
-      name: "Equipo Kinflow",
-      email: "admin@kinflow.app",
-      passwordHash: demoHash,
-    });
-  }
-
-  if (!tenantsRepo.list().some((t) => t.slug === slugify(CHIA.name))) {
+/** Arma el box de demo de un país (si no existe todavía). */
+function seedDemoTenant(profile: DemoProfile, demoHash: string): void {
+  if (tenantsRepo.list().some((t) => t.slug === slugify(profile.name))) return;
+  P = profile;
+  try {
     const chia = createChiaTenant();
     applyPasswordToUsers(chia.tenant.id, demoHash);
     seedClassesFor(chia);
@@ -293,7 +537,35 @@ async function seedAsync(): Promise<void> {
       role: "member",
       email: "invitado@ejemplo.com",
     });
+  } finally {
+    P = DEMO_ES;
   }
+}
+
+/** Para las páginas /demo/ar y /demo/bora: arma (si hace falta) ese box de demo. */
+export async function ensureDemoProfileReady(key: DemoKey): Promise<void> {
+  await ensureDemoReady();
+  if (key === "es") return;
+  seedDemoTenant(key === "ar" ? DEMO_AR : DEMO_BORA, await hashPassword("demo1234"));
+  notifyDataChanged();
+}
+
+async function seedAsync(): Promise<void> {
+  const demoHash = await hashPassword("demo1234");
+
+  // Super admin de la plataforma (la dueña de Kinflow)
+  // Navegadores con la demo vieja: el admin de la plataforma ya no lleva un nombre real.
+  const oldAdmin = superAdminsStore.list().find((a) => a.email === "admin@kinflow.app" && a.name !== "Equipo Kinflow");
+  if (oldAdmin) superAdminsStore.update(oldAdmin.id, { name: "Equipo Kinflow" });
+  if (!superAdminsStore.list().some((a) => a.email === "admin@kinflow.app")) {
+    superAdminsStore.create({
+      name: "Equipo Kinflow",
+      email: "admin@kinflow.app",
+      passwordHash: demoHash,
+    });
+  }
+
+  seedDemoTenant(DEMO_ES, demoHash);
 
   set(SEEDED_KEY, true);
   set(DEMO_VERSION_KEY, DEMO_VERSION);
@@ -375,14 +647,7 @@ function seedFeedFor({ tenant, owner }: SeedResult) {
   const postsRepo = postsRepoFor(tenant.id);
   const today = new Date();
 
-  const items: Array<{ type: PostType; title: string; content: string; pinned?: boolean; daysAgo: number }> = [
-    { type: "aviso", title: "¡Bienvenidos a la app de Chia!", content: "Desde ahora reservas tus clases, ves tus marcas y te enteras de todo desde aquí. Instálala en el móvil: menú del navegador → Añadir a pantalla de inicio. ¡Nos vemos en el box!", pinned: true, daysAgo: 0 },
-    { type: "aviso", title: "Festivo del lunes: horario especial", content: "El lunes abrimos de 9 a 13 con CrossFit a las 9, Funcional a las 10 y Open Box de 11 a 13. El martes volvemos al horario de siempre.", daysAgo: 1 },
-    { type: "aviso", title: "Nuevo Open Box de mediodía", content: "Añadimos Open Box de 12 a 14 de lunes a viernes para que entrenes a tu ritmo. Reserva tu plaza desde la app.", daysAgo: 3 },
-    { type: "consejo", title: "Movilidad: 10 minutos que cambian tu sentadilla", content: "1) 2 min de tobillo contra la pared. 2) 2 min de 90/90 de cadera. 3) 2 min de sentadilla profunda con apoyo. 4) 2 min de apertura torácica. 5) 2 min de hombros con banda. Hazlo antes de cada clase de Halterofilia.", daysAgo: 5 },
-    { type: "receta", title: "Batido post entreno", content: "300 ml de leche, 1 plátano, 2 cucharadas de avena, 1 cucharada de crema de cacahuete y canela. Bátelo y tómatelo en la media hora después del WOD.", daysAgo: 8 },
-    { type: "wod", title: "Benchmark del mes: Cindy", content: "AMRAP 20 min: 5 pull-ups, 10 push-ups, 15 air squats. Apunta tus rondas en la app para el ranking del mes.", daysAgo: 12 },
-  ];
+  const items = P.posts;
 
   items.forEach((it) => {
     const post = postsRepo.create({
@@ -412,7 +677,7 @@ function seedClassesFor({ tenant, coaches, members }: SeedResult) {
 
   // Planes
   const plans = new Map<string, MembershipPlan>();
-  for (const p of CHIA_PLANS) {
+  for (const p of P.plans) {
     plans.set(
       p.key,
       plansRepo.create({
@@ -434,7 +699,7 @@ function seedClassesFor({ tenant, coaches, members }: SeedResult) {
   // Membresías y pagos
   defs.forEach((def, i) => {
     const user = members[i];
-    const planDef = CHIA_PLANS.find((p) => p.key === def.plan);
+    const planDef = P.plans.find((p) => p.key === def.plan);
     const plan = plans.get(def.plan);
     if (!user || !plan || !planDef) return;
     const months = planDef.months ?? 1;
@@ -446,7 +711,7 @@ function seedClassesFor({ tenant, coaches, members }: SeedResult) {
       startDate: toDateKey(start),
       endDate: toDateKey(addMonths(start, months)),
       status: "active",
-      creditsRemaining: plan.type === "credits" ? Math.max(1, Math.round((plan.creditsPerMonth ?? 0) * (1 - def.startedDaysAgo / 30))) : undefined,
+      creditsRemaining: plan.type === "credits" ? ((plan.creditsPerMonth ?? 0) === 0 ? 0 : Math.max(1, Math.round((plan.creditsPerMonth ?? 0) * (1 - def.startedDaysAgo / 30)))) : undefined,
     });
     // Pago del período actual y, en los mensuales, los anteriores desde que se hizo socio (hasta 6)
     const periods = months === 1 ? Math.max(1, Math.min(6, Math.ceil((def.joinedDaysAgo ?? 30) / 30))) : 1;
@@ -463,6 +728,45 @@ function seedClassesFor({ tenant, coaches, members }: SeedResult) {
     }
   });
 
+  const weekStart = startOfWeek(today);
+  const createSession = (day: Date, time: string, t: ClassTemplate, coach?: User, minutes?: number) =>
+    sessionsRepo.create({
+      tenantId: tenant.id,
+      templateId: t.id,
+      date: toDateKey(day),
+      startTime: time,
+      durationMinutes: minutes ?? t.durationMinutes,
+      capacity: t.defaultCapacity,
+      coachId: coach?.id ?? t.defaultCoachId,
+      status: "scheduled",
+    });
+
+  if (P.templates && P.weekday && P.saturday) {
+    // Box con plantillas y horario propios (ej. la demo de BORA).
+    const byKey = new Map(
+      P.templates.map((d) => [
+        d.key,
+        templatesRepo.create({
+          tenantId: tenant.id,
+          name: d.name,
+          type: d.type,
+          durationMinutes: d.durationMinutes,
+          defaultCapacity: d.defaultCapacity,
+          defaultCoachId: d.coach !== undefined ? coaches[d.coach]?.id : undefined,
+          color: d.color,
+        }),
+      ]),
+    );
+    for (let w = -3; w <= 2; w++) {
+      for (let d = 0; d < 6; d++) {
+        const day = addDays(weekStart, w * 7 + d);
+        for (const slot of d === 5 ? P.saturday : P.weekday(d)) {
+          const t = byKey.get(slot.tpl);
+          if (t) createSession(day, slot.time, t, slot.coach !== undefined ? coaches[slot.coach] : undefined, slot.minutes);
+        }
+      }
+    }
+  } else {
   // Plantillas de clase
   const tpl = {
     crossfit: templatesRepo.create({ tenantId: tenant.id, name: "CrossFit", type: "wod", durationMinutes: 60, defaultCapacity: 14, defaultCoachId: lucas?.id, color: "#14B8A6" }),
@@ -498,23 +802,12 @@ function seedClassesFor({ tenant, coaches, members }: SeedResult) {
     { time: "11:00", t: tpl.openBox },
   ];
 
-  const weekStart = startOfWeek(today);
   for (let w = -3; w <= 2; w++) {
     for (let d = 0; d < 6; d++) {
       const day = addDays(weekStart, w * 7 + d);
-      for (const slot of d === 5 ? saturday : weekday(d)) {
-        sessionsRepo.create({
-          tenantId: tenant.id,
-          templateId: slot.t.id,
-          date: toDateKey(day),
-          startTime: slot.time,
-          durationMinutes: slot.minutes ?? slot.t.durationMinutes,
-          capacity: slot.t.defaultCapacity,
-          coachId: slot.coach?.id ?? slot.t.defaultCoachId,
-          status: "scheduled",
-        });
-      }
+      for (const slot of d === 5 ? saturday : weekday(d)) createSession(day, slot.time, slot.t, slot.coach, slot.minutes);
     }
+  }
   }
 
   // Reservas: cada socio va según su plan, en sus horarios preferidos.
@@ -524,7 +817,7 @@ function seedClassesFor({ tenant, coaches, members }: SeedResult) {
   const until = addDays(today, 6);
   defs.forEach((def, i) => {
     const user = members[i];
-    const perWeek = CHIA_PLANS.find((p) => p.key === def.plan)?.perWeek ?? 2;
+    const perWeek = P.plans.find((p) => p.key === def.plan)?.perWeek ?? 2;
     if (!user) return;
     const byWeek = new Map<string, number>();
     // Misma regla que la app: una sola reserva por actividad y por día
@@ -739,8 +1032,8 @@ function seedChallengesFor({ tenant, members }: SeedResult) {
 
   const c1 = chRepo.create({
     tenantId: tenant.id,
-    title: "12 clases este mes",
-    description: "Ven al box 12 veces durante el reto y llévate la insignia.",
+    title: P.challenges.attendance.title,
+    description: P.challenges.attendance.description,
     type: "attendance",
     goal: 12,
     startDate: start,
@@ -752,8 +1045,8 @@ function seedChallengesFor({ tenant, members }: SeedResult) {
   if (fran) {
     const c2 = chRepo.create({
       tenantId: tenant.id,
-      title: "Baja tu Fran",
-      description: "Registra tu mejor Fran, RX o escalado, durante el reto.",
+      title: P.challenges.fran.title,
+      description: P.challenges.fran.description,
       type: "benchmark",
       goal: fran.id,
       startDate: start,
@@ -837,14 +1130,7 @@ function sessionsRepoFor_seed_helper(tenantId: string, programId: string) {
 
 function seedShopFor({ tenant, members }: SeedResult) {
   const pRepo = productsRepoFor(tenant.id);
-  const items = [
-    { name: "Camiseta Chia", description: "Camiseta técnica con logo, tallas S a XL.", price: 25, category: "ropa" as const, stock: 30 },
-    { name: "Muñequeras", description: "Par de muñequeras negras.", price: 12, category: "accesorios" as const, stock: 20 },
-    { name: "Magnesio líquido", description: "Frasco de 250 ml.", price: 9, category: "accesorios" as const, stock: 15 },
-    { name: "Proteína whey 1 kg", description: "Sabor chocolate.", price: 35, category: "suplementacion" as const, stock: 10 },
-    { name: "Botella 750 ml", description: "Botella de acero inoxidable.", price: 15, category: "accesorios" as const, stock: 8 },
-    { name: "Sudadera Chia", description: "Sudadera negra con logo bordado.", price: 45, category: "ropa" as const, stock: 12 },
-  ];
+  const items = P.shop;
   const created = items.map((it) => pRepo.create({ tenantId: tenant.id, ...it, imageUrl: undefined, active: true }));
   const [ana, diego] = members;
   const oRepo = ordersRepoFor(tenant.id);

@@ -53,7 +53,7 @@ export function SessionCard({ session, template, coach, onClick, active, compact
         ) : booked ? (
           <span
             className="ml-auto shrink-0 rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wide font-semibold"
-            style={{ backgroundColor: "var(--brand)", color: "var(--primary-foreground)" }}
+            style={{ backgroundColor: "var(--brand)", color: "var(--brand-foreground)" }}
           >
             {booked === "confirmed" ? "Reservada" : booked === "offered" ? "¡Confirma!" : "En espera"}
           </span>

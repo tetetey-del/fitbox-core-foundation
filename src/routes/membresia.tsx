@@ -50,8 +50,8 @@ function MembershipPage() {
       <div className="grid gap-5 max-w-2xl">
         {/* Plan actual, con el color del box */}
         <section
-          className="relative overflow-hidden rounded-2xl p-5 text-white"
-          style={{ background: "linear-gradient(135deg, var(--brand), color-mix(in srgb, var(--brand) 45%, #0E2A3A))" }}
+          className="relative overflow-hidden rounded-2xl p-5"
+          style={{ background: "linear-gradient(135deg, var(--brand), var(--brand-deep))", color: "var(--brand-foreground)" }}
         >
           <BadgeCheck className="absolute -right-4 -top-4 h-28 w-28 opacity-15" strokeWidth={1.25} aria-hidden />
           {membership && plan ? (
@@ -71,10 +71,10 @@ function MembershipPage() {
                     </span>
                   </div>
                   {total > 0 && (
-                    <div className="mt-3 h-2 rounded-full bg-white/25">
+                    <div className="mt-3 h-2 rounded-full" style={{ backgroundColor: "color-mix(in srgb, var(--brand-foreground) 25%, transparent)" }}>
                       <div
-                        className="h-2 rounded-full bg-white"
-                        style={{ width: `${Math.min(100, Math.round((left / total) * 100))}%` }}
+                        className="h-2 rounded-full"
+                        style={{ width: `${Math.min(100, Math.round((left / total) * 100))}%`, backgroundColor: "var(--brand-foreground)" }}
                       />
                     </div>
                   )}
@@ -142,7 +142,7 @@ function MembershipPage() {
                     <div className={p.id === plan?.id ? "font-semibold" : "font-medium"}>
                       {p.name}
                       {p.id === plan?.id && (
-                        <span className="ml-2 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase" style={{ backgroundColor: "var(--brand)", color: "var(--primary-foreground)" }}>
+                        <span className="ml-2 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase" style={{ backgroundColor: "var(--brand)", color: "var(--brand-foreground)" }}>
                           Tu plan
                         </span>
                       )}
