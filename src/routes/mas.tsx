@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { lazy, Suspense, useState } from "react";
-import { Award, ClipboardList, LineChart, ShoppingBag, Trophy } from "lucide-react";
+import { Award, BadgeCheck, ClipboardList, LineChart, Trophy } from "lucide-react";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useModules } from "@/hooks/useModules";
@@ -13,7 +13,7 @@ export const Route = createFileRoute("/mas")({
   component: MorePage,
 });
 
-/** "Más" del socio: retos, marcas, rutinas, tienda y progreso, cada uno una sola vez. */
+/** "Más" del socio: membresía, retos, marcas, rutinas y progreso, cada uno una sola vez. */
 function MorePage() {
   const { session, currentUser } = useAuth();
   const modules = useModules();
@@ -21,6 +21,13 @@ function MorePage() {
   if (!session || !currentUser) return <AppLayout>{null}</AppLayout>;
 
   const items = [
+    {
+      to: "/membresia",
+      label: "Membresía",
+      hint: "Tu plan, clases y pagos",
+      icon: BadgeCheck,
+      color: "var(--brand)",
+    },
     modules.challenges && {
       to: "/retos",
       label: "Retos",
@@ -42,13 +49,6 @@ function MorePage() {
       icon: ClipboardList,
       color: "#38BDF8",
     },
-    modules.shop && {
-      to: "/tienda",
-      label: "Tienda",
-      hint: "Pide y recoge en el box",
-      icon: ShoppingBag,
-      color: "#F472B6",
-    },
   ].filter(Boolean) as {
     to: string;
     label: string;
@@ -59,7 +59,7 @@ function MorePage() {
 
   return (
     <AppLayout>
-      <PageHeader title="Más" description="Retos, marcas, rutinas y tienda de tu box." />
+      <PageHeader title="Más" description="Tu membresía, retos, marcas y rutinas." />
       <div className="grid max-w-3xl grid-cols-2 gap-3">
         {items.map((m) => (
           <Link
@@ -69,7 +69,7 @@ function MorePage() {
           >
             <span
               className="flex h-10 w-10 items-center justify-center rounded-lg"
-              style={{ backgroundColor: `${m.color}22`, color: m.color }}
+              style={{ backgroundColor: `color-mix(in srgb, ${m.color} 14%, transparent)`, color: m.color }}
             >
               <m.icon className="h-5 w-5" strokeWidth={1.75} />
             </span>

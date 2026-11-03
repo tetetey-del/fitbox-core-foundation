@@ -87,15 +87,17 @@ function SociosPage() {
   const [creating, setCreating] = useState(false);
   const [inviting, setInviting] = useState(false);
   const [selected, setSelected] = useState<User | null>(null);
+  // El coach ve la lista recortada: sin email, plan, créditos ni estado de la cuota.
+  const isCoach = currentUser?.role === "coach";
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return members
-      .filter((u) => (q ? u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) : true))
+      .filter((u) => (q ? u.name.toLowerCase().includes(q) || (!isCoach && u.email.toLowerCase().includes(q)) : true))
       .filter((u) => (filter === "all" ? true : getMembershipStatus(u.id) === filter))
       .sort((a, b) => a.name.localeCompare(b.name));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [members, query, filter, useDataVersion()]);
+  }, [members, query, filter, isCoach, useDataVersion()]);
 
   return (
     <AppLayout>
@@ -111,37 +113,37 @@ function SociosPage() {
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar por nombre o email"
+              placeholder={isCoach ? "Buscar por nombre" : "Buscar por nombre o email"}
               className="pl-8"
             />
           </div>
-          <Select value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
+          {!isCoach && <Select value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
             <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
             <SelectContent>
               {FILTERS.map((f) => (
                 <SelectItem key={f} value={f}>{FILTER_LABEL[f]}</SelectItem>
               ))}
             </SelectContent>
-          </Select>
+          </Select>}
         </div>
-        <div className="flex items-center gap-2">
+        {!isCoach && <div className="flex items-center gap-2">
           <InviteButton onClick={() => setInviting(true)} />
           <Button onClick={() => setCreating(true)}>
             <Plus className="h-4 w-4 mr-2" strokeWidth={1.5} />
             Nuevo socio
           </Button>
-        </div>
+        </div>}
       </div>
-      {currentTenant && <PendingInvitations tenantId={currentTenant.id} />}
+      {currentTenant && !isCoach && <PendingInvitations tenantId={currentTenant.id} />}
 
       <div className="rounded-lg border border-border overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Socio</TableHead>
-              <TableHead>Plan</TableHead>
-              <TableHead>Créditos</TableHead>
-              <TableHead>Estado</TableHead>
+              {!isCoach && <TableHead>Plan</TableHead>}
+              {!isCoach && <TableHead>Créditos</TableHead>}
+              {!isCoach && <TableHead>Estado</TableHead>}
               <TableHead>Asistencia</TableHead>
             </TableRow>
           </TableHeader>
@@ -169,16 +171,16 @@ function SociosPage() {
                       <UserAvatar name={u.name} src={u.avatar} className="h-9 w-9" />
                       <div className="min-w-0">
                         <div className="font-medium">{u.name}</div>
-                        <div className="text-xs text-muted-foreground truncate">{u.email}</div>
+                        {!isCoach && <div className="text-xs text-muted-foreground truncate">{u.email}</div>}
                         <div className="text-xs font-medium sm:hidden" style={{ color: "var(--brand)" }}>
                           {classesLabel(totalAttendance(u.id))} hechas
                         </div>
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-muted-foreground">{plan?.name ?? "—"}</TableCell>
-                  <TableCell><CreditsBadge userId={u.id} /></TableCell>
-                  <TableCell><MembershipBadge status={status} /></TableCell>
+                  {!isCoach && <TableCell className="text-muted-foreground">{plan?.name ?? "—"}</TableCell>}
+                  {!isCoach && <TableCell><CreditsBadge userId={u.id} /></TableCell>}
+                  {!isCoach && <TableCell><MembershipBadge status={status} /></TableCell>}
                   <TableCell className="text-sm">
                     <div className="font-medium">{classesLabel(totalAttendance(u.id))}</div>
                     <div className="text-xs text-muted-foreground">{last ? `Última: ${last}` : "Sin asistencias"}</div>

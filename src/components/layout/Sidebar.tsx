@@ -37,7 +37,7 @@ const STAFF_NAV: NavItem[] = [
   { label: "PRs", to: "/prs", icon: Trophy, roles: ["admin", "coach"], module: "prs" },
   { label: "Retos", to: "/retos", icon: Award, roles: ["admin", "coach"], module: "challenges" },
   { label: "Rutinas", to: "/rutinas", icon: ClipboardList, roles: ["admin", "coach"], module: "programs" },
-  { label: "Tienda", to: "/tienda", icon: ShoppingBag, roles: ["admin", "coach"], module: "shop" },
+  { label: "Tienda", to: "/tienda", icon: ShoppingBag, roles: ["admin"], module: "shop" },
   { label: "Configuración", to: "/configuracion", icon: Settings, roles: ["admin"] },
 ];
 
@@ -45,6 +45,7 @@ const MEMBER_NAV: NavItem[] = [
   { label: "Feed", to: "/feed", icon: Newspaper, roles: ["member"], module: "feed" },
   { label: "Reservas", to: "/reservas", icon: CalendarDays, roles: ["member"], module: "reservas" },
   { label: "Membresía", to: "/membresia", icon: BadgeCheck, roles: ["member"] },
+  { label: "Tienda", to: "/tienda", icon: ShoppingBag, roles: ["member"], module: "shop" },
   { label: "Más", to: "/mas", icon: LayoutGrid, roles: ["member"] },
   { label: "Mi cuenta", to: "/mi-cuenta", icon: UserIcon, roles: ["member"] },
 ];
