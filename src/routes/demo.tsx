@@ -3,7 +3,7 @@ import { useState } from "react";
 import { ArrowRight, Dumbbell, Loader2, Smartphone, Store } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { ensureArgentinaDemoReady, ensureDemoReady } from "@/lib/seed";
+import { ensureDemoProfileReady } from "@/lib/seed";
 import { saveBoxBrand } from "@/lib/boxBrand";
 import { AuthShell } from "./login";
 
@@ -14,7 +14,7 @@ export const Route = createFileRoute("/demo")({
 
 const DEMO_PASSWORD = "demo1234";
 
-type Country = "es" | "ar";
+type Country = "es" | "ar" | "bora";
 
 interface DemoRole {
   id: string;
@@ -36,6 +36,11 @@ const ROLES: Record<Country, DemoRole[]> = {
     { id: "coach", email: "nico.ar@kinflow.app", title: "Como coach", desc: "Clases del día, check-in, notas de cada socio y marcas.", icon: Dumbbell, to: "/dashboard" },
     { id: "member", email: "sofi.ar@kinflow.app", title: "Como socio", desc: "La app que usan tus socios en el celu: reservas, WOD, membresía y marcas.", icon: Smartphone, to: "/feed" },
   ],
+  bora: [
+    { id: "owner", email: "pau.bora@kinflow.app", title: "Como dueña del box", desc: "Panel, alumnos y cuotas, clases y WOD, pagos, tienda y configuración.", icon: Store, to: "/dashboard" },
+    { id: "coach", email: "nico.bora@kinflow.app", title: "Como coach", desc: "Clases del día, check-in, notas de cada alumno y marcas.", icon: Dumbbell, to: "/dashboard" },
+    { id: "member", email: "sofi.bora@kinflow.app", title: "Como alumno", desc: "La app que usarían tus alumnos en el celu: reservas, WOD, cuota y marcas.", icon: Smartphone, to: "/feed" },
+  ],
 };
 
 const TEXTS: Record<Country, { title: string; subtitle: string; note: string; ask: string; cta: string; error: string }> = {
@@ -55,6 +60,14 @@ const TEXTS: Record<Country, { title: string; subtitle: string; note: string; as
     cta: "Creá tu box",
     error: "No se pudo abrir la demo. Recargá la página y probá de nuevo.",
   },
+  bora: {
+    title: "BORA en Kinflow",
+    subtitle: "Así se vería la app de BORA: tus clases, tus horarios y tus planes. Entrá con un toque, sin crear cuenta.",
+    note: "Es una demo: los alumnos y los datos son de ejemplo y se guardan solo en este navegador.",
+    ask: "¿Te gusta?",
+    cta: "Creá tu box",
+    error: "No se pudo abrir la demo. Recargá la página y probá de nuevo.",
+  },
 };
 
 /**
@@ -70,8 +83,7 @@ export function DemoChooser({ country }: { country: Country }) {
   const enter = async (role: DemoRole) => {
     setBusy(role.id);
     try {
-      if (country === "ar") await ensureArgentinaDemoReady();
-      else await ensureDemoReady();
+      await ensureDemoProfileReady(country);
       // La demo no es un box real: sin marca guardada de otro box.
       saveBoxBrand(null);
       await loginWithPassword(role.email, DEMO_PASSWORD);

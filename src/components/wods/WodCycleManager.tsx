@@ -185,9 +185,9 @@ function CycleEditor({ cycle, onDone }: { cycle: WodCycle | null; onDone: () => 
               onClick={() => setWeek(w)}
               className={cn(
                 "relative h-9 min-w-9 shrink-0 rounded-md border px-2 text-sm transition-colors",
-                w === week ? "border-transparent font-semibold text-white" : "border-border hover:border-foreground/40",
+                w === week ? "border-transparent font-semibold" : "border-border hover:border-foreground/40",
               )}
-              style={w === week ? { backgroundColor: "var(--brand)" } : undefined}
+              style={w === week ? { backgroundColor: "var(--brand)", color: "var(--brand-foreground)" } : undefined}
               aria-pressed={w === week}
             >
               {w}

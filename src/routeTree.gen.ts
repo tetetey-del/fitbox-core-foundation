@@ -32,6 +32,7 @@ import { Route as TiendaRouteImport } from './routes/tienda'
 import { Route as AppManifestSlugRouteImport } from './routes/app-manifest.$slug'
 import { Route as BSlugRouteImport } from './routes/b.$slug'
 import { Route as DemoArRouteImport } from './routes/demo_.ar'
+import { Route as DemoBoraRouteImport } from './routes/demo_.bora'
 import { Route as InvitacionCodeRouteImport } from './routes/invitacion.$code'
 import { Route as LegalAvisoLegalRouteImport } from './routes/legal.aviso-legal'
 import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
@@ -155,6 +156,11 @@ const DemoArRoute = DemoArRouteImport.update({
   path: '/demo/ar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DemoBoraRoute = DemoBoraRouteImport.update({
+  id: '/demo_/bora',
+  path: '/demo/bora',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InvitacionCodeRoute = InvitacionCodeRouteImport.update({
   id: '/invitacion/$code',
   path: '/invitacion/$code',
@@ -215,6 +221,7 @@ export interface FileRoutesByFullPath {
   '/app-manifest/$slug': typeof AppManifestSlugRoute
   '/b/$slug': typeof BSlugRoute
   '/demo/ar': typeof DemoArRoute
+  '/demo/bora': typeof DemoBoraRoute
   '/invitacion/$code': typeof InvitacionCodeRoute
   '/legal/aviso-legal': typeof LegalAvisoLegalRoute
   '/legal/cookies': typeof LegalCookiesRoute
@@ -247,6 +254,7 @@ export interface FileRoutesByTo {
   '/app-manifest/$slug': typeof AppManifestSlugRoute
   '/b/$slug': typeof BSlugRoute
   '/demo/ar': typeof DemoArRoute
+  '/demo/bora': typeof DemoBoraRoute
   '/invitacion/$code': typeof InvitacionCodeRoute
   '/legal/aviso-legal': typeof LegalAvisoLegalRoute
   '/legal/cookies': typeof LegalCookiesRoute
@@ -280,6 +288,7 @@ export interface FileRoutesById {
   '/app-manifest/$slug': typeof AppManifestSlugRoute
   '/b/$slug': typeof BSlugRoute
   '/demo_/ar': typeof DemoArRoute
+  '/demo_/bora': typeof DemoBoraRoute
   '/invitacion/$code': typeof InvitacionCodeRoute
   '/legal/aviso-legal': typeof LegalAvisoLegalRoute
   '/legal/cookies': typeof LegalCookiesRoute
@@ -314,6 +323,7 @@ export interface FileRouteTypes {
     | '/app-manifest/$slug'
     | '/b/$slug'
     | '/demo/ar'
+    | '/demo/bora'
     | '/invitacion/$code'
     | '/legal/aviso-legal'
     | '/legal/cookies'
@@ -346,6 +356,7 @@ export interface FileRouteTypes {
     | '/app-manifest/$slug'
     | '/b/$slug'
     | '/demo/ar'
+    | '/demo/bora'
     | '/invitacion/$code'
     | '/legal/aviso-legal'
     | '/legal/cookies'
@@ -378,6 +389,7 @@ export interface FileRouteTypes {
     | '/app-manifest/$slug'
     | '/b/$slug'
     | '/demo_/ar'
+    | '/demo_/bora'
     | '/invitacion/$code'
     | '/legal/aviso-legal'
     | '/legal/cookies'
@@ -411,6 +423,7 @@ export interface RootRouteChildren {
   AppManifestSlugRoute: typeof AppManifestSlugRoute
   BSlugRoute: typeof BSlugRoute
   DemoArRoute: typeof DemoArRoute
+  DemoBoraRoute: typeof DemoBoraRoute
   InvitacionCodeRoute: typeof InvitacionCodeRoute
   LegalAvisoLegalRoute: typeof LegalAvisoLegalRoute
   LegalCookiesRoute: typeof LegalCookiesRoute
@@ -583,6 +596,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoArRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/demo_/bora': {
+      id: '/demo_/bora'
+      path: '/demo/bora'
+      fullPath: '/demo/bora'
+      preLoaderRoute: typeof DemoBoraRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/invitacion/$code': {
       id: '/invitacion/$code'
       path: '/invitacion/$code'
@@ -659,6 +679,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppManifestSlugRoute: AppManifestSlugRoute,
   BSlugRoute: BSlugRoute,
   DemoArRoute: DemoArRoute,
+  DemoBoraRoute: DemoBoraRoute,
   InvitacionCodeRoute: InvitacionCodeRoute,
   LegalAvisoLegalRoute: LegalAvisoLegalRoute,
   LegalCookiesRoute: LegalCookiesRoute,

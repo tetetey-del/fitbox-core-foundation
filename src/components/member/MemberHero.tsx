@@ -37,8 +37,8 @@ export function MemberHero() {
 
   return (
     <section
-      className="relative mb-6 overflow-hidden rounded-2xl p-5 text-white"
-      style={{ background: "linear-gradient(135deg, var(--brand), color-mix(in srgb, var(--brand) 40%, #0E2A3A))" }}
+      className="relative mb-6 overflow-hidden rounded-2xl p-5"
+      style={{ background: "linear-gradient(135deg, var(--brand), var(--brand-deep))", color: "var(--brand-foreground)" }}
     >
       <div aria-hidden className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10" />
       <div aria-hidden className="absolute -bottom-12 right-12 h-28 w-28 rounded-full bg-white/10" />

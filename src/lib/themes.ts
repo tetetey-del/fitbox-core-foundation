@@ -278,5 +278,24 @@ export function applyTheme(themeId: ThemeId | undefined, brandColor?: string): v
   set("--ring", theme.vars.ring);
   set("--destructive", theme.vars.destructive);
   set("--destructive-foreground", theme.vars.destructiveForeground);
-  set("--brand", brandColor ?? theme.previewAccent);
+  const brand = brandColor ?? theme.previewAccent;
+  set("--brand", brand);
+  // Texto legible sobre el color del box: oscuro si el color es claro (ej. amarillo), blanco si no.
+  const light = isLightColor(brand);
+  set("--brand-foreground", light ? "#111111" : "#FFFFFF");
+  // Segundo tono para degradados: con colores claros se oscurece un poco, así el texto oscuro se sigue leyendo.
+  set("--brand-deep", light ? `color-mix(in srgb, ${brand} 78%, #000000)` : `color-mix(in srgb, ${brand} 42%, #0E2A3A)`);
+}
+
+/** true si el color (#RRGGBB) es claro: luminancia relativa alta. */
+export function isLightColor(hex: string): boolean {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+  if (!m) return false;
+  const n = parseInt(m[1], 16);
+  const lin = (c: number) => {
+    const v = c / 255;
+    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  };
+  const L = 0.2126 * lin((n >> 16) & 255) + 0.7152 * lin((n >> 8) & 255) + 0.0722 * lin(n & 255);
+  return L > 0.42;
 }
