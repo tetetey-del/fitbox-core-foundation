@@ -303,3 +303,5 @@ grant execute on function public.kf_get_invitation(text) to anon, authenticated;
 --   plan, status, trial_ends_at) y trial_started_at.
 -- kf_notify_platform(): al crear un box (kf_handle_new_user) deja una notificación 'platform_new_box' a cada
 --   admin de la plataforma en su box (campanita + push si lo activó).
+-- (migración kinflow_platform_alerts_table) Cambio: los avisos de box nuevo ya NO van a la campanita de un box.
+-- Van a la tabla platform_alerts (solo la plataforma la lee) y se ven en /plataforma → Avisos.

@@ -1,13 +1,20 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, RefreshCw, Shield } from "lucide-react";
+import { ArrowLeft, Bell, RefreshCw, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { isPlatformAdmin, listPlatformBoxes, monthlyCharge, setBoxPlan, type PlatformBox } from "@/lib/cloud/platform";
-import { registerServiceWorker } from "@/lib/cloud/push";
-import { PushSettings } from "@/components/member/PushControls";
+import {
+  isPlatformAdmin,
+  listPlatformAlerts,
+  listPlatformBoxes,
+  markPlatformAlertsRead,
+  monthlyCharge,
+  setBoxPlan,
+  type PlatformAlert,
+  type PlatformBox,
+} from "@/lib/cloud/platform";
 import { PLANS } from "@/lib/plans";
 import { formatDate, toDateKey } from "@/lib/date";
 import type { PlanId, SubscriptionStatus } from "@/types";
@@ -28,11 +35,13 @@ function PlatformPage() {
   const [allowed, setAllowed] = useState<boolean | null>(null);
   const [boxes, setBoxes] = useState<PlatformBox[]>([]);
   const [loading, setLoading] = useState(false);
+  const [alerts, setAlerts] = useState<PlatformAlert[]>([]);
 
   const load = async () => {
     setLoading(true);
     try {
       setBoxes(await listPlatformBoxes());
+      setAlerts(await listPlatformAlerts());
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "No se pudo cargar");
     } finally {
@@ -41,7 +50,6 @@ function PlatformPage() {
   };
 
   useEffect(() => {
-    registerServiceWorker();
     isPlatformAdmin().then((ok) => {
       setAllowed(ok);
       if (ok) load();
@@ -97,13 +105,13 @@ function PlatformPage() {
             Cobro mensual de los boxes activos: <span className="font-semibold">{monthly.toLocaleString("es-ES")} €</span>
           </p>
         </div>
-        <div className="space-y-2 rounded-lg border border-border bg-card p-4">
-          <div className="text-sm font-medium">Aviso cuando se registra un box nuevo</div>
-          <p className="text-xs text-muted-foreground">
-            Te llega a la campanita de tu box y, si activas los avisos en este móvil, también como notificación.
-          </p>
-          <PushSettings />
-        </div>
+        <AlertsPanel
+          alerts={alerts}
+          onRead={async () => {
+            await markPlatformAlertsRead();
+            setAlerts(await listPlatformAlerts());
+          }}
+        />
         <div className="space-y-3">
           {boxes.map((b) => <BoxRow key={b.id} box={b} onSaved={load} />)}
         </div>
@@ -321,5 +329,44 @@ function BoxRow({ box, onSaved }: { box: PlatformBox; onSaved: () => void }) {
         </Button>
       </div>
     </div>
+  );
+}
+
+/** Avisos de la plataforma: cada box nuevo que se registra. */
+function AlertsPanel({ alerts, onRead }: { alerts: PlatformAlert[]; onRead: () => void }) {
+  const unread = alerts.filter((a) => !a.read_at).length;
+  return (
+    <section className="space-y-3 rounded-lg border border-border bg-card p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="flex items-center gap-2 text-sm font-semibold">
+          <Bell className="h-4 w-4" strokeWidth={1.5} /> Avisos
+          {unread > 0 && (
+            <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ backgroundColor: "var(--brand)", color: "var(--brand-foreground)" }}>
+              {unread} nuevo{unread === 1 ? "" : "s"}
+            </span>
+          )}
+        </h2>
+        {unread > 0 && (
+          <Button size="sm" variant="ghost" onClick={onRead}>Marcar como vistos</Button>
+        )}
+      </div>
+      {alerts.length === 0 ? (
+        <p className="text-xs text-muted-foreground">Cuando alguien cree su box para probar Kinflow, aparece acá.</p>
+      ) : (
+        <ul className="divide-y divide-border">
+          {alerts.slice(0, 10).map((a) => (
+            <li key={a.id} className="flex items-start justify-between gap-3 py-2">
+              <div className="min-w-0">
+                <div className={`text-sm ${a.read_at ? "text-muted-foreground" : "font-medium"}`}>{a.title}</div>
+                {a.body && <div className="truncate text-xs text-muted-foreground">{a.body}</div>}
+              </div>
+              <span className="shrink-0 text-[11px] text-muted-foreground">
+                {new Date(a.created_at).toLocaleString("es-ES", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
