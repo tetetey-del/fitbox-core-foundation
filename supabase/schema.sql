@@ -297,3 +297,9 @@ grant execute on function public.kf_get_invitation(text) to anon, authenticated;
 -- Colección 'locations' en records (los socios la pueden leer). class_sessions.data.locationId y
 -- users.data.profile.locationId (sede principal). Vacío = la sede principal (la primera creada).
 -- records_location_limit: Starter 1 sede, Pro 2, Business sin límite (KF_LIMIT_LOCATIONS).
+
+-- ---------- Plataforma: precio, descuento y avisos (migración kinflow_platform_pricing_and_alerts, 03/11/2026) ----------
+-- tenant_plans: price_override, discount_pct, discount_note (solo la plataforma: los boxes solo pueden leer
+--   plan, status, trial_ends_at) y trial_started_at.
+-- kf_notify_platform(): al crear un box (kf_handle_new_user) deja una notificación 'platform_new_box' a cada
+--   admin de la plataforma en su box (campanita + push si lo activó).
