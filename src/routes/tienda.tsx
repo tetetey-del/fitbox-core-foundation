@@ -55,11 +55,16 @@ function TiendaPage() {
   const { currentUser } = useAuth();
   useDataVersion();
   if (!enabled || !currentUser) return null;
-  const isStaff = currentUser.role === "admin" || currentUser.role === "coach";
   return (
     <AppLayout>
       <PageHeader title="Tienda" description="Pide y recoge en el box." />
-      {isStaff ? <StaffShop /> : <MemberShop userId={currentUser.id} />}
+      {currentUser.role === "admin" ? (
+        <StaffShop />
+      ) : currentUser.role === "coach" ? (
+        <p className="text-sm text-muted-foreground">La tienda la gestiona el dueño del box.</p>
+      ) : (
+        <MemberShop userId={currentUser.id} />
+      )}
     </AppLayout>
   );
 }

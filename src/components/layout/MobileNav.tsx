@@ -47,15 +47,16 @@ const STAFF_SECONDARY: NavItem[] = [
   { label: "PRs", to: "/prs", icon: Trophy, roles: ["admin", "coach"], module: "prs" },
   { label: "Retos", to: "/retos", icon: Award, roles: ["admin", "coach"], module: "challenges" },
   { label: "Rutinas", to: "/rutinas", icon: ClipboardList, roles: ["admin", "coach"], module: "programs" },
-  { label: "Tienda", to: "/tienda", icon: ShoppingBag, roles: ["admin", "coach"], module: "shop" },
+  { label: "Tienda", to: "/tienda", icon: ShoppingBag, roles: ["admin"], module: "shop" },
   { label: "Configuración", to: "/configuracion", icon: Settings, roles: ["admin"] },
 ];
 
-// Socio: cuatro secciones abajo. Retos, marcas, rutinas y tienda están en "Más"; Mi cuenta, en el avatar.
+// Socio: cuatro secciones abajo. Membresía, retos, marcas y rutinas están en "Más"; Mi cuenta, en el avatar.
+// Si el box no usa tienda, Membresía vuelve a la barra.
 const MEMBER_PRIMARY: NavItem[] = [
   { label: "Feed", to: "/feed", icon: Newspaper, roles: ["member"], module: "feed" },
   { label: "Reservas", to: "/reservas", icon: CalendarDays, roles: ["member"], module: "reservas" },
-  { label: "Membresía", to: "/membresia", icon: BadgeCheck, roles: ["member"] },
+  { label: "Tienda", to: "/tienda", icon: ShoppingBag, roles: ["member"], module: "shop" },
   { label: "Más", to: "/mas", icon: LayoutGrid, roles: ["member"] },
 ];
 const MEMBER_SECONDARY: NavItem[] = [];
@@ -72,7 +73,11 @@ export function MobileNav() {
 
   const filt = (list: NavItem[]) =>
     list.filter((n) => isAny(n.roles)).filter((n) => !n.module || modules[n.module]);
-  const primary = filt(primaryRaw);
+  let primary = filt(primaryRaw);
+  if (isMember && !modules.shop) {
+    const i = primary.findIndex((n) => n.to === "/mas");
+    primary = [...primary.slice(0, i), { label: "Membresía", to: "/membresia", icon: BadgeCheck, roles: ["member"] }, ...primary.slice(i)];
+  }
   const secondary = filt(secondaryRaw);
 
   return (

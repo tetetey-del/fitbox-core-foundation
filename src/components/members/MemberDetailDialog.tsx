@@ -21,6 +21,9 @@ import { MemberPaymentsTab } from "./memberDetail/MemberPaymentsTab";
 import { MemberAttendanceTab } from "./memberDetail/MemberAttendanceTab";
 import { MemberNotesTab } from "./memberDetail/MemberNotesTab";
 import { UserAvatar } from "@/components/members/UserAvatar";
+import { MemberPRsTab } from "./memberDetail/MemberPRsTab";
+import { useAuth } from "@/contexts/AuthContext";
+import { useModules } from "@/hooks/useModules";
 
 // Re-export para no romper importadores existentes.
 export { lastAttendanceOf } from "./memberDetail/attendance.helpers";
@@ -41,8 +44,37 @@ export function MemberDetailDialog({ open, onOpenChange, user }: Props) {
   useDataVersion();
   const [assigning, setAssigning] = useState(false);
   const [paying, setPaying] = useState(false);
+  const { currentUser } = useAuth();
+  const modules = useModules();
+  // El coach ve una ficha recortada: nombre, foto, notas, marcas y asistencia. Sin cuota, pagos ni datos personales.
+  const isCoach = currentUser?.role === "coach";
 
   if (!user) return null;
+
+  if (isCoach) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden">
+          <DialogHeader>
+            <DialogTitle className="flex flex-wrap items-center gap-2">
+              <UserAvatar name={user.name} src={user.avatar} className="h-10 w-10 text-sm" />
+              {user.name}
+            </DialogTitle>
+            <DialogDescription>Notas, marcas y asistencia.</DialogDescription>
+          </DialogHeader>
+          <MemberNotesTab memberId={user.id} />
+          {modules.prs && (
+            <>
+              <Separator />
+              <MemberPRsTab userId={user.id} />
+            </>
+          )}
+          <Separator />
+          <MemberAttendanceTab userId={user.id} />
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   const membership = getActiveMembership(user.id);
   const plan = membership ? getPlan(membership.planId) : null;

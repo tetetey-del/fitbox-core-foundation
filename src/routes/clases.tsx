@@ -34,11 +34,14 @@ function ClasesPage() {
   const coaches = tenantUsers.filter((u) => u.role === "coach" || u.role === "admin");
 
   // Se puede abrir directo en una pestaña con #sesiones o #wod (por ejemplo, desde "Primeros pasos").
+  // El coach solo ve las sesiones y el WOD: crear, generar o quitar clases es del dueño.
+  const isAdmin = currentUser?.role === "admin";
   const [tab, setTab] = useState<string>("plantillas");
   useEffect(() => {
     const h = window.location.hash.replace("#", "");
     if (h === "wod" || h === "sesiones") setTab(h);
-  }, []);
+    else if (currentUser && currentUser.role !== "admin") setTab("sesiones");
+  }, [currentUser]);
   const [editing, setEditing] = useState<ClassTemplate | null>(null);
   const [creating, setCreating] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -47,17 +50,21 @@ function ClasesPage() {
     <AppLayout>
       <PageHeader
         title="Clases"
-        description="Gestiona las plantillas de clase y programa sesiones recurrentes."
+        description={
+          isAdmin
+            ? "Gestiona las plantillas de clase y programa sesiones recurrentes."
+            : "Consulta las próximas sesiones y publica el WOD."
+        }
       />
 
       <Tabs value={tab} onValueChange={setTab} className="space-y-6">
         <TabsList>
-          <TabsTrigger value="plantillas">Plantillas</TabsTrigger>
+          {isAdmin && <TabsTrigger value="plantillas">Plantillas</TabsTrigger>}
           <TabsTrigger value="sesiones">Sesiones próximas</TabsTrigger>
           <TabsTrigger value="wod">WOD del día</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="plantillas" className="space-y-4">
+        {isAdmin && <TabsContent value="plantillas" className="space-y-4">
           <div className="flex items-center justify-between gap-2">
             <p className="text-sm text-muted-foreground">
               {templates.length} plantilla{templates.length === 1 ? "" : "s"} definida
@@ -80,7 +87,7 @@ function ClasesPage() {
             coaches={coaches}
             onEdit={(t) => setEditing(t)}
           />
-        </TabsContent>
+        </TabsContent>}
 
         <TabsContent value="sesiones">
           <UpcomingSessionsList templates={templates} coaches={coaches} />
@@ -91,7 +98,7 @@ function ClasesPage() {
         </TabsContent>
       </Tabs>
 
-      <TemplateFormDialog
+      {isAdmin && <><TemplateFormDialog
         open={creating || !!editing}
         onOpenChange={(o) => {
           if (!o) {
@@ -109,6 +116,7 @@ function ClasesPage() {
         templates={templates}
         coaches={coaches}
       />
+      </>}
     </AppLayout>
   );
 }
