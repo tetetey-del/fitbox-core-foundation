@@ -12,6 +12,7 @@ export function UpgradeDialog({
   max,
   title,
   body,
+  target = "pro",
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -19,10 +20,12 @@ export function UpgradeDialog({
   max?: number;
   title?: string;
   body?: string;
+  /** Plan que se ofrece (Pro por defecto; Business para quien ya es Pro). */
+  target?: "pro" | "business";
 }) {
   const { currentTenant } = useAuth();
   const msg = kind && max ? limitMessage(kind, max) : { title: title ?? "Disponible en el plan Pro", body: body ?? "" };
-  const pro = PLANS.pro;
+  const pro = PLANS[target];
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
@@ -35,7 +38,7 @@ export function UpgradeDialog({
         </DialogHeader>
         <div className="rounded-lg border border-border p-4">
           <div className="flex items-baseline justify-between">
-            <span className="font-semibold">Plan Pro</span>
+            <span className="font-semibold">Plan {pro.name}</span>
             <span className="text-sm text-muted-foreground">{pro.priceMonthly} € / mes</span>
           </div>
           <ul className="mt-3 space-y-1.5 text-sm">
@@ -51,7 +54,7 @@ export function UpgradeDialog({
         <SupportContact
           compact
           boxName={currentTenant?.name}
-          message={`Hola, soy de ${currentTenant?.name ?? "mi box"} y quiero pasarme al plan Pro de Kinflow.`}
+          message={`Hola, soy de ${currentTenant?.name ?? "mi box"} y quiero pasarme al plan ${pro.name} de Kinflow.`}
         />
       </DialogContent>
     </Dialog>

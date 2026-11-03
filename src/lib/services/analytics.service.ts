@@ -12,6 +12,28 @@ import { bookingsRepo } from "@/lib/storage/repositories/bookings.repo";
 import { usersRepo } from "@/lib/storage/repositories/users.repo";
 import { addDays, daysBetween, parseDateKey, startOfWeek, toDateKey, DAY_LABELS } from "@/lib/date";
 import type { User } from "@/types";
+import { inLocation, userLocationId } from "./locations.service";
+
+/**
+ * Filtro por sede (null = todas). Los socios cuentan en su sede principal;
+ * las clases y asistencias, en la sede de la clase.
+ */
+function memberInLocation(locationId: string | null | undefined) {
+  if (!locationId) return () => true;
+  const byId = new Map(usersRepo.list().map((u) => [u.id, u]));
+  return (userId: string) => {
+    const u = byId.get(userId);
+    return !!u && userLocationId(u) === locationId;
+  };
+}
+function sessionInLocation(locationId: string | null | undefined) {
+  if (!locationId) return () => true;
+  const byId = new Map(classSessionsRepo.list().map((s) => [s.id, s]));
+  return (sessionId: string) => {
+    const s = byId.get(sessionId);
+    return !!s && inLocation(s, locationId);
+  };
+}
 
 // ---- KPIs mensuales ----
 
@@ -26,7 +48,9 @@ export interface MonthlyKpis {
   attendancesThisMonth: number;
 }
 
-export function getMonthlyKpis(reference: Date = new Date()): MonthlyKpis {
+export function getMonthlyKpis(reference: Date = new Date(), locationId: string | null = null): MonthlyKpis {
+  const isMember = memberInLocation(locationId);
+  const isSession = sessionInLocation(locationId);
   const m = monthKey(reference);
   const startOfMonth = new Date(reference.getFullYear(), reference.getMonth(), 1);
   const endOfMonth = new Date(reference.getFullYear(), reference.getMonth() + 1, 0);
@@ -35,21 +59,21 @@ export function getMonthlyKpis(reference: Date = new Date()): MonthlyKpis {
 
   const revenue = paymentsRepo
     .list()
-    .filter((p) => p.date >= startKey && p.date <= endKey)
+    .filter((p) => p.date >= startKey && p.date <= endKey && isMember(p.userId))
     .reduce((sum, p) => sum + p.amount, 0);
 
   const today = toDateKey(new Date());
   const activeMembers = membershipsRepo
     .list()
-    .filter((mem) => mem.status === "active" && mem.startDate <= today && mem.endDate >= today).length;
+    .filter((mem) => mem.status === "active" && mem.startDate <= today && mem.endDate >= today && isMember(mem.userId)).length;
 
   const newMembersThisMonth = usersRepo
     .list()
-    .filter((u) => u.role === "member" && u.createdAt.slice(0, 7) === m).length;
+    .filter((u) => u.role === "member" && u.createdAt.slice(0, 7) === m && isMember(u.id)).length;
 
   const attendancesThisMonth = checkinsRepo
     .list()
-    .filter((c) => c.checkedInAt.slice(0, 7) === m).length;
+    .filter((c) => c.checkedInAt.slice(0, 7) === m && isSession(c.sessionId)).length;
 
   return { revenue, activeMembers, newMembersThisMonth, attendancesThisMonth };
 }
@@ -61,7 +85,8 @@ export interface MonthlyRevenuePoint {
   revenue: number;
 }
 
-export function getMonthlyRevenue(months: number = 6): MonthlyRevenuePoint[] {
+export function getMonthlyRevenue(months: number = 6, locationId: string | null = null): MonthlyRevenuePoint[] {
+  const isMember = memberInLocation(locationId);
   const now = new Date();
   const buckets: MonthlyRevenuePoint[] = [];
   for (let i = months - 1; i >= 0; i--) {
@@ -70,6 +95,7 @@ export function getMonthlyRevenue(months: number = 6): MonthlyRevenuePoint[] {
   }
   const byMonth = new Map(buckets.map((b) => [b.month, b]));
   for (const p of paymentsRepo.list()) {
+    if (!isMember(p.userId)) continue;
     const key = p.date.slice(0, 7);
     const bucket = byMonth.get(key);
     if (bucket) bucket.revenue += p.amount;
@@ -84,7 +110,7 @@ export interface OccupancyByWeekday {
   occupancy: number; // 0-100
 }
 
-export function getOccupancyByWeekday(weeks: number = 4): OccupancyByWeekday[] {
+export function getOccupancyByWeekday(weeks: number = 4, locationId: string | null = null): OccupancyByWeekday[] {
   const today = new Date();
   const currentMonday = startOfWeek(today);
   const from = addDays(currentMonday, -7 * (weeks - 1));
@@ -97,7 +123,8 @@ export function getOccupancyByWeekday(weeks: number = 4): OccupancyByWeekday[] {
       (s) =>
         s.status !== "cancelled" &&
         s.date >= fromKey &&
-        s.date <= toKey,
+        s.date <= toKey &&
+        inLocation(s, locationId),
     );
 
   const bookingsBySession = new Map<string, number>();
@@ -132,12 +159,13 @@ export interface ExpiringMembership {
   planId: string;
 }
 
-export function getExpiringMemberships(daysAhead: number = 7): ExpiringMembership[] {
+export function getExpiringMemberships(daysAhead: number = 7, locationId: string | null = null): ExpiringMembership[] {
   const today = new Date();
+  const isMember = memberInLocation(locationId);
   const userMap = new Map<string, User>(usersRepo.list().map((u) => [u.id, u]));
   return membershipsRepo
     .list()
-    .filter((m) => m.status === "active")
+    .filter((m) => m.status === "active" && isMember(m.userId))
     .map((m) => ({ m, days: daysBetween(today, parseDateKey(m.endDate)) }))
     .filter(({ days }) => days >= 0 && days <= daysAhead)
     .sort((a, b) => a.days - b.days)

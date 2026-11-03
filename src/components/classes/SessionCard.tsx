@@ -1,4 +1,5 @@
-import { Clock, User as UserIcon } from "lucide-react";
+import { Clock, MapPin, User as UserIcon } from "lucide-react";
+import { hasMultipleLocations, locationName, sessionLocationId } from "@/lib/services/locations.service";
 import type { Booking, ClassSession, ClassTemplate, User } from "@/types";
 import { cn } from "@/lib/utils";
 import { OccupancyBar } from "./OccupancyBar";
@@ -64,7 +65,7 @@ export function SessionCard({ session, template, coach, onClick, active, compact
         ) : null}
       </div>
 
-      <div className="mt-1.5 flex items-center gap-3 text-xs text-muted-foreground">
+      <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
         <span className="inline-flex items-center gap-1">
           <Clock className="h-3 w-3" strokeWidth={1.5} />
           {session.startTime}
@@ -73,6 +74,12 @@ export function SessionCard({ session, template, coach, onClick, active, compact
           <span className="inline-flex items-center gap-1 truncate">
             <UserIcon className="h-3 w-3" strokeWidth={1.5} />
             {coach.name}
+          </span>
+        )}
+        {hasMultipleLocations() && (
+          <span className="inline-flex items-center gap-1 truncate">
+            <MapPin className="h-3 w-3" strokeWidth={1.5} />
+            {locationName(sessionLocationId(session)).replace(/^Sede\s+/i, "")}
           </span>
         )}
       </div>

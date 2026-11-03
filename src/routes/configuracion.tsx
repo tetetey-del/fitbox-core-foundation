@@ -55,6 +55,7 @@ import { AppLinkSection } from "@/components/config/AppLinkSection";
 import { ModulesSection } from "@/components/config/ModulesSection";
 import { NumberInput } from "@/components/ui/number-input";
 import { PlanSection } from "@/components/plan/PlanSection";
+import { LocationsSection } from "@/components/config/LocationsSection";
 
 
 export const Route = createFileRoute("/configuracion")({ component: ConfigPage });
@@ -187,6 +188,7 @@ function ConfigPage() {
             <Button onClick={save}>Guardar cambios</Button>
           </section>
 
+          <LocationsSection />
           <AppearanceSection />
           <AppLinkSection />
           <ModulesSection />

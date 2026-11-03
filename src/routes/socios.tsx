@@ -35,6 +35,7 @@ import { MEMBERSHIP_UI_LABEL } from "@/types";
 import { usersRepo } from "@/lib/storage/repositories/users.repo";
 import { useAuth } from "@/contexts/AuthContext";
 import { limitReached } from "@/lib/plans";
+import { listLocations, locationName, userLocationId } from "@/lib/services/locations.service";
 import { UpgradeDialog } from "@/components/plan/UpgradeDialog";
 import { useDataVersion, notifyDataChanged } from "@/lib/data-bus";
 import {
@@ -86,6 +87,9 @@ function SociosPage() {
   );
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("all");
+  const locations = listLocations();
+  const multiLocation = locations.length > 1;
+  const [locationFilter, setLocationFilter] = useState("all");
   const [creating, setCreating] = useState(false);
   const [inviting, setInviting] = useState(false);
   const [selected, setSelected] = useState<User | null>(null);
@@ -104,9 +108,10 @@ function SociosPage() {
     return members
       .filter((u) => (q ? u.name.toLowerCase().includes(q) || (!isCoach && u.email.toLowerCase().includes(q)) : true))
       .filter((u) => (filter === "all" ? true : getMembershipStatus(u.id) === filter))
+      .filter((u) => (!multiLocation || locationFilter === "all" ? true : userLocationId(u) === locationFilter))
       .sort((a, b) => a.name.localeCompare(b.name));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [members, query, filter, isCoach, useDataVersion()]);
+  }, [members, query, filter, isCoach, locationFilter, multiLocation, useDataVersion()]);
 
   return (
     <AppLayout>
@@ -134,6 +139,17 @@ function SociosPage() {
               ))}
             </SelectContent>
           </Select>}
+          {multiLocation && (
+            <Select value={locationFilter} onValueChange={setLocationFilter}>
+              <SelectTrigger className="w-[150px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las sedes</SelectItem>
+                {locations.map((l) => (
+                  <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
         {!isCoach && <div className="flex items-center gap-2">
           <InviteButton onClick={() => setInviting(true)} />
@@ -181,6 +197,7 @@ function SociosPage() {
                       <div className="min-w-0">
                         <div className="font-medium">{u.name}</div>
                         {!isCoach && <div className="text-xs text-muted-foreground truncate">{u.email}</div>}
+                        {multiLocation && <div className="text-xs text-muted-foreground truncate">{locationName(userLocationId(u))}</div>}
                         <div className="text-xs font-medium sm:hidden" style={{ color: "var(--brand)" }}>
                           {classesLabel(totalAttendance(u.id))} hechas
                         </div>

@@ -8,6 +8,8 @@ import { notifyDataChanged } from "@/lib/data-bus";
 import { formatDate } from "@/lib/date";
 import { ageFrom, formatBirthDate, todayKey } from "@/lib/memberData";
 import type { User, UserProfile } from "@/types";
+import { hasMultipleLocations, locationName, userLocationId } from "@/lib/services/locations.service";
+import { LocationSelect } from "@/components/config/LocationSelect";
 
 type Form = {
   name: string;
@@ -18,6 +20,7 @@ type Form = {
   address: string;
   emergencyName: string;
   emergencyPhone: string;
+  locationId: string;
 };
 
 function toForm(user: User): Form {
@@ -31,12 +34,14 @@ function toForm(user: User): Form {
     address: p.address ?? "",
     emergencyName: p.emergencyName ?? "",
     emergencyPhone: p.emergencyPhone ?? "",
+    locationId: userLocationId(user) ?? "",
   };
 }
 
 /** Bloque de datos personales editables del socio dentro del detalle. */
 export function MemberProfileTab({ user }: { user: User }) {
   const [editing, setEditing] = useState(false);
+  const multiLocation = hasMultipleLocations();
   const [f, setF] = useState<Form>(() => toForm(user));
   const set = (k: keyof Form) => (e: React.ChangeEvent<HTMLInputElement>) => setF((prev) => ({ ...prev, [k]: e.target.value }));
 
@@ -50,6 +55,7 @@ export function MemberProfileTab({ user }: { user: User }) {
       address: f.address.trim() || undefined,
       emergencyName: f.emergencyName.trim() || undefined,
       emergencyPhone: f.emergencyPhone.trim() || undefined,
+      ...(multiLocation ? { locationId: f.locationId || undefined } : {}),
     };
     usersRepo.update(user.id, { name: f.name.trim(), email: f.email.trim(), profile });
     toast.success("Datos actualizados");
@@ -68,6 +74,7 @@ export function MemberProfileTab({ user }: { user: User }) {
     ["Dirección", p.address ?? ""],
     ["Emergencia", emergency],
     ["Alta", formatDate(user.createdAt.slice(0, 10))],
+    ...(multiLocation ? ([["Sede", locationName(userLocationId(user))]] as Array<[string, string]>) : []),
   ];
 
   return (
@@ -102,6 +109,11 @@ export function MemberProfileTab({ user }: { user: User }) {
           <Field label="Dirección"><Input value={f.address} onChange={set("address")} /></Field>
           <Field label="Contacto de emergencia"><Input value={f.emergencyName} onChange={set("emergencyName")} placeholder="Nombre y relación" /></Field>
           <Field label="Teléfono de emergencia"><Input type="tel" value={f.emergencyPhone} onChange={set("emergencyPhone")} /></Field>
+          {multiLocation && (
+            <Field label="Sede principal">
+              <LocationSelect value={f.locationId} onChange={(id) => setF((prev) => ({ ...prev, locationId: id }))} />
+            </Field>
+          )}
         </div>
       ) : (
         <dl className="grid gap-x-4 gap-y-1.5 text-sm sm:grid-cols-2">

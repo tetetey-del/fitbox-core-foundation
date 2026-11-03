@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/contexts/AuthContext";
+import { hasMultipleLocations, userLocationId } from "@/lib/services/locations.service";
+import { LocationSelect } from "@/components/config/LocationSelect";
 import { AuthError } from "@/lib/services/auth.service";
 import { updateUserById } from "@/lib/storage/repositories/users.repo";
 import { MEMBER_GOAL_LABEL, type MemberGoal } from "@/types";
@@ -94,6 +96,8 @@ function MyDataCard({ onSaved }: { onSaved: () => void }) {
   const [address, setAddress] = useState(p.address ?? "");
   const [emergencyName, setEmergencyName] = useState(p.emergencyName ?? "");
   const [emergencyPhone, setEmergencyPhone] = useState(p.emergencyPhone ?? "");
+  const [locationId, setLocationId] = useState(currentUser ? userLocationId(currentUser) ?? "" : "");
+  const multiLocation = hasMultipleLocations();
   const [tried, setTried] = useState(false);
 
   if (!session || !currentUser) return null;
@@ -112,6 +116,7 @@ function MyDataCard({ onSaved }: { onSaved: () => void }) {
         address: address.trim() || undefined,
         emergencyName: emergencyName.trim() || undefined,
         emergencyPhone: emergencyPhone.trim() || undefined,
+        ...(multiLocation ? { locationId: locationId || undefined } : {}),
       },
     });
     toast.success("Datos guardados");
@@ -156,6 +161,11 @@ function MyDataCard({ onSaved }: { onSaved: () => void }) {
         <FieldRow label="Teléfono de emergencia">
           <Input type="tel" inputMode="tel" value={emergencyPhone} onChange={(e) => setEmergencyPhone(e.target.value)} />
         </FieldRow>
+        {multiLocation && (
+          <FieldRow label="Mi sede principal">
+            <LocationSelect value={locationId} onChange={setLocationId} />
+          </FieldRow>
+        )}
       </div>
       <div className="flex justify-end">
         <Button onClick={save}>Guardar datos</Button>
