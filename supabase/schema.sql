@@ -279,3 +279,8 @@ grant execute on function public.kf_get_invitation(text) to anon, authenticated;
 --   esas clases (los propios y los del staff se bajan todos) y avisos de más de 90 días.
 --   since fecha → solo lo que cambió después (updated_at > since).
 -- La app baja todo al entrar y cada 15 minutos; cada 30 segundos solo los cambios y borrados.
+
+-- ---------- Reservas: límite de días y coaches (migración kinflow_booking_window, 03/11/2026) ----------
+-- kf_book_session: tenants.data.settings.bookingWindowDays = X → el socio (y el coach para sí mismo)
+--   solo reserva clases de hoy a hoy + (X - 1), días de calendario en la zona del box. 0/vacío = sin límite.
+--   El dueño apunta a cualquiera en cualquier fecha; el coach puede apuntar a otros solo en clases de hoy.

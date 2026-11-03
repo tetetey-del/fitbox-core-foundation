@@ -29,6 +29,9 @@ import {
   isLateCancellation,
   cancelBooking,
   getUserBooking,
+  bookingWindowCheck,
+  bookingWindowMessage,
+  getBookingWindowDays,
 } from "@/lib/services/booking.service";
 
 
@@ -51,7 +54,7 @@ export const Route = createFileRoute("/reservas")({ component: ReservasPage });
 
 function ReservasPage() {
   useRequireModule("reservas");
-  const { currentUser, tenantUsers } = useAuth();
+  const { currentUser, currentTenant, tenantUsers } = useAuth();
   const dataVersion = useDataVersion();
 
   const [monday, setMonday] = useState<Date>(() => startOfWeek(new Date()));
@@ -152,6 +155,14 @@ function ReservasPage() {
     }
     const existing = getUserBooking(s.id, currentUser.id);
     if (!existing) {
+      // Límite de días de antelación del box
+      const win = bookingWindowCheck(s);
+      if (!win.open) {
+        toast.error("Todavía no se puede reservar esta clase", {
+          description: bookingWindowMessage(win.days, win.opensOn),
+        });
+        return;
+      }
       // Aviso antes de abrir el cartel si ya tiene esta actividad ese día
       const same = findSameActivityBookingOnDay(s.id, currentUser.id);
       if (same) {
@@ -190,7 +201,7 @@ function ReservasPage() {
           toast.info("Alguien de la lista de espera ha pasado a confirmado");
       }
     } else {
-      const res = cloud ? await cloudBookSession(s.id) : bookSession(s.id, currentUser.id);
+      const res = cloud ? await cloudBookSession(s.id) : bookSession(s.id, currentUser.id, { actorRole: currentUser.role });
       if (!res.ok) toast.error(res.reason ?? "No se pudo reservar");
       else if (res.booking?.status === "waitlist")
         toast("Añadido a lista de espera", {
@@ -255,6 +266,15 @@ function ReservasPage() {
                   }
                 />
 
+                {!isStaff && !myBooking && s.status !== "cancelled" && !hasSessionStarted(s) && (() => {
+                  const win = bookingWindowCheck(s);
+                  return win.open || !win.opensOn ? null : (
+                    <p className="px-1 text-[11px] text-muted-foreground">
+                      Reserva disponible desde el {formatLongDay(win.opensOn)}
+                    </p>
+                  );
+                })()}
+
                 {!isStaff && myBooking && occ && (
                   <MemberBadge
                     myBookingId={myBooking.id}
@@ -298,6 +318,13 @@ function ReservasPage() {
             setSelectedDayKey(toDateKey(new Date()));
           }}
         />
+        {!isStaff && currentTenant && getBookingWindowDays(currentTenant.id) > 0 && (
+          <p className="text-xs text-muted-foreground">
+            {getBookingWindowDays(currentTenant.id) === 1
+              ? "Las reservas se abren el mismo día de la clase."
+              : `Puedes reservar con hasta ${getBookingWindowDays(currentTenant.id)} días de antelación (hoy incluido).`}
+          </p>
+        )}
       </div>
 
       {/* Selector de día (solo móvil) */}

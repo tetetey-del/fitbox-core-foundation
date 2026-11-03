@@ -10,7 +10,7 @@ import { checkinsRepo } from "@/lib/storage/repositories/checkins.repo";
 import { classSessionsRepo } from "@/lib/storage/repositories/classSessions.repo";
 import { classTemplatesRepo } from "@/lib/storage/repositories/classTemplates.repo";
 import { tenantsRepo } from "@/lib/storage/repositories/tenants.repo";
-import { hoursBetween, sessionStart, formatDate } from "@/lib/date";
+import { hoursBetween, sessionStart, formatDate, formatLongDay, addDays, toDateKey } from "@/lib/date";
 import { consumeCredit, inspectCredits, refundCredit } from "./membership.service";
 import { notify } from "./notifications.service";
 
@@ -27,6 +27,39 @@ const bookingKey = (sessionId: string, userId: string) => `${sessionId}::${userI
 export function getCancellationWindow(tenantId: string): number {
   const t = tenantsRepo.getById(tenantId);
   return t?.settings?.cancellationWindowHours ?? DEFAULT_CANCELLATION_HOURS;
+}
+
+/** Días de antelación con los que pueden reservar los socios (0 = sin límite). */
+export function getBookingWindowDays(tenantId: string): number {
+  const t = tenantsRepo.getById(tenantId);
+  return Math.max(0, Math.floor(t?.settings?.bookingWindowDays ?? 0));
+}
+
+/**
+ * ¿Un socio ya puede reservar esta clase? Con un límite de X días, puede reservar
+ * desde hoy hasta hoy + (X - 1), por días de calendario.
+ * Devuelve el día desde el que se abre la reserva cuando todavía no se puede.
+ */
+export function bookingWindowCheck(session: ClassSession): { open: boolean; days: number; opensOn?: string } {
+  const days = getBookingWindowDays(session.tenantId);
+  if (!days) return { open: true, days };
+  const today = new Date();
+  const lastKey = toDateKey(addDays(today, days - 1));
+  if (session.date <= lastKey) return { open: true, days };
+  const [y, m, d] = session.date.split("-").map(Number);
+  const opensOn = toDateKey(addDays(new Date(y, m - 1, d), -(days - 1)));
+  return { open: false, days, opensOn };
+}
+
+/** Mensaje para el socio cuando la clase todavía no se puede reservar. */
+export function bookingWindowMessage(days: number, opensOn?: string): string {
+  const cuando = days === 1 ? "el mismo día" : `con ${days} días de antelación`;
+  return `Las reservas se abren ${cuando}.${opensOn ? ` Podrás reservar esta clase desde el ${formatLongDay(opensOn)}.` : ""}`;
+}
+
+/** ¿Es una clase de hoy? (los coaches solo pueden apuntar a alguien en las clases del día) */
+export function isTodaySession(session: ClassSession): boolean {
+  return session.date === toDateKey(new Date());
 }
 
 /** ¿La clase ya empezó? (no se puede reservar ni cancelar) */
@@ -87,6 +120,8 @@ export interface BookResult {
 export interface BookOptions {
   /** Cuando el staff apunta manualmente a alguien, se saltan las validaciones de créditos. */
   bypassCredits?: boolean;
+  /** Quién hace la reserva. El dueño no tiene límite de días; el resto, sí. */
+  actorRole?: UserRole;
 }
 
 /**
@@ -134,6 +169,10 @@ export function bookSession(
     if (!session) return { ok: false, reason: "La sesión no existe" };
     if (session.status === "cancelled") return { ok: false, reason: "La sesión está cancelada" };
     if (hasSessionStarted(session)) return { ok: false, reason: "Esta clase ya pasó" };
+    if (opts.actorRole !== "admin") {
+      const win = bookingWindowCheck(session);
+      if (!win.open) return { ok: false, reason: bookingWindowMessage(win.days, win.opensOn) };
+    }
 
     const existing = getUserBooking(sessionId, userId);
     if (existing) return { ok: false, reason: "Ya tienes una reserva en esta sesión" };
@@ -429,9 +468,15 @@ export function removeSessions(sessionIds: string[]): { deleted: number; cancell
 
 // ---- Alta manual de asistente (staff) ----
 
-export function addAttendee(sessionId: string, userId: string): BookResult {
-  // El dueño anota a alguien: se controlan su plan y sus créditos igual que si reservara él.
-  const res = bookSession(sessionId, userId);
+export function addAttendee(sessionId: string, userId: string, actorRole: UserRole = "admin"): BookResult {
+  // El staff anota a alguien: se controlan su plan y sus créditos igual que si reservara él.
+  // El dueño puede anotar en cualquier fecha; los coaches, solo en las clases de hoy.
+  const session = classSessionsRepo.getById(sessionId);
+  if (actorRole === "member") return { ok: false, reason: "Solo el staff puede apuntar a otras personas" };
+  if (actorRole === "coach" && session && !isTodaySession(session)) {
+    return { ok: false, reason: "Los coaches solo pueden apuntar a alguien en las clases del día." };
+  }
+  const res = bookSession(sessionId, userId, { actorRole: "admin" });
   if (!res.ok && res.reason === "Sin membresía activa") {
     return { ok: false, reason: "Esa persona no tiene un plan activo. Asígnale un plan primero." };
   }

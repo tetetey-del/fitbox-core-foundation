@@ -65,6 +65,7 @@ function ConfigPage() {
   const [cancellationWindow, setCancellationWindow] = useState(
     currentTenant?.settings?.cancellationWindowHours ?? 1,
   );
+  const [bookingWindow, setBookingWindow] = useState(currentTenant?.settings?.bookingWindowDays ?? 0);
   const [currency, setCurrency] = useState<CurrencyCode>(currentTenant?.settings?.currency ?? "EUR");
   const [wodVisibility, setWodVisibility] = useState<WodVisibility>(
     currentTenant?.settings?.wodVisibility ?? "visible",
@@ -76,6 +77,7 @@ function ConfigPage() {
     if (!currentTenant) return;
     setName(currentTenant.name);
     setCancellationWindow(currentTenant.settings?.cancellationWindowHours ?? 1);
+    setBookingWindow(currentTenant.settings?.bookingWindowDays ?? 0);
     setCurrency(currentTenant.settings?.currency ?? "EUR");
     setWodVisibility(currentTenant.settings?.wodVisibility ?? "visible");
   }, [currentTenant]);
@@ -87,6 +89,7 @@ function ConfigPage() {
       settings: {
         ...currentTenant.settings,
         cancellationWindowHours: cancellationWindow,
+        bookingWindowDays: Math.max(0, Math.floor(bookingWindow || 0)),
         currency,
         wodVisibility,
       },
@@ -134,6 +137,23 @@ function ConfigPage() {
                 />
                 <p className="text-xs text-muted-foreground">
                   Si un socio cancela con menos antelación, la clase se le descuenta igual.
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">
+                  Los socios pueden reservar con hasta (días de antelación)
+                </Label>
+                <NumberInput
+                  min={0}
+                  value={bookingWindow}
+                  onChange={(e) => setBookingWindow(Number(e.target.value))}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {bookingWindow > 0
+                    ? `Cuenta el día de hoy: con ${bookingWindow}, un lunes pueden reservar ${
+                        ["", "solo el lunes", "lunes y martes", "de lunes a miércoles", "de lunes a jueves", "de lunes a viernes", "de lunes a sábado", "toda la semana"][Math.min(bookingWindow, 7)]
+                      }. Los coaches solo pueden apuntar a alguien en las clases del día; tú, en cualquier fecha.`
+                    : "0 = sin límite: pueden reservar cualquier clase publicada."}
                 </p>
               </div>
               <div className="space-y-1.5">
