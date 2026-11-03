@@ -58,7 +58,15 @@ function RetosPage() {
   }, []);
 
   if (!enabled || !currentUser) return null;
-  const isStaff = currentUser.role === "admin" || currentUser.role === "coach";
+  if (currentUser.role === "coach") {
+    return (
+      <AppLayout>
+        <PageHeader title="Retos" />
+        <p className="text-sm text-muted-foreground">Esta sección es para los socios y la gestiona el dueño del box.</p>
+      </AppLayout>
+    );
+  }
+  const isStaff = currentUser.role === "admin";
   const all = challengesRepo.list().sort((a, b) => b.startDate.localeCompare(a.startDate));
   const visible = isStaff ? all : all.filter((c) => c.status !== "draft");
   const userById = new Map(tenantUsers.map((u) => [u.id, u]));

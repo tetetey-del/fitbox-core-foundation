@@ -146,6 +146,8 @@ export interface Invitation extends BaseEntity {
   tenantId: string;
   code: string;
   email?: string;
+  /** Móvil de la persona invitada, para mandarle la invitación por WhatsApp. */
+  phone?: string;
   role: "coach" | "member";
   planId?: string;
   invitedBy: string;
