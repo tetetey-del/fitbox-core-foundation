@@ -82,10 +82,12 @@ function onWrite(key: string, prev: unknown, next: unknown): void {
   if (key === TENANTS_KEY) {
     if (ctx.role !== "admin") return; // solo el admin puede cambiar los datos del box
     const find = (list: unknown) => (Array.isArray(list) ? (list as Row[]).find((t) => t.id === ctx!.tenantId) : undefined);
-    const a = find(prev);
-    const b = find(next);
+    // El plan (subscription) es de solo lectura: viene de tenant_plans y no se sube.
+    const strip = (t: Row | undefined) => (t ? (({ subscription: _s, ...rest }) => rest)(t as Row & { subscription?: unknown }) : t);
+    const a = strip(find(prev));
+    const b = strip(find(next));
     if (b && JSON.stringify(a) !== JSON.stringify(b)) {
-      tenantPatch = b;
+      tenantPatch = b as Row;
       schedule();
     }
     return;
@@ -243,7 +245,17 @@ async function pullTenantRow(tenantId: string): Promise<void> {
   const { data: tenantRow, error } = await sb().from("tenants").select("id,data").eq("id", tenantId).maybeSingle();
   if (error) throw error;
   if (!tenantRow) return;
-  const tenant = { ...(tenantRow.data as Row), id: tenantRow.id as string };
+  // Plan del box (Starter / Pro / Business), de solo lectura.
+  const { data: planRow } = await sb()
+    .from("tenant_plans")
+    .select("plan,status,trial_ends_at")
+    .eq("tenant_id", tenantId)
+    .maybeSingle();
+  const { subscription: _old, ...data } = tenantRow.data as Row & { subscription?: unknown };
+  const tenant: Row = { ...data, id: tenantRow.id as string };
+  if (planRow) {
+    tenant.subscription = { plan: planRow.plan, status: planRow.status, trialEndsAt: planRow.trial_ends_at };
+  }
   let list: Row[] = [];
   try {
     list = JSON.parse(window.localStorage.getItem(TENANTS_KEY) ?? "[]");

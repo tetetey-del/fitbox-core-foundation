@@ -40,8 +40,9 @@ export interface ClassAlert {
 }
 
 /** Avisos para una clase: notas de los asistentes sobre ejercicios del WOD de ese día. */
-export function classAlerts(date: string, memberIds: string[]): Map<string, ClassAlert[]> {
+export function classAlerts(date: string, memberIds: string[], enabled = true): Map<string, ClassAlert[]> {
   const out = new Map<string, ClassAlert[]>();
+  if (!enabled) return out;
   const inWod = new Map(exercisesInWodOf(date).map((e) => [e.id, e]));
   if (inWod.size === 0) return out;
   for (const id of memberIds) {

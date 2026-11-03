@@ -34,6 +34,8 @@ import type { MembershipUiStatus, User } from "@/types";
 import { MEMBERSHIP_UI_LABEL } from "@/types";
 import { usersRepo } from "@/lib/storage/repositories/users.repo";
 import { useAuth } from "@/contexts/AuthContext";
+import { limitReached } from "@/lib/plans";
+import { UpgradeDialog } from "@/components/plan/UpgradeDialog";
 import { useDataVersion, notifyDataChanged } from "@/lib/data-bus";
 import {
   getActiveMembership,
@@ -89,6 +91,13 @@ function SociosPage() {
   const [selected, setSelected] = useState<User | null>(null);
   // El coach ve la lista recortada: sin email, plan, créditos ni estado de la cuota.
   const isCoach = currentUser?.role === "coach";
+  // Plan Starter: hasta 50 socios. Al pasarse, se explica y se ofrece el Pro.
+  const [upgrade, setUpgrade] = useState<number | null>(null);
+  const guard = (open: () => void) => () => {
+    const max = limitReached(currentTenant, "members");
+    if (max !== null) setUpgrade(max);
+    else open();
+  };
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -128,7 +137,7 @@ function SociosPage() {
         </div>
         {!isCoach && <div className="flex items-center gap-2">
           <InviteButton onClick={() => setInviting(true)} />
-          <Button onClick={() => setCreating(true)}>
+          <Button onClick={guard(() => setCreating(true))}>
             <Plus className="h-4 w-4 mr-2" strokeWidth={1.5} />
             Nuevo socio
           </Button>
@@ -199,6 +208,7 @@ function SociosPage() {
       />
 
       <NewMemberDialog open={creating} onOpenChange={setCreating} />
+      <UpgradeDialog open={upgrade !== null} onOpenChange={(o) => !o && setUpgrade(null)} kind="members" max={upgrade ?? 50} />
       <InviteMemberDialog open={inviting} onOpenChange={setInviting} />
     </AppLayout>
   );

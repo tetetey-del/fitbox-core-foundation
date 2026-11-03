@@ -97,7 +97,7 @@ const es = {
       },
       Pro: {
         desc: "Para boxes en crecimiento.",
-        features: ["Socios ilimitados", "Todos los módulos", "Marcas y ranking", "Tu logo y tus colores", "Coaches ilimitados", "Notificaciones"],
+        features: ["Socios ilimitados", "Hasta 2 sedes", "Todos los módulos", "Marcas y ranking", "Tu logo y tus colores", "Coaches ilimitados", "Notificaciones"],
       },
       Business: {
         desc: "Para cadenas y varias sedes.",
@@ -241,7 +241,7 @@ const en: LandingCopy = {
       },
       Pro: {
         desc: "For growing boxes.",
-        features: ["Unlimited members", "All modules", "PRs and leaderboard", "Your logo and colors", "Unlimited coaches", "Notifications"],
+        features: ["Unlimited members", "Up to 2 locations", "All modules", "PRs and leaderboard", "Your logo and colors", "Unlimited coaches", "Notifications"],
       },
       Business: {
         desc: "For chains and multiple locations.",

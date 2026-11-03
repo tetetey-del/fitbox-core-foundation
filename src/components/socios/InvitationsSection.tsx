@@ -19,6 +19,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
+import { limitMessage, limitReached, type LimitKind } from "@/lib/plans";
+import { SupportContact } from "@/components/plan/SupportContact";
 import { notifyDataChanged, useDataVersion } from "@/lib/data-bus";
 import type { Invitation, InvitationStatus } from "@/types";
 import { formatPlanPrice } from "@/lib/format";
@@ -72,6 +74,9 @@ export function InviteMemberDialog({
   const [phone, setPhone] = useState("");
   const [planId, setPlanId] = useState<string>("");
   const [created, setCreated] = useState<Invitation | null>(null);
+  // Límite del plan para el rol elegido (Starter: 50 socios, 1 coach).
+  const limitKind = role === "coach" ? "coaches" : "members";
+  const limitMax = limitReached(currentTenant, limitKind);
 
   const plans = useMemo(() => {
     if (!currentTenant) return [];
@@ -115,7 +120,21 @@ export function InviteMemberDialog({
         <DialogHeader>
           <DialogTitle>Invitar a alguien nuevo</DialogTitle>
         </DialogHeader>
-        {!created ? (
+        {!created && limitMax !== null ? (
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Rol</Label>
+              <Select value={role} onValueChange={(v) => setRole(v as "coach" | "member")}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="member">Socio/a</SelectItem>
+                  <SelectItem value="coach">Coach</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <LimitNotice kind={limitKind} max={limitMax} />
+          </div>
+        ) : !created ? (
           <div className="grid gap-3">
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Rol</Label>
@@ -287,5 +306,21 @@ export function InviteButton({ onClick }: { onClick: () => void }) {
       <UserPlus className="h-4 w-4 mr-2" strokeWidth={1.5} />
       Invitar
     </Button>
+  );
+}
+
+function LimitNotice({ kind, max }: { kind: LimitKind; max: number }) {
+  const { currentTenant } = useAuth();
+  const msg = limitMessage(kind, max);
+  return (
+    <div className="space-y-3 rounded-md border border-border p-3">
+      <div className="text-sm font-medium">{msg.title}</div>
+      <p className="text-sm text-muted-foreground">{msg.body}</p>
+      <SupportContact
+        compact
+        boxName={currentTenant?.name}
+        message={`Hola, soy de ${currentTenant?.name ?? "mi box"} y quiero pasarme al plan Pro de Kinflow.`}
+      />
+    </div>
   );
 }

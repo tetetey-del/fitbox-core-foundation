@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { tenantsRepo } from "@/lib/storage/repositories/tenants.repo";
 import { notifyDataChanged } from "@/lib/data-bus";
 import { DEFAULT_MODULES, type TenantModules } from "@/types";
+import { modulesAllowedByPlan } from "@/lib/plans";
+import { ProBadge } from "@/components/plan/UpgradeDialog";
 
 const DESCRIPTIONS: Record<keyof TenantModules, { label: string; desc: string }> = {
   reservas: { label: "Reservas", desc: "Calendario de clases, reservas de socios y check-ins." },
@@ -23,6 +25,7 @@ export function ModulesSection() {
   const { currentTenant, refresh } = useAuth();
   const initial = { ...DEFAULT_MODULES, ...(currentTenant?.settings?.enabledModules ?? {}) };
   const [mods, setMods] = useState<TenantModules>(initial);
+  const allowed = modulesAllowedByPlan(currentTenant);
 
   useEffect(() => {
     setMods({ ...DEFAULT_MODULES, ...(currentTenant?.settings?.enabledModules ?? {}) });
@@ -53,12 +56,16 @@ export function ModulesSection() {
             className="flex items-start justify-between gap-3 rounded-md border border-border p-3"
           >
             <div className="min-w-0">
-              <div className="text-sm font-medium">{DESCRIPTIONS[k].label}</div>
+              <div className="flex items-center gap-2 text-sm font-medium">
+                {DESCRIPTIONS[k].label}
+                {allowed[k] === false && <ProBadge />}
+              </div>
               <p className="text-xs text-muted-foreground">{DESCRIPTIONS[k].desc}</p>
             </div>
             <Switch
               aria-label={DESCRIPTIONS[k].label}
-              checked={mods[k]}
+              checked={allowed[k] !== false && mods[k]}
+              disabled={allowed[k] === false}
               onCheckedChange={(v) => setMods((m) => ({ ...m, [k]: v }))}
             />
           </li>

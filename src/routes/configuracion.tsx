@@ -54,6 +54,7 @@ import { AppearanceSection } from "@/components/config/AppearanceSection";
 import { AppLinkSection } from "@/components/config/AppLinkSection";
 import { ModulesSection } from "@/components/config/ModulesSection";
 import { NumberInput } from "@/components/ui/number-input";
+import { PlanSection } from "@/components/plan/PlanSection";
 
 
 export const Route = createFileRoute("/configuracion")({ component: ConfigPage });
@@ -116,6 +117,7 @@ function ConfigPage() {
         }
       >
         <div className="grid gap-8 max-w-3xl">
+          <PlanSection />
           <section className="space-y-4 rounded-lg border border-border bg-card p-6">
             <div>
               <h2 className="text-base font-semibold">Datos del box</h2>

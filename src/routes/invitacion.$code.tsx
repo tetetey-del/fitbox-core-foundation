@@ -125,6 +125,18 @@ function InvitationPage() {
     );
   }
 
+  if (resolved.status === "full") {
+    return (
+      <AuthShell title="Todavía no puedes unirte">
+        <p className="text-sm text-muted-foreground">
+          {resolved.tenantName ?? "El box"} llegó al límite de personas de su plan en Kinflow.
+        </p>
+        <p className="mt-2 text-xs text-muted-foreground">Avísale al box para que lo revise y vuelve a abrir este enlace.</p>
+        <Button className="mt-4 w-full" onClick={() => navigate({ to: "/" })}>Volver al inicio</Button>
+      </AuthShell>
+    );
+  }
+
   if (resolved.status !== "pending") {
     const label =
       resolved.status === "expired"

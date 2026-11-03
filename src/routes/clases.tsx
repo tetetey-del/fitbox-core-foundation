@@ -6,6 +6,8 @@ import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
+import { planAllows } from "@/lib/plans";
+import { ProBadge } from "@/components/plan/UpgradeDialog";
 import { useDataVersion } from "@/lib/data-bus";
 import { classTemplatesRepo } from "@/lib/storage/repositories/classTemplates.repo";
 import type { ClassTemplate } from "@/types";
@@ -124,6 +126,8 @@ function ClasesPage() {
 
 /** WOD: día por día o ciclo de programación que se repite. */
 function WodTabs() {
+  const { currentTenant } = useAuth();
+  const cycles = planAllows(currentTenant, "wodCycles");
   return (
     <Tabs defaultValue="dia" className="max-w-3xl space-y-4">
       <TabsList>
@@ -137,7 +141,16 @@ function WodTabs() {
       </TabsContent>
       <TabsContent value="ciclo">
         <div className="rounded-lg border border-border bg-card p-5">
-          <WodCycleManager />
+          {cycles ? (
+            <WodCycleManager />
+          ) : (
+            <div className="space-y-1">
+              <h3 className="flex items-center gap-2 text-sm font-semibold">Ciclo de programación <ProBadge /></h3>
+              <p className="text-sm text-muted-foreground">
+                Con el plan Pro armas la programación una vez (por ejemplo, 12 semanas) y se repite sola.
+              </p>
+            </div>
+          )}
         </div>
       </TabsContent>
     </Tabs>

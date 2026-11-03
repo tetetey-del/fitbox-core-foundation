@@ -20,6 +20,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as MasRouteImport } from './routes/mas'
 import { Route as MembresiaRouteImport } from './routes/membresia'
 import { Route as MiCuentaRouteImport } from './routes/mi-cuenta'
+import { Route as PlataformaRouteImport } from './routes/plataforma'
 import { Route as PrsRouteImport } from './routes/prs'
 import { Route as RecuperarRouteImport } from './routes/recuperar'
 import { Route as RegistroRouteImport } from './routes/registro'
@@ -94,6 +95,11 @@ const MembresiaRoute = MembresiaRouteImport.update({
 const MiCuentaRoute = MiCuentaRouteImport.update({
   id: '/mi-cuenta',
   path: '/mi-cuenta',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlataformaRoute = PlataformaRouteImport.update({
+  id: '/plataforma',
+  path: '/plataforma',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrsRoute = PrsRouteImport.update({
@@ -209,6 +215,7 @@ export interface FileRoutesByFullPath {
   '/mas': typeof MasRoute
   '/membresia': typeof MembresiaRoute
   '/mi-cuenta': typeof MiCuentaRoute
+  '/plataforma': typeof PlataformaRoute
   '/prs': typeof PrsRoute
   '/recuperar': typeof RecuperarRoute
   '/registro': typeof RegistroRoute
@@ -242,6 +249,7 @@ export interface FileRoutesByTo {
   '/mas': typeof MasRoute
   '/membresia': typeof MembresiaRoute
   '/mi-cuenta': typeof MiCuentaRoute
+  '/plataforma': typeof PlataformaRoute
   '/prs': typeof PrsRoute
   '/recuperar': typeof RecuperarRoute
   '/registro': typeof RegistroRoute
@@ -276,6 +284,7 @@ export interface FileRoutesById {
   '/mas': typeof MasRoute
   '/membresia': typeof MembresiaRoute
   '/mi-cuenta': typeof MiCuentaRoute
+  '/plataforma': typeof PlataformaRoute
   '/prs': typeof PrsRoute
   '/recuperar': typeof RecuperarRoute
   '/registro': typeof RegistroRoute
@@ -311,6 +320,7 @@ export interface FileRouteTypes {
     | '/mas'
     | '/membresia'
     | '/mi-cuenta'
+    | '/plataforma'
     | '/prs'
     | '/recuperar'
     | '/registro'
@@ -344,6 +354,7 @@ export interface FileRouteTypes {
     | '/mas'
     | '/membresia'
     | '/mi-cuenta'
+    | '/plataforma'
     | '/prs'
     | '/recuperar'
     | '/registro'
@@ -377,6 +388,7 @@ export interface FileRouteTypes {
     | '/mas'
     | '/membresia'
     | '/mi-cuenta'
+    | '/plataforma'
     | '/prs'
     | '/recuperar'
     | '/registro'
@@ -411,6 +423,7 @@ export interface RootRouteChildren {
   MasRoute: typeof MasRoute
   MembresiaRoute: typeof MembresiaRoute
   MiCuentaRoute: typeof MiCuentaRoute
+  PlataformaRoute: typeof PlataformaRoute
   PrsRoute: typeof PrsRoute
   RecuperarRoute: typeof RecuperarRoute
   RegistroRoute: typeof RegistroRoute
@@ -510,6 +523,13 @@ declare module '@tanstack/react-router' {
       path: '/mi-cuenta'
       fullPath: '/mi-cuenta'
       preLoaderRoute: typeof MiCuentaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/plataforma': {
+      id: '/plataforma'
+      path: '/plataforma'
+      fullPath: '/plataforma'
+      preLoaderRoute: typeof PlataformaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/prs': {
@@ -667,6 +687,7 @@ const rootRouteChildren: RootRouteChildren = {
   MasRoute: MasRoute,
   MembresiaRoute: MembresiaRoute,
   MiCuentaRoute: MiCuentaRoute,
+  PlataformaRoute: PlataformaRoute,
   PrsRoute: PrsRoute,
   RecuperarRoute: RecuperarRoute,
   RegistroRoute: RegistroRoute,
