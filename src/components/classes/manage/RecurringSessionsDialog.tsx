@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { generateRecurringSessions } from "@/lib/services/sessions.service";
+import { listLocations } from "@/lib/services/locations.service";
 import { notifyDataChanged } from "@/lib/data-bus";
 import { addDays, DAY_LABELS, toDateKey } from "@/lib/date";
 import type { ClassTemplate, User } from "@/types";
@@ -39,10 +40,13 @@ export function RecurringSessionsDialog({ open, onOpenChange, templates, coaches
   const [endDate, setEndDate] = useState(toDateKey(addDays(new Date(), 28)));
   const [coachId, setCoachId] = useState<string>("");
   const [capacity, setCapacity] = useState<number>(12);
+  const locations = listLocations();
+  const [locationId, setLocationId] = useState<string>("");
 
   // Solo al abrir el diálogo se elige la primera plantilla. Antes se reiniciaba cada vez que
   // llegaban datos nuevos y terminaba generando sesiones de la primera plantilla.
   useEffect(() => {
+    if (open) setLocationId((cur) => cur || listLocations()[0]?.id || "");
     if (open && templates[0]) {
       setTemplateId(templates[0].id);
       setCapacity(templates[0].defaultCapacity);
@@ -78,6 +82,7 @@ export function RecurringSessionsDialog({ open, onOpenChange, templates, coaches
       startDate: new Date(sy, sm - 1, sd),
       endDate: new Date(ey, em - 1, ed),
       coachId: coachId || undefined,
+      locationId: locations.length > 1 && locationId && locationId !== locations[0]?.id ? locationId : undefined,
       capacity,
       durationMinutes: t.durationMinutes,
     });
@@ -152,6 +157,19 @@ export function RecurringSessionsDialog({ open, onOpenChange, templates, coaches
               <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
             </ClassFieldRow>
           </div>
+
+          {locations.length > 1 && (
+            <ClassFieldRow label="Sede">
+              <Select value={locationId} onValueChange={setLocationId}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {locations.map((l) => (
+                    <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </ClassFieldRow>
+          )}
 
           <ClassFieldRow label="Coach">
             <Select value={coachId} onValueChange={setCoachId}>

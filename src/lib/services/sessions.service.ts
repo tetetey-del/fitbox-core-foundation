@@ -16,6 +16,8 @@ export interface GenerateOptions {
   startDate: Date;
   endDate: Date;
   coachId?: string;
+  /** Sede (vacío = la principal). */
+  locationId?: string;
   capacity: number;
   durationMinutes: number;
 }
@@ -54,7 +56,12 @@ export function generateRecurringSessions(opts: GenerateOptions): GenerateResult
       const clash = existing.find(
         // Solo se omite si ya hay una clase de la MISMA plantilla a esa hora: dos clases
         // distintas pueden coincidir (por ejemplo, CrossFit y Movilidad en salas distintas).
-        (s) => s.date === date && s.startTime === opts.startTime && s.templateId === opts.templateId && s.status !== "cancelled",
+        (s) =>
+          s.date === date &&
+          s.startTime === opts.startTime &&
+          s.templateId === opts.templateId &&
+          (s.locationId ?? "") === (opts.locationId ?? "") &&
+          s.status !== "cancelled",
       );
       if (clash) {
         skipped.push(clash);
@@ -67,6 +74,7 @@ export function generateRecurringSessions(opts: GenerateOptions): GenerateResult
           durationMinutes: opts.durationMinutes,
           capacity: opts.capacity,
           coachId: opts.coachId,
+          ...(opts.locationId ? { locationId: opts.locationId } : {}),
           status: "scheduled",
         });
         created.push(s);

@@ -1,6 +1,7 @@
 import { tenantsRepo } from "./storage/repositories/tenants.repo";
 import { createUserInTenant } from "./storage/repositories/users.repo";
 import { classTemplatesRepoFor } from "./storage/repositories/classTemplates.repo";
+import { locationsRepoFor } from "@/lib/storage/repositories/locations.repo";
 import { classSessionsRepoFor } from "./storage/repositories/classSessions.repo";
 import { bookingsRepoFor } from "./storage/repositories/bookings.repo";
 import { checkinsRepoFor } from "./storage/repositories/checkins.repo";
@@ -29,7 +30,7 @@ const SEEDED_KEY = buildKey(null, "seeded");
 const DEMO_CLEARED_KEY = buildKey(null, "demo_cleared");
 /** Versión del gimnasio de demo. Si cambia, los navegadores con la demo vieja se vuelven a sembrar. */
 const DEMO_VERSION_KEY = buildKey(null, "demo_version");
-const DEMO_VERSION = 10;
+const DEMO_VERSION = 11;
 /** Boxes de demos anteriores que se borran al actualizar: FitBox (v1) y versiones previas de Chia (v2 a v6). */
 const OLD_DEMO_SLUGS = ["crossfit-norte", "box-sur", "chia-training", "ritmo-crossfit", "bora-crossfit"];
 const OLD_SUPERADMIN_EMAILS = ["isaac@fitbox.io"];
@@ -194,6 +195,8 @@ interface DemoProfile {
   templates?: DemoTemplate[];
   weekday?: (d: number) => DemoSlot[];
   saturday?: DemoSlot[];
+  /** Sedes del box (la primera es la principal). Los slots con `loc` van a otra sede. */
+  locations?: { name: string; address?: string }[];
 }
 
 type DemoTemplate = {
@@ -206,7 +209,7 @@ type DemoTemplate = {
   /** Índice del coach (0, 1, 2) que da la clase por defecto. */
   coach?: number;
 };
-type DemoSlot = { time: string; tpl: string; coach?: number; minutes?: number };
+type DemoSlot = { time: string; tpl: string; coach?: number; minutes?: number; loc?: number };
 
 const ES_POSTS: DemoPost[] = [
   { type: "aviso", title: "¡Bienvenidos a la app de Chia!", content: "Desde ahora reservas tus clases, ves tus marcas y te enteras de todo desde aquí. Instálala en el móvil: menú del navegador → Añadir a pantalla de inicio. ¡Nos vemos en el box!", pinned: true, daysAgo: 0 },
@@ -407,8 +410,16 @@ const DEMO_BORA: DemoProfile = {
     { time: "19:00", tpl: "crossfit", coach: 1 },
     { time: "20:00", tpl: "crossfit", coach: 0 },
     { time: "21:00", tpl: "crossfit", coach: 1 },
+    // Segunda sede (Calle 24): tarde y noche.
+    { time: "18:00", tpl: "crossfit", coach: 2, loc: 1 },
+    { time: "19:00", tpl: "funcional", coach: 2, loc: 1 },
+    { time: "20:00", tpl: "crossfit", coach: 2, loc: 1 },
   ],
-  saturday: [{ time: "10:00", tpl: "openbox" }],
+  saturday: [{ time: "10:00", tpl: "openbox" }, { time: "10:00", tpl: "crossfit", coach: 2, loc: 1 }],
+  locations: [
+    { name: "Sede Calle 105", address: "Calle 105, General Pico" },
+    { name: "Sede Calle 24", address: "Calle 24, General Pico" },
+  ],
 };
 
 /** Perfiles de demo por clave (para las páginas /demo, /demo/ar y /demo/bora). */
@@ -416,6 +427,8 @@ export type DemoKey = "es" | "ar" | "bora";
 
 /** Perfil de la demo que se está armando (España por defecto). */
 let P: DemoProfile = DEMO_ES;
+/** Sedes creadas para la demo que se está armando. */
+let demoLocationIds: string[] = [];
 
 /** Datos de ficha inventados pero coherentes para el socio número i. */
 function demoProfile(i: number, named: boolean): UserProfile {
@@ -456,6 +469,15 @@ function createChiaTenant(): SeedResult {
   // para que se vea el aviso "Completa tus datos".
   const profiles = new Map(members.map((u, i) => [u.id, demoProfile(i, defs[i].email.endsWith("@kinflow.app"))]));
   usersRepo.replaceAll(usersRepo.list().map((u) => (profiles.has(u.id) ? { ...u, profile: { ...u.profile, ...profiles.get(u.id)! } } : u)));
+  // Sedes (demo de BORA): uno de cada tres socios entrena en la segunda sede.
+  const locationIds = (P.locations ?? []).map((l) => locationsRepoFor(tenant.id).create({ tenantId: tenant.id, name: l.name, address: l.address }).id);
+  if (locationIds.length > 1) {
+    const second = new Set(members.filter((_, i) => i % 3 === 2 && !defs[i].email.endsWith("@kinflow.app")).map((u) => u.id));
+    usersRepo.replaceAll(
+      usersRepo.list().map((u) => ({ ...u, profile: { ...u.profile, locationId: second.has(u.id) ? locationIds[1] : locationIds[0] } })),
+    );
+  }
+  demoLocationIds = locationIds;
 
   const exercisesRepo = exercisesRepoFor(tenant.id);
   DEFAULT_EXERCISES.forEach((d) => exercisesRepo.create({ tenantId: tenant.id, isCustom: false, ...d }));
@@ -729,8 +751,9 @@ function seedClassesFor({ tenant, coaches, members }: SeedResult) {
   });
 
   const weekStart = startOfWeek(today);
-  const createSession = (day: Date, time: string, t: ClassTemplate, coach?: User, minutes?: number) =>
+  const createSession = (day: Date, time: string, t: ClassTemplate, coach?: User, minutes?: number, loc?: number) =>
     sessionsRepo.create({
+      ...(loc && demoLocationIds[loc] ? { locationId: demoLocationIds[loc] } : {}),
       tenantId: tenant.id,
       templateId: t.id,
       date: toDateKey(day),
@@ -762,7 +785,7 @@ function seedClassesFor({ tenant, coaches, members }: SeedResult) {
         const day = addDays(weekStart, w * 7 + d);
         for (const slot of d === 5 ? P.saturday : P.weekday(d)) {
           const t = byKey.get(slot.tpl);
-          if (t) createSession(day, slot.time, t, slot.coach !== undefined ? coaches[slot.coach] : undefined, slot.minutes);
+          if (t) createSession(day, slot.time, t, slot.coach !== undefined ? coaches[slot.coach] : undefined, slot.minutes, slot.loc);
         }
       }
     }

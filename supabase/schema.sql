@@ -292,3 +292,8 @@ grant execute on function public.kf_get_invitation(text) to anon, authenticated;
 -- kf_plan_blocked(t): bloqueado a mano o prueba vencida → kf_book_session no deja reservar.
 -- records_plan_limits: en Starter, máx. 50 socios, 1 coach y 1 admin (KF_LIMIT_*).
 -- kf_get_invitation devuelve status 'full' si el box llegó al límite de su plan.
+
+-- ---------- Sedes (migración kinflow_locations, 03/11/2026) ----------
+-- Colección 'locations' en records (los socios la pueden leer). class_sessions.data.locationId y
+-- users.data.profile.locationId (sede principal). Vacío = la sede principal (la primera creada).
+-- records_location_limit: Starter 1 sede, Pro 2, Business sin límite (KF_LIMIT_LOCATIONS).

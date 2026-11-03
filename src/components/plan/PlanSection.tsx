@@ -2,6 +2,7 @@ import { Check, Crown } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { PLANS, PLAN_FEATURE_LABEL, countActive, planOf, subscriptionOf, trialDaysLeft } from "@/lib/plans";
 import { formatDate } from "@/lib/date";
+import { listLocations } from "@/lib/services/locations.service";
 import { SupportContact } from "./SupportContact";
 
 /** Configuración → Tu plan y ayuda. Solo el dueño. */
@@ -44,7 +45,7 @@ export function PlanSection() {
         <div className="grid gap-2 sm:grid-cols-3">
           <Usage label="Socios" value={members} max={plan.maxMembers} />
           <Usage label="Coaches" value={coaches} max={plan.maxCoaches} />
-          <Usage label="Sedes" value={1} max={plan.maxLocations} />
+          <Usage label="Sedes" value={Math.max(1, listLocations().length)} max={plan.maxLocations} />
         </div>
 
         <ul className="grid gap-1.5 text-sm sm:grid-cols-2">

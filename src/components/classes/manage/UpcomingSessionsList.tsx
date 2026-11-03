@@ -16,6 +16,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { inLocation, listLocations, locationName, sessionLocationId } from "@/lib/services/locations.service";
 import { useAuth } from "@/contexts/AuthContext";
 import { classSessionsRepo } from "@/lib/storage/repositories/classSessions.repo";
 import { getSessionOccupancy, removeSessions, sessionHasPeople } from "@/lib/services/booking.service";
@@ -41,6 +42,9 @@ export function UpcomingSessionsList({ templates, coaches }: Props) {
   const isAdmin = currentUser?.role === "admin";
   const todayKey = toDateKey(new Date());
   const [templateFilter, setTemplateFilter] = useState(ALL);
+  const locations = listLocations();
+  const multi = locations.length > 1;
+  const [locationFilter, setLocationFilter] = useState(ALL);
   const [from, setFrom] = useState(todayKey);
   const [to, setTo] = useState("");
   const [limit, setLimit] = useState(PAGE);
@@ -55,7 +59,8 @@ export function UpcomingSessionsList({ templates, coaches }: Props) {
       (s) =>
         s.date >= (from || todayKey) &&
         (!to || s.date <= to) &&
-        (templateFilter === ALL || s.templateId === templateFilter),
+        (templateFilter === ALL || s.templateId === templateFilter) &&
+        (!multi || locationFilter === ALL || inLocation(s, locationFilter)),
     )
     .sort((a, b) => (a.date === b.date ? a.startTime.localeCompare(b.startTime) : a.date.localeCompare(b.date)));
   const sessions = filtered.slice(0, limit);
@@ -115,6 +120,20 @@ export function UpcomingSessionsList({ templates, coaches }: Props) {
             </SelectContent>
           </Select>
         </div>
+        {multi && (
+          <div className="min-w-[140px] flex-1 sm:flex-none">
+            <div className="mb-1 text-xs text-muted-foreground">Sede</div>
+            <Select value={locationFilter} onValueChange={(v) => { setLocationFilter(v); setLimit(PAGE); }}>
+              <SelectTrigger className="h-9 sm:w-40"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>Todas</SelectItem>
+                {locations.map((l) => (
+                  <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
         <div>
           <div className="mb-1 text-xs text-muted-foreground">Desde</div>
           <Input type="date" className="h-9 w-[150px]" value={from} min={todayKey} onChange={(e) => setFrom(e.target.value)} />
@@ -181,6 +200,7 @@ export function UpcomingSessionsList({ templates, coaches }: Props) {
                   <TableCell>{s.startTime}</TableCell>
                   <TableCell className="font-medium">
                     {tpl?.name ?? "—"}
+                    {multi && <span className="block text-xs font-normal text-muted-foreground">{locationName(sessionLocationId(s))}</span>}
                     {cancelled && <span className="ml-2 text-xs font-medium text-red-400 sm:hidden">Cancelada</span>}
                   </TableCell>
                   <TableCell className="hidden text-muted-foreground sm:table-cell">{coach?.name ?? "—"}</TableCell>

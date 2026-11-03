@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useRequireModule } from "@/hooks/useRequireModule";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { CalendarDays, Clock } from "lucide-react";
+import { CalendarDays, Clock, MapPin } from "lucide-react";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
+import { hasMultipleLocations, inLocation, listLocations, locationName, sessionLocationId, userLocationId } from "@/lib/services/locations.service";
 import { WeekNavigator } from "@/components/classes/WeekNavigator";
 import { SessionCard } from "@/components/classes/SessionCard";
 import { SessionDetailSheet } from "@/components/classes/SessionDetailSheet";
@@ -62,6 +63,15 @@ function ReservasPage() {
   /** Clase que el socio está por reservar o cancelar, a la espera de que confirme. */
   const [pending, setPending] = useState<{ session: ClassSession; action: "book" | "cancel" } | null>(null);
   const [selectedDayKey, setSelectedDayKey] = useState<string>(() => toDateKey(new Date()));
+  // Sedes: el socio ve primero su sede principal; puede cambiar a otra o ver todas.
+  const locations = useMemo(() => listLocations(), [dataVersion]);
+  const multiLocation = locations.length > 1;
+  const [locationFilter, setLocationFilter] = useState<string | null>(null);
+  const [locationTouched, setLocationTouched] = useState(false);
+  useEffect(() => {
+    if (!multiLocation || locationTouched || !currentUser) return;
+    setLocationFilter(currentUser.role === "member" ? userLocationId(currentUser) : null);
+  }, [multiLocation, locationTouched, currentUser]);
 
 
   const templates = useMemo(() => classTemplatesRepo.list(), [dataVersion]);
@@ -82,8 +92,9 @@ function ReservasPage() {
     return classSessionsRepo
       .list()
       .filter((s) => s.date >= fromKey && s.date <= toKey)
+      .filter((s) => inLocation(s, locationFilter))
       .sort((a, b) => a.startTime.localeCompare(b.startTime));
-  }, [fromKey, toKey, dataVersion]);
+  }, [fromKey, toKey, dataVersion, locationFilter]);
 
   const byDay = useMemo(() => {
     const m = new Map<string, ClassSession[]>();
@@ -327,6 +338,28 @@ function ReservasPage() {
         )}
       </div>
 
+      {multiLocation && (
+        <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="Sede">
+          {[{ id: null as string | null, name: "Todas las sedes" }, ...locations].map((l) => {
+            const active = locationFilter === l.id;
+            return (
+              <button
+                key={l.id ?? "all"}
+                type="button"
+                aria-pressed={active}
+                onClick={() => { setLocationFilter(l.id); setLocationTouched(true); }}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                  active ? "border-foreground bg-foreground text-background" : "border-border text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {l.id && <MapPin className="h-3 w-3" strokeWidth={1.75} />}
+                {l.name}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* Selector de día (solo móvil) */}
       <div className="md:hidden mb-4 -mx-4 px-4 overflow-x-auto">
         <div className="flex gap-2 min-w-max">
@@ -501,6 +534,7 @@ function MyUpcomingClasses({
                   </div>
                   <div className="text-xs text-muted-foreground first-letter:uppercase">
                     {formatLongDay(s.date)}
+                    {hasMultipleLocations() && ` · ${locationName(sessionLocationId(s))}`}
                     {b.status === "waitlist" && ` · en espera (#${b.position ?? "?"})`}
                     {b.status === "offered" && " · ¡lugar libre! confírmalo arriba"}
                   </div>

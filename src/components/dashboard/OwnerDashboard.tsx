@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Calendar, TrendingUp, UserPlus, Users } from "lucide-react";
 import {
@@ -23,6 +23,7 @@ import {
 import { formatMoney, formatMonthShort } from "@/lib/format";
 import { formatDate } from "@/lib/date";
 import { pendingOrdersCount } from "@/lib/services/shop.service";
+import { listLocations } from "@/lib/services/locations.service";
 import { useModules } from "@/hooks/useModules";
 import { ShoppingBag } from "lucide-react";
 
@@ -32,11 +33,14 @@ import { ShoppingBag } from "lucide-react";
  * ocupación, y listado de membresías próximas a expirar.
  */
 export function OwnerDashboard() {
-  useDataVersion();
-  const kpis = useMemo(() => getMonthlyKpis(), []);
-  const revenue = useMemo(() => getMonthlyRevenue(6), []);
-  const occupancy = useMemo(() => getOccupancyByWeekday(4), []);
-  const expiring = useMemo(() => getExpiringMemberships(7), []);
+  const version = useDataVersion();
+  // Sedes: primero los números de todo el box; se puede ver cada sede por separado.
+  const locations = useMemo(() => listLocations(), [version]);
+  const [locationId, setLocationId] = useState<string | null>(null);
+  const kpis = useMemo(() => getMonthlyKpis(new Date(), locationId), [locationId, version]);
+  const revenue = useMemo(() => getMonthlyRevenue(6, locationId), [locationId, version]);
+  const occupancy = useMemo(() => getOccupancyByWeekday(4, locationId), [locationId, version]);
+  const expiring = useMemo(() => getExpiringMemberships(7, locationId), [locationId, version]);
 
   const modules = useModules();
   const pendingOrders = useMemo(() => (modules.shop ? pendingOrdersCount() : 0), [modules.shop]);
@@ -45,6 +49,26 @@ export function OwnerDashboard() {
 
   return (
     <div className="space-y-6 sm:space-y-8">
+      {locations.length > 1 && (
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Ver por sede">
+          {[{ id: null as string | null, name: "Todo el box" }, ...locations].map((l) => {
+            const active = locationId === l.id;
+            return (
+              <button
+                key={l.id ?? "all"}
+                type="button"
+                aria-pressed={active}
+                onClick={() => setLocationId(l.id)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                  active ? "border-foreground bg-foreground text-background" : "border-border text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {l.name}
+              </button>
+            );
+          })}
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
         <KpiCard
           label="Ingresos del mes"

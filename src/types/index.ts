@@ -140,6 +140,8 @@ export interface UserProfile {
   address?: string;
   emergencyName?: string;
   emergencyPhone?: string;
+  /** Sede principal del socio (puede reservar en cualquiera). */
+  locationId?: string;
 }
 
 export interface User extends BaseEntity {
@@ -240,6 +242,15 @@ export interface ClassSession extends BaseEntity {
   capacity: number;
   coachId?: string;
   status: ClassSessionStatus;
+  /** Sede donde se da la clase. Vacío = la sede principal. */
+  locationId?: string;
+}
+
+/** Sede del box (Pro: hasta 2; Business: sin límite). */
+export interface Location extends BaseEntity {
+  tenantId: string;
+  name: string;
+  address?: string;
 }
 
 /**
