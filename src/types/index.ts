@@ -86,6 +86,17 @@ export const WOD_VISIBILITY_LABEL: Record<WodVisibility, string> = {
 
 export type TenantStatus = "active" | "suspended";
 
+/** Plan de Kinflow del box. Lo decide la plataforma, no el dueño. */
+export type PlanId = "starter" | "pro" | "business";
+export type SubscriptionStatus = "trial" | "active" | "blocked";
+
+export interface TenantSubscription {
+  plan: PlanId;
+  status: SubscriptionStatus;
+  /** Fin de la prueba gratis (ISO). */
+  trialEndsAt?: string | null;
+}
+
 export interface Tenant extends BaseEntity {
   name: string;
   slug: string;
@@ -101,6 +112,8 @@ export interface Tenant extends BaseEntity {
   appIcon?: Record<string, string>;
   /** Ajustes del ícono elegidos por el box: tamaño del logo y color de fondo. */
   appIconStyle?: { scale?: number; bg?: string };
+  /** Plan del box (solo lectura: viene de Supabase, tabla tenant_plans). */
+  subscription?: TenantSubscription;
 }
 
 export type UserStatus = "active" | "invited" | "pending" | "suspended";

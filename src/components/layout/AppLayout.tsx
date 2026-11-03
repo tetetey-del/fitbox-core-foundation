@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { scanExpiringMembershipsForTenant } from "@/lib/services/notifications.service";
 import { syncCycleWods } from "@/lib/services/wodCycle.service";
 import { notifyDataChanged } from "@/lib/data-bus";
+import { BlockedScreen, TrialBanner, usePlanBlocked } from "@/components/plan/PlanGate";
 
 // El ciclo de programación se pone al día una vez por carga y por box.
 const cycleSynced = new Set<string>();
@@ -21,6 +22,7 @@ const cycleSynced = new Set<string>();
 export function AppLayout({ children }: { children: ReactNode }) {
   const { ready, session, currentTenant, isImpersonating, logout } = useAuth();
   const navigate = useNavigate();
+  const planBlocked = usePlanBlocked();
 
   useEffect(() => {
     if (ready && !session) navigate({ to: "/login" });
@@ -67,6 +69,10 @@ export function AppLayout({ children }: { children: ReactNode }) {
     );
   }
 
+  if (planBlocked) {
+    return <BlockedScreen onLogout={() => { logout(); navigate({ to: "/login" }); }} />;
+  }
+
   return (
     <div className="min-h-dvh flex flex-col bg-background text-foreground pt-[env(safe-area-inset-top)]">
       <ImpersonationBanner />
@@ -75,6 +81,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
         <div className="flex-1 flex flex-col min-w-0">
           <Header />
           <main className="flex-1 p-4 sm:p-6 md:p-8 pb-24 md:pb-8">
+            <TrialBanner />
             <OfferBanner />
             <PushPrompt />
             <CompleteProfileBanner />

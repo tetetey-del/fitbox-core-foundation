@@ -1,5 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
-import { LogOut, User as UserIcon, ChevronDown } from "lucide-react";
+import { LogOut, User as UserIcon, ChevronDown, LifeBuoy, Shield } from "lucide-react";
+import { usePlatformAdmin } from "@/lib/cloud/platform";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,8 +25,9 @@ const ROLE_LABEL: Record<string, string> = {
 };
 
 export function Header() {
-  const { currentTenant, currentUser, logout } = useAuth();
+  const { currentTenant, currentUser, session, logout } = useAuth();
   const navigate = useNavigate();
+  const platformAdmin = usePlatformAdmin(!!session?.cloud && currentUser?.role === "admin");
   useDataVersion();
   if (!currentTenant || !currentUser) return null;
 
@@ -82,6 +84,18 @@ export function Header() {
               <DropdownMenuItem onClick={() => navigate({ to: "/mi-cuenta" })}>
                 <UserIcon className="h-4 w-4 mr-2" strokeWidth={1.5} />
                 Mi cuenta
+              </DropdownMenuItem>
+            )}
+            {currentUser.role === "admin" && (
+              <DropdownMenuItem onClick={() => navigate({ to: "/configuracion", hash: "plan" })}>
+                <LifeBuoy className="h-4 w-4 mr-2" strokeWidth={1.5} />
+                Mi plan y ayuda
+              </DropdownMenuItem>
+            )}
+            {platformAdmin && (
+              <DropdownMenuItem onClick={() => navigate({ to: "/plataforma" })}>
+                <Shield className="h-4 w-4 mr-2" strokeWidth={1.5} />
+                Plataforma Kinflow
               </DropdownMenuItem>
             )}
             <DropdownMenuItem onClick={handleLogout}>

@@ -15,6 +15,8 @@ import { compressImage, dataUrlBytes } from "@/lib/image";
 import { APP_ICON_VERSION, sameAppIconStyle, uploadAppIcons, type AppIconStyle } from "@/lib/boxBrand";
 import { AppIconEditor } from "./AppIconEditor";
 import { isCloudSession } from "@/lib/cloud/bookings";
+import { planAllows } from "@/lib/plans";
+import { ProBadge } from "@/components/plan/UpgradeDialog";
 
 export function AppearanceSection() {
   const { currentTenant, refresh } = useAuth();
@@ -23,6 +25,8 @@ export function AppearanceSection() {
   const [logo, setLogo] = useState<string | undefined>(currentTenant?.logo);
   const [iconStyle, setIconStyle] = useState<AppIconStyle>(currentTenant?.appIconStyle ?? {});
   const fileRef = useRef<HTMLInputElement>(null);
+  // Starter: logo sí, colores y temas propios no (son del plan Pro).
+  const ownColors = planAllows(currentTenant, "themes");
 
   useEffect(() => {
     setThemeId(currentTenant?.themeId ?? DEFAULT_THEME_ID);
@@ -65,7 +69,7 @@ export function AppearanceSection() {
       }
     }
     tenantsRepo.update(currentTenant.id, { themeId, brandColor, logo, appIcon, appIconStyle: iconStyle });
-    applyTheme(themeId, brandColor);
+    if (ownColors) applyTheme(themeId, brandColor);
     toast.success("Apariencia actualizada", {
       description: isCloudSession() && logo && appIcon ? "La app de tus socios ya usa tu logo." : undefined,
     });
@@ -83,7 +87,16 @@ export function AppearanceSection() {
         </p>
       </div>
 
-      <div className="space-y-2">
+      {!ownColors && (
+        <div className="rounded-md border border-border p-3">
+          <div className="flex items-center gap-2 text-sm font-medium">Tus colores y temas <ProBadge /></div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            En el plan Starter la app usa los colores de Kinflow con tu logo. Con el plan Pro eliges el tema y el color de tu box.
+          </p>
+        </div>
+      )}
+
+      {ownColors && <div className="space-y-2">
         <Label className="text-xs text-muted-foreground">Tema</Label>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {THEMES.map((t) => {
@@ -121,10 +134,10 @@ export function AppearanceSection() {
             );
           })}
         </div>
-      </div>
+      </div>}
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-1.5">
+        {ownColors && <div className="space-y-1.5">
           <Label className="text-xs text-muted-foreground">Color de acento</Label>
           <div className="flex items-center gap-3">
             <input
@@ -139,7 +152,7 @@ export function AppearanceSection() {
           <p className="text-xs text-muted-foreground">
             Por defecto usa {getTheme(themeId).previewAccent} del tema.
           </p>
-        </div>
+        </div>}
 
         <div className="space-y-1.5">
           <Label className="text-xs text-muted-foreground">Logo</Label>

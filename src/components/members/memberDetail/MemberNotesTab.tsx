@@ -4,6 +4,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { planAllows } from "@/lib/plans";
+import { ProBadge } from "@/components/plan/UpgradeDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { notifyDataChanged } from "@/lib/data-bus";
 import { exercisesRepo } from "@/lib/storage/repositories/exercises.repo";
@@ -15,12 +17,22 @@ const GENERAL = "general";
 
 /** Notas de los coaches sobre el socio (solo staff). Las atadas a un ejercicio avisan en las clases. */
 export function MemberNotesTab({ memberId }: { memberId: string }) {
-  const { session, currentUser, tenantUsers } = useAuth();
+  const { session, currentUser, tenantUsers, currentTenant } = useAuth();
   const [text, setText] = useState("");
   const [exerciseId, setExerciseId] = useState(GENERAL);
   const [editing, setEditing] = useState<CoachNote | null>(null);
 
   if (!session || !currentUser) return null;
+  if (!planAllows(currentTenant, "coachNotes")) {
+    return (
+      <section className="space-y-1">
+        <h3 className="flex items-center gap-2 text-sm font-semibold">Notas de los coaches <ProBadge /></h3>
+        <p className="text-xs text-muted-foreground">
+          Con el plan Pro, los coaches anotan lesiones y adaptaciones de cada socio y les aparece el aviso en la clase.
+        </p>
+      </section>
+    );
+  }
   const exercises = exercisesRepo.list().sort((a, b) => a.name.localeCompare(b.name));
   const exById = new Map(exercises.map((e) => [e.id, e]));
   const nameOf = (id: string) => tenantUsers.find((u) => u.id === id)?.name.split(" ")[0] ?? "Coach";

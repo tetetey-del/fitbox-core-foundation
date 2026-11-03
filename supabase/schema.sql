@@ -284,3 +284,11 @@ grant execute on function public.kf_get_invitation(text) to anon, authenticated;
 -- kf_book_session: tenants.data.settings.bookingWindowDays = X → el socio (y el coach para sí mismo)
 --   solo reserva clases de hoy a hoy + (X - 1), días de calendario en la zona del box. 0/vacío = sin límite.
 --   El dueño apunta a cualquiera en cualquier fecha; el coach puede apuntar a otros solo en clases de hoy.
+
+-- ---------- Planes de Kinflow (migraciones kinflow_plans, kinflow_plans_block_booking, kinflow_invitation_plan_limit, 03/11/2026) ----------
+-- tenant_plans(tenant_id, plan starter|pro|business, status trial|active|blocked, trial_ends_at, notes):
+--   cada box nuevo arranca con 14 días de Pro (trigger tenants_plan_default). Solo lectura para el box (RLS).
+-- platform_admins(email): quién ve el panel /plataforma (kf_platform_boxes, kf_platform_set_plan).
+-- kf_plan_blocked(t): bloqueado a mano o prueba vencida → kf_book_session no deja reservar.
+-- records_plan_limits: en Starter, máx. 50 socios, 1 coach y 1 admin (KF_LIMIT_*).
+-- kf_get_invitation devuelve status 'full' si el box llegó al límite de su plan.

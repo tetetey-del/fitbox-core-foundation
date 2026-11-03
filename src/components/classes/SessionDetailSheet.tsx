@@ -24,6 +24,7 @@ import {
   undoCheckIn,
 } from "@/lib/services/booking.service";
 import { useAuth } from "@/contexts/AuthContext";
+import { planAllows } from "@/lib/plans";
 import { notifyDataChanged, useDataVersion } from "@/lib/data-bus";
 import { AttendeesList } from "./sessionDetail/AttendeesList";
 import { classAlerts } from "@/lib/services/coachNotes.service";
@@ -48,7 +49,7 @@ interface Props {
 export function SessionDetailSheet({
   open, onOpenChange, session, template, coach, tenantUsers,
 }: Props) {
-  const { currentUser } = useAuth();
+  const { currentUser, currentTenant } = useAuth();
   useDataVersion();
   const [addUserId, setAddUserId] = useState<string>("");
 
@@ -69,7 +70,7 @@ export function SessionDetailSheet({
   const canAdd =
     session.status !== "cancelled" && !hasSessionStarted(session) && (isAdmin || (isCoach && isTodaySession(session)));
 
-  const alerts = isStaff ? classAlerts(session.date, occ.confirmed.map((b) => b.userId)) : undefined;
+  const alerts = isStaff ? classAlerts(session.date, occ.confirmed.map((b) => b.userId), planAllows(currentTenant, "coachNotes")) : undefined;
 
   const alreadyBooked = new Set(
     [...occ.confirmed, ...occ.waitlist].map((b) => b.userId),

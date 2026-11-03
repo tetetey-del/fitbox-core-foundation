@@ -12,3 +12,13 @@ export function publicOrigin(): string {
   if (typeof window === "undefined") return APP_URL;
   return PRODUCTION_HOSTS.has(window.location.hostname) ? APP_URL : window.location.origin;
 }
+
+/** Contacto de Kinflow (lo ve solo el dueño del box). */
+export const SUPPORT_EMAIL = "hola.kinflow@gmail.com";
+export const SUPPORT_WHATSAPP = "+34613431913";
+export const SUPPORT_WHATSAPP_LABEL = "+34 613 43 19 13";
+
+export function supportWhatsappUrl(text?: string): string {
+  const n = SUPPORT_WHATSAPP.replace(/\D/g, "");
+  return `https://wa.me/${n}${text ? `?text=${encodeURIComponent(text)}` : ""}`;
+}
