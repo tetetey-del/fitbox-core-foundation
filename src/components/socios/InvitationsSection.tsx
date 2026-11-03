@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
+import { isCloudSession } from "@/lib/cloud/bookings";
 import { limitMessage, limitReached, type LimitKind } from "@/lib/plans";
 import { SupportContact } from "@/components/plan/SupportContact";
 import { notifyDataChanged, useDataVersion } from "@/lib/data-bus";
@@ -158,7 +159,7 @@ export function InviteMemberDialog({
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Email (opcional)</Label>
+              <Label className="text-xs text-muted-foreground">Email (opcional: si lo pones, le llega la invitación por mail)</Label>
               <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
             <div className="space-y-1.5">
@@ -187,7 +188,14 @@ export function InviteMemberDialog({
           </div>
         ) : (
           <div className="space-y-3">
-            <p className="text-sm">Invitación generada. Comparte este enlace:</p>
+            {created.email && isCloudSession() ? (
+              <p className="text-sm">
+                Le mandamos la invitación por email a <span className="font-medium">{created.email}</span>. También puedes
+                compartir el enlace:
+              </p>
+            ) : (
+              <p className="text-sm">Invitación generada. Comparte este enlace:</p>
+            )}
             <div className="rounded-md border border-border bg-muted/30 p-3 space-y-2">
               <code className="block text-xs font-mono break-all">{buildInvitationLink(created.code)}</code>
               <div className="flex items-center gap-2">
