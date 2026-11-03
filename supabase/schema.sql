@@ -305,3 +305,10 @@ grant execute on function public.kf_get_invitation(text) to anon, authenticated;
 --   admin de la plataforma en su box (campanita + push si lo activó).
 -- (migración kinflow_platform_alerts_table) Cambio: los avisos de box nuevo ya NO van a la campanita de un box.
 -- Van a la tabla platform_alerts (solo la plataforma la lee) y se ven en /plataforma → Avisos.
+
+-- ---------- Emails con Resend (migración kinflow_emails, 03/11/2026) ----------
+-- Edge Function kf-email (secreto RESEND_API_KEY en Supabase; remitente hola@kinflow.es, y onboarding@resend.dev
+--   mientras el dominio no esté verificado). La llama kf_email(kind, id) con pg_net:
+--   new_box (trigger platform_alerts_email → mail a hola.kinflow@gmail.com),
+--   invitation (trigger records_invitation_email, invitaciones con email),
+--   trial_ending (pg_cron 'kinflow-aviso-fin-prueba' 09:07 UTC → kf_trial_notices(): 5 días antes, una vez).
