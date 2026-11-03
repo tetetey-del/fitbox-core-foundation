@@ -25,6 +25,7 @@ export interface CreateInvitationInput {
   invitedBy: string;
   role: "coach" | "member";
   email?: string;
+  phone?: string;
   planId?: string;
 }
 
@@ -35,6 +36,7 @@ export function createInvitation(input: CreateInvitationInput): Invitation {
     code: generateReadableCode(8),
     role: input.role,
     email: input.email?.trim().toLowerCase() || undefined,
+    phone: input.phone?.trim() || undefined,
     planId: input.planId,
     invitedBy: input.invitedBy,
     status: "pending",
@@ -42,6 +44,10 @@ export function createInvitation(input: CreateInvitationInput): Invitation {
       Date.now() + INVITE_TTL_DAYS * 24 * 60 * 60_000,
     ).toISOString(),
   });
+}
+
+export function setInvitationPhone(tenantId: string, id: string, phone: string): void {
+  invitationsRepoFor(tenantId).update(id, { phone: phone.trim() || undefined });
 }
 
 export function revokeInvitation(tenantId: string, id: string): void {

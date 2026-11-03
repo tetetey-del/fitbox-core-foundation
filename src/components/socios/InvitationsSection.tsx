@@ -31,19 +31,29 @@ import {
   listInvitationsForTenant,
   regenerateInvitation,
   revokeInvitation,
+  setInvitationPhone,
 } from "@/lib/services/invitations.service";
 import { membershipPlansRepoFor } from "@/lib/storage/repositories/membershipPlans.repo";
 
-/** Teléfono para WhatsApp: solo dígitos; si es un móvil español de 9 cifras, se le agrega el 34. */
-function waPhone(phone: string): string {
+/**
+ * Teléfono para WhatsApp: solo dígitos, con código de país.
+ * Sin código: móvil español de 9 cifras → 34; en boxes de Argentina, número de 10 cifras → 549.
+ */
+export function waPhone(phone: string, currency?: string): string {
   const d = phone.replace(/\D/g, "").replace(/^00/, "");
+  if (phone.trim().startsWith("+")) return d;
+  if (currency === "ARS") {
+    const local = d.replace(/^0/, "").replace(/^(\d{2,4})15/, "$1");
+    if (local.length === 10) return `549${local}`;
+    return d;
+  }
   return d.length === 9 && /^[67]/.test(d) ? `34${d}` : d;
 }
 
-/** Abre WhatsApp con el mensaje de invitación (al número indicado, o eligiendo el contacto). */
-export function whatsappInviteUrl(boxName: string, link: string, phone?: string): string {
+/** Abre WhatsApp con el mensaje de invitación al número de la persona. */
+export function whatsappInviteUrl(boxName: string, link: string, phone?: string, currency?: string): string {
   const text = `¡Hola! Te invito a la app de ${boxName} para reservar tus clases y ver el WOD. Crea tu cuenta aquí: ${link}`;
-  const to = phone ? waPhone(phone) : "";
+  const to = phone ? waPhone(phone, currency) : "";
   return `https://wa.me/${to}?text=${encodeURIComponent(text)}`;
 }
 
@@ -100,6 +110,7 @@ export function InviteMemberDialog({
       invitedBy: session.userId,
       role,
       email: email.trim() || undefined,
+      phone: phone.trim() || undefined,
       planId: planId || undefined,
     });
     setCreated(inv);
@@ -204,7 +215,7 @@ export function InviteMemberDialog({
               </Button>
               <Button asChild className="bg-[#25D366] text-white hover:bg-[#1eb957]">
                 <a
-                  href={whatsappInviteUrl(currentTenant?.name ?? "tu box", buildInvitationLink(created.code), phone || undefined)}
+                  href={whatsappInviteUrl(currentTenant?.name ?? "tu box", buildInvitationLink(created.code), phone || undefined, currentTenant?.settings?.currency)}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -224,6 +235,9 @@ export function PendingInvitations({ tenantId }: { tenantId: string }) {
   useDataVersion();
   const { currentTenant } = useAuth();
   const [loading, setLoading] = useState(false);
+  // Invitación sin móvil guardado: se pide antes de abrir WhatsApp.
+  const [asking, setAsking] = useState<Invitation | null>(null);
+  const [askPhone, setAskPhone] = useState("");
 
   useEffect(() => {
     expireOutdatedInvitations(tenantId);
@@ -260,10 +274,10 @@ export function PendingInvitations({ tenantId }: { tenantId: string }) {
           <li key={i.id} className="py-3 flex flex-wrap items-center gap-3 justify-between">
             <div className="min-w-0">
               <div className="text-sm font-medium">
-                {i.email ?? "(sin email)"} · {i.role === "coach" ? "Coach" : "Socio"}
+                {i.email ?? i.phone ?? "(sin email)"} · {i.role === "coach" ? "Coach" : "Socio"}
               </div>
               <div className="text-xs text-muted-foreground font-mono truncate">
-                {i.code} · caduca {new Date(i.expiresAt).toLocaleDateString("es-ES")}
+                {i.code}{i.email && i.phone ? ` · ${i.phone}` : ""} · caduca {new Date(i.expiresAt).toLocaleDateString("es-ES")}
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -275,14 +289,21 @@ export function PendingInvitations({ tenantId }: { tenantId: string }) {
                   <Button size="sm" variant="ghost" onClick={() => copy(i.code)} aria-label="Copiar enlace">
                     <Copy className="h-3.5 w-3.5" strokeWidth={1.5} />
                   </Button>
-                  <Button size="sm" variant="ghost" asChild aria-label="Enviar por WhatsApp">
-                    <a
-                      href={whatsappInviteUrl(currentTenant?.name ?? "tu box", buildInvitationLink(i.code))}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <MessageCircle className="h-3.5 w-3.5 text-[#25D366]" strokeWidth={1.75} />
-                    </a>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    aria-label={i.phone ? `Enviar por WhatsApp a ${i.phone}` : "Enviar por WhatsApp"}
+                    title={i.phone ? `Enviar por WhatsApp a ${i.phone}` : "Enviar por WhatsApp"}
+                    onClick={() => {
+                      if (i.phone) {
+                        window.open(whatsappInviteUrl(currentTenant?.name ?? "tu box", buildInvitationLink(i.code), i.phone, currentTenant?.settings?.currency), "_blank", "noopener");
+                      } else {
+                        setAsking(i);
+                        setAskPhone("");
+                      }
+                    }}
+                  >
+                    <MessageCircle className="h-3.5 w-3.5 text-[#25D366]" strokeWidth={1.75} />
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => regen(i.id)} aria-label="Regenerar" disabled={loading}>
                     {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" strokeWidth={1.5} />}
@@ -296,6 +317,38 @@ export function PendingInvitations({ tenantId }: { tenantId: string }) {
           </li>
         ))}
       </ul>
+
+      <Dialog open={!!asking} onOpenChange={(o) => !o && setAsking(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>¿A qué móvil la mandamos?</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Móvil de la persona invitada</Label>
+            <Input
+              type="tel"
+              inputMode="tel"
+              autoFocus
+              placeholder={currentTenant?.settings?.currency === "ARS" ? "2302 123456" : "600 123 456"}
+              value={askPhone}
+              onChange={(e) => setAskPhone(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">Queda guardado en la invitación para la próxima vez.</p>
+          </div>
+          <Button
+            disabled={askPhone.replace(/\D/g, "").length < 8}
+            onClick={() => {
+              if (!asking) return;
+              setInvitationPhone(tenantId, asking.id, askPhone);
+              notifyDataChanged();
+              window.open(whatsappInviteUrl(currentTenant?.name ?? "tu box", buildInvitationLink(asking.code), askPhone, currentTenant?.settings?.currency), "_blank", "noopener");
+              setAsking(null);
+            }}
+          >
+            <MessageCircle className="mr-2 h-4 w-4" strokeWidth={1.75} /> Abrir WhatsApp
+          </Button>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

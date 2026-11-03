@@ -44,8 +44,8 @@ const STAFF_PRIMARY: NavItem[] = [
 const STAFF_SECONDARY: NavItem[] = [
   { label: "Feed", to: "/feed", icon: Newspaper, roles: ["admin", "coach"], module: "feed" },
   { label: "Clases", to: "/clases", icon: Dumbbell, roles: ["admin", "coach"], module: "reservas" },
-  { label: "PRs", to: "/prs", icon: Trophy, roles: ["admin", "coach"], module: "prs" },
-  { label: "Retos", to: "/retos", icon: Award, roles: ["admin", "coach"], module: "challenges" },
+  { label: "PRs", to: "/prs", icon: Trophy, roles: ["admin"], module: "prs" },
+  { label: "Retos", to: "/retos", icon: Award, roles: ["admin"], module: "challenges" },
   { label: "Rutinas", to: "/rutinas", icon: ClipboardList, roles: ["admin", "coach"], module: "programs" },
   { label: "Tienda", to: "/tienda", icon: ShoppingBag, roles: ["admin"], module: "shop" },
   { label: "Configuración", to: "/configuracion", icon: Settings, roles: ["admin"] },

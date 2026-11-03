@@ -28,7 +28,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { useAuth } from "@/contexts/AuthContext";
-import { hasPersonalTraining } from "@/lib/services/membership.service";
+import { getActiveMembership, getPlan, hasPersonalTraining } from "@/lib/services/membership.service";
 import { useDataVersion, notifyDataChanged } from "@/lib/data-bus";
 import { useRequireModule } from "@/hooks/useRequireModule";
 import {
@@ -180,15 +180,21 @@ function ProgramRow({ program, onEdit }: { program: Program; onEdit: () => void 
               <Select value={pickedUser} onValueChange={setPickedUser}>
                 <SelectTrigger><SelectValue placeholder="Elige socio…" /></SelectTrigger>
                 <SelectContent>
-                  {eligibleMembers.map((u) => (
-                    <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
-                  ))}
+                  {eligibleMembers.map((u) => {
+                    const m = getActiveMembership(u.id);
+                    const planName = m ? getPlan(m.planId)?.name : undefined;
+                    return (
+                      <SelectItem key={u.id} value={u.id}>
+                        {u.name}{planName ? ` · ${planName}` : ""}
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
               <p className="mt-1.5 text-xs text-muted-foreground">
                 {eligibleMembers.length === 0
                   ? "Ningún socio tiene un plan con entreno personalizado. Actívalo en Configuración → Planes y precios."
-                  : "Solo aparecen los socios cuyo plan incluye entreno personalizado."}
+                  : `Solo aparecen los ${eligibleMembers.length} socios cuyo plan incluye entreno personalizado (al lado, su plan).`}
               </p>
             </div>
           </div>

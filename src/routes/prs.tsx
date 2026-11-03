@@ -89,6 +89,15 @@ function PRsPage() {
     );
   }
 
+  if (currentUser?.role === "coach") {
+    return (
+      <AppLayout>
+        <PageHeader title="PRs" />
+        <p className="text-sm text-muted-foreground">Esta sección es para los socios y la gestiona el dueño del box.</p>
+      </AppLayout>
+    );
+  }
+
   return (
     <AppLayout>
       <PageHeader
