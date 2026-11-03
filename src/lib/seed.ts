@@ -30,7 +30,7 @@ const SEEDED_KEY = buildKey(null, "seeded");
 const DEMO_CLEARED_KEY = buildKey(null, "demo_cleared");
 /** Versión del gimnasio de demo. Si cambia, los navegadores con la demo vieja se vuelven a sembrar. */
 const DEMO_VERSION_KEY = buildKey(null, "demo_version");
-const DEMO_VERSION = 11;
+const DEMO_VERSION = 12;
 /** Boxes de demos anteriores que se borran al actualizar: FitBox (v1) y versiones previas de Chia (v2 a v6). */
 const OLD_DEMO_SLUGS = ["crossfit-norte", "box-sur", "chia-training", "ritmo-crossfit", "bora-crossfit"];
 const OLD_SUPERADMIN_EMAILS = ["isaac@fitbox.io"];
@@ -197,6 +197,8 @@ interface DemoProfile {
   saturday?: DemoSlot[];
   /** Sedes del box (la primera es la principal). Los slots con `loc` van a otra sede. */
   locations?: { name: string; address?: string }[];
+  /** Logo del box (ruta en /public). */
+  logo?: string;
 }
 
 type DemoTemplate = {
@@ -347,6 +349,7 @@ const DEMO_BORA: DemoProfile = {
   ...DEMO_AR,
   name: "BORA CrossFit",
   brandColor: "#DDDE00",
+  logo: "/demo/bora-logo.png",
   themeId: "dark-carbon" as ThemeId,
   timezone: "America/Argentina/Buenos_Aires",
   owner: { name: "Pau", email: "pau.bora@kinflow.app" },
@@ -454,6 +457,7 @@ function createChiaTenant(): SeedResult {
     slug: slugify(P.name),
     brandColor: P.brandColor,
     themeId: P.themeId,
+    ...(P.logo ? { logo: P.logo } : {}),
     status: "active",
     settings: { cancellationWindowHours: 1, enabledModules: DEFAULT_MODULES, currency: P.currency, timezone: P.timezone },
   });
