@@ -56,6 +56,11 @@ export const CURRENCY_LABEL: Record<CurrencyCode, string> = {
 
 export interface TenantSettings {
   cancellationWindowHours: number;
+  /**
+   * Con cuántos días de calendario de antelación pueden reservar los socios (contando hoy).
+   * 3 = hoy, mañana y pasado. 0 o vacío = sin límite.
+   */
+  bookingWindowDays?: number;
   enabledModules?: TenantModules;
   /** Moneda en la que el box cobra. Por defecto, euros. */
   currency?: CurrencyCode;

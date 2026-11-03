@@ -19,6 +19,8 @@ import {
   checkIn,
   getSessionOccupancy,
   hasCheckIn,
+  hasSessionStarted,
+  isTodaySession,
   undoCheckIn,
 } from "@/lib/services/booking.service";
 import { useAuth } from "@/contexts/AuthContext";
@@ -62,6 +64,10 @@ export function SessionDetailSheet({
   const isStaff = currentUser.role === "admin" || currentUser.role === "coach";
   // Apuntar o quitar socios (y cancelar la clase entera) es solo del dueño/administrador.
   const isAdmin = currentUser.role === "admin";
+  // Los coaches pueden apuntar a alguien, pero solo en las clases del día.
+  const isCoach = currentUser.role === "coach";
+  const canAdd =
+    session.status !== "cancelled" && !hasSessionStarted(session) && (isAdmin || (isCoach && isTodaySession(session)));
 
   const alerts = isStaff ? classAlerts(session.date, occ.confirmed.map((b) => b.userId)) : undefined;
 
@@ -92,7 +98,7 @@ export function SessionDetailSheet({
 
   const handleAdd = async () => {
     if (!addUserId) return;
-    const res = isCloudSession() ? await cloudBookSession(session.id, addUserId) : addAttendee(session.id, addUserId);
+    const res = isCloudSession() ? await cloudBookSession(session.id, addUserId) : addAttendee(session.id, addUserId, currentUser.role);
     if (!res.ok) toast.error(res.reason ?? "No se pudo añadir");
     else toast.success("Asistente añadido");
     setAddUserId("");
@@ -131,7 +137,16 @@ export function SessionDetailSheet({
           <OccupancyBar confirmed={occ.confirmed.length} capacity={occ.capacity} />
         </div>
 
-        {isAdmin && (
+        {isCoach && !canAdd && session.status !== "cancelled" && !hasSessionStarted(session) && (
+          <>
+            <Separator className="my-5" />
+            <p className="text-xs text-muted-foreground">
+              Los coaches pueden apuntar socios solo en las clases del día.
+            </p>
+          </>
+        )}
+
+        {canAdd && (
           <>
             <Separator className="my-5" />
             <AddAttendeeCombobox
