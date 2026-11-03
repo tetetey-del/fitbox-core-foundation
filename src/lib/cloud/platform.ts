@@ -92,3 +92,27 @@ export function monthlyCharge(listPrice: number, priceOverride: number | null, d
   const pct = Math.min(100, Math.max(0, discountPct ?? 0));
   return Math.round(base * (1 - pct / 100) * 100) / 100;
 }
+
+export interface PlatformAlert {
+  id: string;
+  tenant_id: string | null;
+  title: string;
+  body: string | null;
+  created_at: string;
+  read_at: string | null;
+}
+
+/** Avisos de la plataforma (por ejemplo, "Nuevo box en Kinflow"). Solo para la plataforma. */
+export async function listPlatformAlerts(): Promise<PlatformAlert[]> {
+  const { data, error } = await sb()
+    .from("platform_alerts")
+    .select("id,tenant_id,title,body,created_at,read_at")
+    .order("created_at", { ascending: false })
+    .limit(30);
+  if (error) return [];
+  return (data ?? []) as PlatformAlert[];
+}
+
+export async function markPlatformAlertsRead(): Promise<void> {
+  await sb().from("platform_alerts").update({ read_at: new Date().toISOString() }).is("read_at", null);
+}
