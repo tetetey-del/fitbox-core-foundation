@@ -43,11 +43,27 @@ export function Header() {
   return (
     <header className="h-14 flex items-center justify-between gap-3 border-b border-border px-3 sm:px-4 md:px-6 bg-background">
       <div className="flex items-center gap-3 min-w-0 flex-1">
-        <span
-          aria-hidden
-          className="h-6 w-1 rounded-full shrink-0"
-          style={{ backgroundColor: accent }}
-        />
+        {currentTenant.logo ? (
+          // En el celu no hay menú lateral: el logo del box va acá, al lado del nombre.
+          <>
+            <img
+              src={currentTenant.logo}
+              alt=""
+              className="h-8 w-8 shrink-0 rounded-md object-contain md:hidden"
+            />
+            <span
+              aria-hidden
+              className="hidden h-6 w-1 rounded-full shrink-0 md:block"
+              style={{ backgroundColor: accent }}
+            />
+          </>
+        ) : (
+          <span
+            aria-hidden
+            className="h-6 w-1 rounded-full shrink-0"
+            style={{ backgroundColor: accent }}
+          />
+        )}
         <div className="min-w-0">
           <div className="text-sm font-semibold text-foreground truncate">
             {currentTenant.name}
