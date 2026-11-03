@@ -501,7 +501,8 @@ export type NotificationType =
   | "new_post"
   | "challenge_completed"
   | "program_assigned"
-  | "order_ready";
+  | "order_ready"
+  | "platform_new_box";
 
 export interface Notification extends BaseEntity {
   tenantId: string;
