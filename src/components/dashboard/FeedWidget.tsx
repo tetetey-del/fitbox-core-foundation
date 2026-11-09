@@ -2,10 +2,10 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight, Pin } from "lucide-react";
 import { postsRepo } from "@/lib/storage/repositories/posts.repo";
 import { hideWodPostsForCurrentUser } from "@/lib/services/wods.service";
-import { POST_TYPE_LABEL } from "@/types";
 import { POST_ICONS, POST_COLORS } from "@/routes/feed";
 import { useDataVersion } from "@/lib/data-bus";
 import { cn } from "@/lib/utils";
+import { postTypeLabel } from "@/lib/placeTerms";
 
 export function FeedWidget() {
   useDataVersion();
@@ -56,7 +56,7 @@ export function FeedWidget() {
                       {p.pinned && <Pin className="h-3 w-3 text-muted-foreground shrink-0" strokeWidth={1.5} />}
                     </div>
                     <div className="text-xs text-muted-foreground truncate">
-                      {POST_TYPE_LABEL[p.type]}
+                      {postTypeLabel(p.type)}
                     </div>
                   </div>
                 </Link>

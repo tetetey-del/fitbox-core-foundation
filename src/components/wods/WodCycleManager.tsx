@@ -35,6 +35,7 @@ import {
   saveCycle,
 } from "@/lib/services/wodCycle.service";
 import { NumberInput } from "@/components/ui/number-input";
+import { currentTerms } from "@/lib/placeTerms";
 
 const BLOCK_ORDER: WodBlockType[] = ["calentamiento", "fuerza", "metcon", "accesorio"];
 
@@ -67,9 +68,9 @@ export function WodCycleManager() {
           Programación que se repite
         </div>
         <p className="text-muted-foreground">
-          Si tu box programa por ciclos (por ejemplo, 12 semanas), arma las semanas una sola vez y elige cuándo empieza la
+          Si tu {currentTerms().place} programa por ciclos (por ejemplo, 12 semanas), arma las semanas una sola vez y elige cuándo empieza la
           semana 1. La app pone el WOD de cada día y, al terminar la última semana, vuelve a empezar. Si un día cambias
-          algo desde "WOD por día", solo cambia ese día.
+          algo desde "{currentTerms().wodShort} por día", solo cambia ese día.
         </p>
         <Button onClick={() => setCreating(true)}>Crear ciclo</Button>
       </div>
@@ -124,7 +125,7 @@ function CycleEditor({ cycle, onDone }: { cycle: WodCycle | null; onDone: () => 
     notifyDataChanged();
     setDirty(false);
     toast.success("Ciclo guardado", {
-      description: active ? `Los WODs de las próximas ${CYCLE_DAYS_AHEAD / 7} semanas ya están en el calendario.` : "El ciclo está apagado.",
+      description: active ? `Los ${currentTerms().wods} de las próximas ${CYCLE_DAYS_AHEAD / 7} semanas ya están en el calendario.` : "El ciclo está apagado.",
     });
     onDone();
   };
@@ -210,7 +211,7 @@ function CycleEditor({ cycle, onDone }: { cycle: WodCycle | null; onDone: () => 
                 <CollapsibleTrigger className="flex w-full items-center gap-2 px-3 py-2.5 text-left">
                   <span className="w-24 shrink-0 text-sm font-medium">{label}</span>
                   <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
-                    {hasContent(day) ? day.title || day.blocks.map((b) => WOD_BLOCK_LABEL[b.type]).join(" · ") : "Sin WOD"}
+                    {hasContent(day) ? day.title || day.blocks.map((b) => WOD_BLOCK_LABEL[b.type]).join(" · ") : `Sin ${currentTerms().wodShort.toLowerCase()}`}
                   </span>
                   {isToday && <span className="text-[10px] font-semibold uppercase" style={{ color: "var(--brand)" }}>Hoy</span>}
                   <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" strokeWidth={1.5} />

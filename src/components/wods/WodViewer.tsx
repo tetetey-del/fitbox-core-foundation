@@ -6,6 +6,7 @@ import {
 } from "@/components/ui/collapsible";
 import type { Wod } from "@/types";
 import { WOD_BLOCK_LABEL } from "@/types";
+import { currentTerms } from "@/lib/placeTerms";
 
 export function WodViewer({ wod, defaultOpen = false }: { wod: Wod; defaultOpen?: boolean }) {
   return (
@@ -13,7 +14,7 @@ export function WodViewer({ wod, defaultOpen = false }: { wod: Wod; defaultOpen?
       <CollapsibleTrigger className="flex w-full items-center justify-between gap-2 px-3 py-2 text-sm hover:bg-muted/40 transition-colors group">
         <span className="flex items-center gap-2 min-w-0">
           <Dumbbell className="h-4 w-4 text-foreground/70 shrink-0" strokeWidth={1.5} />
-          <span className="font-medium truncate">WOD · {wod.title}</span>
+          <span className="font-medium truncate">{currentTerms().wodShort} · {wod.title}</span>
         </span>
         <ChevronDown
           className="h-4 w-4 text-muted-foreground shrink-0 transition-transform group-data-[state=open]:rotate-180"

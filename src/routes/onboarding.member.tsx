@@ -9,6 +9,7 @@ import type { MemberGoal } from "@/types";
 import { MEMBER_GOAL_LABEL } from "@/types";
 import { AuthShell, Field } from "./login";
 import { AvatarPicker } from "@/components/members/AvatarPicker";
+import { currentTerms } from "@/lib/placeTerms";
 
 export const Route = createFileRoute("/onboarding/member")({
   head: () => ({ meta: [{ title: "Bienvenido — Kinflow" }] }),
@@ -81,11 +82,11 @@ function MemberOnboarding() {
             <Hint icon={<CalendarDays className="h-4 w-4" strokeWidth={1.5} />} title="Reserva tus clases">
               Entra en <span className="font-medium">Reservas</span>, elige día y hora, y confirma. Si está llena, entrarás en lista de espera automática.
             </Hint>
-            <Hint icon={<Newspaper className="h-4 w-4" strokeWidth={1.5} />} title="El WOD del día">
+            <Hint icon={<Newspaper className="h-4 w-4" strokeWidth={1.5} />} title={`El ${currentTerms().wod}`}>
               Cada día encontrarás el WOD publicado en la portada del <span className="font-medium">Feed</span> y en la sección de reservas.
             </Hint>
             <Hint icon={<Trophy className="h-4 w-4" strokeWidth={1.5} />} title="Registra tus PRs">
-              Anota tus marcas y compáralas con el resto del box en <span className="font-medium">PRs</span>.
+              Anota tus marcas y compáralas con el resto del {currentTerms().place} en <span className="font-medium">PRs</span>.
             </Hint>
           </div>
           <div className="flex justify-between">

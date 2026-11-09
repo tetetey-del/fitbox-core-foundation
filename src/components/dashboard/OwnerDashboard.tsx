@@ -26,6 +26,7 @@ import { pendingOrdersCount } from "@/lib/services/shop.service";
 import { listLocations } from "@/lib/services/locations.service";
 import { useModules } from "@/hooks/useModules";
 import { ShoppingBag } from "lucide-react";
+import { currentTerms } from "@/lib/placeTerms";
 
 
 /**
@@ -51,7 +52,7 @@ export function OwnerDashboard() {
     <div className="space-y-6 sm:space-y-8">
       {locations.length > 1 && (
         <div className="flex flex-wrap gap-2" role="group" aria-label="Ver por sede">
-          {[{ id: null as string | null, name: "Todo el box" }, ...locations].map((l) => {
+          {[{ id: null as string | null, name: `Todo el ${currentTerms().place}` }, ...locations].map((l) => {
             const active = locationId === l.id;
             return (
               <button

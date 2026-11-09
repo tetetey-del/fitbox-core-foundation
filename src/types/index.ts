@@ -56,6 +56,8 @@ export const CURRENCY_LABEL: Record<CurrencyCode, string> = {
 
 export interface TenantSettings {
   cancellationWindowHours: number;
+  /** Cómo se llama el lugar en la app: gimnasio (por defecto), box, centro o estudio. */
+  placeWord?: "gimnasio" | "box" | "centro" | "estudio";
   /**
    * Con cuántos días de calendario de antelación pueden reservar los socios (contando hoy).
    * 3 = hoy, mañana y pasado. 0 o vacío = sin límite.
@@ -219,6 +221,10 @@ export type ClassType =
   | "gimnasticos"
   | "movilidad"
   | "open_box"
+  | "personal"
+  | "gap"
+  | "spinning"
+  | "pilates"
   | "otro";
 
 export interface ClassTemplate extends BaseEntity {
@@ -286,6 +292,10 @@ export const CLASS_TYPE_LABEL: Record<ClassType, string> = {
   gimnasticos: "Gimnásticos",
   movilidad: "Movilidad",
   open_box: "Open Box",
+  personal: "Entrenamiento personal",
+  gap: "GAP",
+  spinning: "Spinning",
+  pilates: "Pilates",
   otro: "Otro",
 };
 

@@ -2,6 +2,7 @@ import { Input } from "@/components/ui/input";
 import { Field } from "@/routes/login";
 import { THEMES } from "@/lib/themes";
 import type { ThemeId } from "@/types";
+import { PLACE_WORDS, type PlaceWord } from "@/lib/placeTerms";
 
 interface Props {
   boxName: string;
@@ -12,16 +13,38 @@ interface Props {
   onThemeChange: (v: ThemeId) => void;
   logo: string;
   onLogoChange: (v: string) => void;
+  placeWord: PlaceWord;
+  onPlaceWordChange: (v: PlaceWord) => void;
 }
 
 /** Paso 1 del onboarding del owner: identidad visual del box. */
 export function StepBoxData({
-  boxName, onBoxNameChange, color, onColorChange, themeId, onThemeChange, logo, onLogoChange,
+  boxName, onBoxNameChange, color, onColorChange, themeId, onThemeChange, logo, onLogoChange, placeWord, onPlaceWordChange,
 }: Props) {
   return (
     <div className="space-y-4">
-      <Field label="Nombre del box">
+      <Field label="Nombre">
         <Input value={boxName} onChange={(e) => onBoxNameChange(e.target.value)} />
+      </Field>
+      <Field label="¿Cómo lo llamas?">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {PLACE_WORDS.map((w) => (
+            <button
+              key={w.id}
+              type="button"
+              aria-pressed={placeWord === w.id}
+              onClick={() => onPlaceWordChange(w.id)}
+              className={`rounded-md border px-3 py-2 text-sm transition-colors ${
+                placeWord === w.id ? "border-foreground bg-foreground text-background" : "border-border text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {w.label}
+            </button>
+          ))}
+        </div>
+        <p className="mt-1 text-xs text-muted-foreground">
+          La app usa esta palabra en todos lados ({PLACE_WORDS.find((w) => w.id === placeWord)?.example}).
+        </p>
       </Field>
       <Field label="Color de marca">
         <div className="flex items-center gap-3">

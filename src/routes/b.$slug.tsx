@@ -9,7 +9,7 @@ import { saveBoxBrand, type BoxBrand } from "@/lib/boxBrand";
 import { BoxIcon } from "./login";
 
 export const Route = createFileRoute("/b/$slug")({
-  head: () => ({ meta: [{ title: "Tu box — Kinflow" }] }),
+  head: () => ({ meta: [{ title: "Tu gimnasio — Kinflow" }] }),
   component: BoxLandingPage,
 });
 
@@ -60,8 +60,8 @@ function BoxLandingPage() {
   if (!brand) {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-background p-6 text-center text-foreground">
-        <p className="text-lg font-semibold">No encontramos ese box</p>
-        <p className="text-sm text-muted-foreground">Revisa el link o pídeselo de nuevo a tu box.</p>
+        <p className="text-lg font-semibold">No encontramos ese gimnasio</p>
+        <p className="text-sm text-muted-foreground">Revisa el link o pídeselo de nuevo a tu gimnasio.</p>
         <Button asChild variant="outline">
           <Link to="/login">Iniciar sesión</Link>
         </Button>
@@ -88,7 +88,7 @@ function BoxLandingPage() {
               <Button asChild className="h-11 w-full" style={{ backgroundColor: brand.brandColor }}>
                 <Link to="/login">Iniciar sesión</Link>
               </Button>
-              <p className="text-xs text-muted-foreground">¿Todavía no tienes cuenta? Pide a tu box tu invitación.</p>
+              <p className="text-xs text-muted-foreground">¿Todavía no tienes cuenta? Pide tu invitación en tu gimnasio.</p>
             </>
           )}
         </div>
@@ -111,7 +111,7 @@ function BoxLandingPage() {
                 </p>
               ),
             )}
-            <p className="mt-2 text-xs text-muted-foreground">Te quedará con el logo de tu box y podrás recibir avisos.</p>
+            <p className="mt-2 text-xs text-muted-foreground">Te quedará con el logo de tu gimnasio y podrás recibir avisos.</p>
           </div>
         )}
       </main>

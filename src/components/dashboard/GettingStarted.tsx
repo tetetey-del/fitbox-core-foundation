@@ -13,6 +13,7 @@ import { wodsRepo } from "@/lib/storage/repositories/wods.repo";
 import { postsRepo } from "@/lib/storage/repositories/posts.repo";
 import { toDateKey } from "@/lib/date";
 import { cn } from "@/lib/utils";
+import { currentTerms } from "@/lib/placeTerms";
 
 const sharedKey = (tenantId: string) => `kinflow:link-compartido:${tenantId}`;
 const hiddenKey = (tenantId: string) => `kinflow:primeros-pasos-oculto:${tenantId}`;
@@ -66,7 +67,7 @@ export function GettingStarted() {
   const steps: Step[] = [
     {
       id: "marca",
-      title: "Pon el logo y el color de tu box",
+      title: `Pon el logo y el color de tu ${currentTerms().place}`,
       hint: "Es también el ícono de la app que instalan tus socios.",
       done: !!currentTenant.logo,
       to: "/configuracion",
@@ -96,7 +97,7 @@ export function GettingStarted() {
     },
     {
       id: "wod",
-      title: "Publica el primer WOD o un aviso",
+      title: `Publica el primer ${currentTerms().wodShort.toLowerCase()} o un aviso`,
       hint: "Tus socios lo ven en el Feed.",
       done: wodsRepo.list().length > 0 || postsRepo.list().length > 0,
       to: "/clases",
@@ -139,7 +140,7 @@ export function GettingStarted() {
         <div className="min-w-0 flex-1">
           <h2 className="text-base font-semibold">Primeros pasos</h2>
           <p className="text-xs text-muted-foreground">
-            {doneCount} de {steps.length} hechos. Cuando termines, tu box está listo para tus socios.
+            {doneCount} de {steps.length} hechos. Cuando termines, tu {currentTerms().place} está listo para tus socios.
           </p>
           <div className="mt-2 h-1.5 rounded-full bg-muted">
             <div className="h-1.5 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: "var(--brand)" }} />

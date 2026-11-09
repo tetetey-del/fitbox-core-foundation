@@ -32,7 +32,7 @@ export const MESSAGES: Record<AuthErrorCode, string> = {
   wrong_credentials: "Email o contraseña incorrectos.",
   email_not_confirmed: "Todavía no confirmaste tu email. Revisa tu bandeja de entrada (y la de spam) y toca el enlace que te enviamos.",
   confirm_email: "Te enviamos un email para confirmar tu cuenta. Toca el enlace y después inicia sesión.",
-  no_tenant: "Tu cuenta no está asociada a ningún box. Pídele a tu box una invitación.",
+  no_tenant: "Tu cuenta no está asociada a ningún gimnasio. Pídele una invitación a tu gimnasio.",
   network: "No se pudo conectar. Revisa tu conexión e inténtalo de nuevo.",
 };
 

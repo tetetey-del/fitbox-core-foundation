@@ -49,6 +49,7 @@ import type { Program, ProgramSession, WodBlock, WodBlockType } from "@/types";
 import { PROGRAM_LEVEL_LABEL, WOD_BLOCK_LABEL } from "@/types";
 import { DAY_LABELS } from "@/lib/date";
 import { NumberInput } from "@/components/ui/number-input";
+import { currentTerms } from "@/lib/placeTerms";
 
 export const Route = createFileRoute("/rutinas")({
   head: () => ({ meta: [{ title: "Rutinas — Kinflow" }] }),
@@ -69,7 +70,7 @@ function RutinasPage() {
       ) : hasPersonalTraining(currentUser.id) ? (
         <MemberView userId={currentUser.id} />
       ) : (
-        <EmptyState text="Tu plan no incluye entreno personalizado. Si te interesa, habla con tu box." />
+        <EmptyState text={`Tu plan no incluye entreno personalizado. Si te interesa, habla con tu ${currentTerms().place}.`} />
       )}
     </AppLayout>
   );

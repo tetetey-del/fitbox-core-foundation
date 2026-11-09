@@ -17,6 +17,7 @@ import { WOD_BLOCK_LABEL } from "@/types";
 import { toDateKey } from "@/lib/date";
 import { getWodByDate, saveWod } from "@/lib/services/wods.service";
 import { notifyDataChanged, useDataVersion } from "@/lib/data-bus";
+import { currentTerms } from "@/lib/placeTerms";
 
 const DEFAULT_BLOCKS: WodBlock[] = [
   { type: "calentamiento", content: "" },
@@ -64,7 +65,7 @@ export function WodEditor() {
       return toast.error("Añade al menos un bloque con contenido");
     }
     saveWod({ date, title, blocks: blocks.filter((b) => b.content.trim()), publish });
-    toast.success(publish ? "WOD publicado" : "WOD guardado");
+    toast.success(publish ? `${currentTerms().wodShort} publicado` : `${currentTerms().wodShort} guardado`);
     notifyDataChanged();
   };
 
@@ -87,7 +88,7 @@ export function WodEditor() {
           </div>
         </div>
         <div className="space-y-1.5">
-          <Label className="text-xs text-muted-foreground">Título del WOD</Label>
+          <Label className="text-xs text-muted-foreground">Título del {currentTerms().wodShort.toLowerCase()}</Label>
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}

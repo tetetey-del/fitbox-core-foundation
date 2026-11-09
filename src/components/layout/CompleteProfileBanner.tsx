@@ -2,6 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { UserRound, ArrowRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { needsProfileData } from "@/lib/memberData";
+import { currentTerms } from "@/lib/placeTerms";
 
 /** Aviso al socio cuando le falta completar sus datos obligatorios (fecha de nacimiento). */
 export function CompleteProfileBanner() {
@@ -18,7 +19,7 @@ export function CompleteProfileBanner() {
       <span className="min-w-0 flex-1">
         <span className="font-medium">Completa tus datos</span>
         <span className="block text-xs text-muted-foreground">
-          Tu box necesita tu fecha de nacimiento y un contacto de emergencia.
+          Tu {currentTerms().place} necesita tu fecha de nacimiento y un contacto de emergencia.
         </span>
       </span>
       <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" strokeWidth={1.5} />

@@ -90,13 +90,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { title: brand ? brand.name : "Kinflow — Gestión para boxes y gimnasios" },
+      { title: brand ? brand.name : "Kinflow — Gestión para gimnasios y boxes" },
       {
         name: "description",
         content:
-          "Kinflow es el software todo-en-uno para boxes de CrossFit, Hyrox y gimnasios: reservas, socios, clases y PRs.",
+          "Kinflow es el software todo-en-uno para gimnasios, boxes y centros de entrenamiento: reservas, socios, cuotas, clases y app con tu marca.",
       },
-      { property: "og:title", content: "Kinflow — Gestión para boxes y gimnasios" },
+      { property: "og:title", content: "Kinflow — Gestión para gimnasios y boxes" },
       {
         property: "og:description",
         content: "Reservas, socios, clases y PRs en un solo sitio.",
@@ -109,10 +109,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-title", content: appName },
       { name: "application-name", content: appName },
       { name: "mobile-web-app-capable", content: "yes" },
-      { name: "twitter:title", content: "Kinflow — Gestión para boxes y gimnasios" },
-      { name: "description", content: "Kinflow es el software todo-en-uno para boxes de CrossFit, Hyrox y gimnasios: reservas, socios, clases y PRs." },
-      { property: "og:description", content: "Kinflow es el software todo-en-uno para boxes de CrossFit, Hyrox y gimnasios: reservas, socios, clases y PRs." },
-      { name: "twitter:description", content: "Kinflow es el software todo-en-uno para boxes de CrossFit, Hyrox y gimnasios: reservas, socios, clases y PRs." },
+      { name: "twitter:title", content: "Kinflow — Gestión para gimnasios y boxes" },
+      { name: "description", content: "Kinflow es el software todo-en-uno para gimnasios, boxes y centros de entrenamiento: reservas, socios, cuotas, clases y app con tu marca." },
+      { property: "og:description", content: "Kinflow es el software todo-en-uno para gimnasios, boxes y centros de entrenamiento: reservas, socios, cuotas, clases y app con tu marca." },
+      { name: "twitter:description", content: "Kinflow es el software todo-en-uno para gimnasios, boxes y centros de entrenamiento: reservas, socios, cuotas, clases y app con tu marca." },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/47f3dded-7e62-4194-8c97-12c55a5f2e7b/id-preview-a17b69e1--8a43a2be-09b4-4706-bf2f-6bdd77dd3d83.lovable.app-1783161887024.png" },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/47f3dded-7e62-4194-8c97-12c55a5f2e7b/id-preview-a17b69e1--8a43a2be-09b4-4706-bf2f-6bdd77dd3d83.lovable.app-1783161887024.png" },
     ],

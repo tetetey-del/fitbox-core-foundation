@@ -93,7 +93,7 @@ export interface BackupPayload {
 
 export function exportTenantData(tenantId: string): BackupPayload {
   const tenant = tenantsRepo.getById(tenantId);
-  if (!tenant) throw new Error("Box no encontrado");
+  if (!tenant) throw new Error("Gimnasio no encontrado");
 
   return {
     meta: {
@@ -162,7 +162,7 @@ export function validateBackup(raw: unknown): BackupPayload {
     );
   }
   if (!p.tenant || typeof p.tenant !== "object" || !("id" in (p.tenant as object))) {
-    throw new BackupValidationError("Falta la información del box");
+    throw new BackupValidationError("Falta la información del gimnasio");
   }
   const requiredV1: Array<keyof BackupPayload> = [
     "users", "classTemplates", "classSessions", "bookings", "checkins",

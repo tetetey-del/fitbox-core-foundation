@@ -21,7 +21,7 @@ export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
       { title: "Iniciar sesión — Kinflow" },
-      { name: "description", content: "Accede a tu box en Kinflow con tu email y contraseña." },
+      { name: "description", content: "Accede a tu gimnasio en Kinflow con tu email y contraseña." },
     ],
   }),
   validateSearch: (s: Record<string, unknown>): LoginSearch => ({
@@ -101,12 +101,12 @@ function LoginPage() {
   return (
     <AuthShell
       title="Iniciar sesión"
-      subtitle={brand ? `Entra a ${brand.name} con tu email y contraseña.` : "Accede a tu box con tu email y contraseña."}
+      subtitle={brand ? `Entra a ${brand.name} con tu email y contraseña.` : "Accede a tu gimnasio con tu email y contraseña."}
       brand={brand}
     >
       {confirmado && !error && (
         <div className="mb-4 rounded-md border border-[#14B8A6]/40 bg-[#14B8A6]/10 px-3 py-2 text-sm">
-          ¡Email confirmado! {loading ? "Entrando a tu box…" : "Ya puedes iniciar sesión."}
+          ¡Email confirmado! {loading ? "Entrando…" : "Ya puedes iniciar sesión."}
         </div>
       )}
       <form onSubmit={submit} className="space-y-4">

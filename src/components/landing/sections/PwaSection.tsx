@@ -91,7 +91,7 @@ export function PwaSection({ onCreate }: { onCreate: () => void }) {
                     <div className="mt-1 text-[9px] text-muted-foreground">{t.phoneBooked}</div>
                   </div>
                   <div className="rounded-lg border border-[#14B8A6]/30 bg-[#14B8A6]/5 p-2.5">
-                    <div className="text-[10px] font-medium text-[#14B8A6]">WOD · Fran</div>
+                    <div className="text-[10px] font-medium text-[#14B8A6]">Entreno · Full body</div>
                     <div className="text-[9px] text-muted-foreground mt-0.5">21-15-9 Thrusters + Pull-ups</div>
                   </div>
                   <div className="rounded-lg border border-[#14B8A6]/20 bg-[#14B8A6]/5 p-2.5">

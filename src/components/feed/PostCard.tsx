@@ -1,10 +1,10 @@
 import { Pin, Pencil, Trash2 } from "lucide-react";
 import type { Post } from "@/types";
-import { POST_TYPE_LABEL } from "@/types";
 import { Button } from "@/components/ui/button";
 import { POST_ICONS, POST_COLORS } from "@/routes/feed";
 import { formatDate } from "@/lib/date";
 import { cn } from "@/lib/utils";
+import { postTypeLabel } from "@/lib/placeTerms";
 
 export function PostCard({
   post,
@@ -37,7 +37,7 @@ export function PostCard({
             )}
           >
             <Icon className="h-3 w-3" strokeWidth={1.5} />
-            {POST_TYPE_LABEL[post.type]}
+            {postTypeLabel(post.type)}
           </span>
           {post.pinned && (
             <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md border border-border text-muted-foreground">

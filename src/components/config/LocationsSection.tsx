@@ -11,6 +11,7 @@ import { createLocation, deleteLocation, listLocations, updateLocation } from "@
 import { planOf } from "@/lib/plans";
 import { UpgradeDialog } from "@/components/plan/UpgradeDialog";
 import type { Location } from "@/types";
+import { currentTerms } from "@/lib/placeTerms";
 
 /** Configuración → Sedes. Pro: hasta 2; Business: las que quieras. */
 export function LocationsSection() {
@@ -35,8 +36,8 @@ export function LocationsSection() {
           <h2 className="text-base font-semibold">Sedes</h2>
           <p className="text-sm text-muted-foreground">
             {locations.length <= 1
-              ? "Tu box tiene una sola sede. Si abres otra, agrégala acá: cada clase tendrá su sede y los socios podrán reservar en cualquiera."
-              : `${locations.length} sedes. Las clases y los socios tienen su sede; los planes y el WOD son los mismos para todas.`}
+              ? `Tu ${currentTerms().place} tiene una sola sede. Si abres otra, agrégala aquí: cada clase tendrá su sede y los socios podrán reservar en cualquiera.`
+              : `${locations.length} sedes. Las clases y los socios tienen su sede; los planes y el ${currentTerms().wod} son los mismos para todas.`}
           </p>
         </div>
         <Button variant="outline" onClick={add}>

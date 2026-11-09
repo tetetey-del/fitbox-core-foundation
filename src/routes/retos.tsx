@@ -39,6 +39,7 @@ import type { Challenge } from "@/types";
 import { toDateKey, addDays, formatDate } from "@/lib/date";
 import { formatPrValue } from "@/lib/format";
 import { NumberInput } from "@/components/ui/number-input";
+import { currentTerms } from "@/lib/placeTerms";
 
 export const Route = createFileRoute("/retos")({
   head: () => ({ meta: [{ title: "Retos — Kinflow" }] }),
@@ -62,7 +63,7 @@ function RetosPage() {
     return (
       <AppLayout>
         <PageHeader title="Retos" />
-        <p className="text-sm text-muted-foreground">Esta sección es para los socios y la gestiona el dueño del box.</p>
+        <p className="text-sm text-muted-foreground">Esta sección es para los socios y la gestiona el dueño del {currentTerms().place}.</p>
       </AppLayout>
     );
   }

@@ -15,6 +15,7 @@ import { scanExpiringMembershipsForTenant } from "@/lib/services/notifications.s
 import { syncCycleWods } from "@/lib/services/wodCycle.service";
 import { notifyDataChanged } from "@/lib/data-bus";
 import { BlockedScreen, TrialBanner, usePlanBlocked } from "@/components/plan/PlanGate";
+import { currentTerms } from "@/lib/placeTerms";
 
 // El ciclo de programación se pone al día una vez por carga y por box.
 const cycleSynced = new Set<string>();
@@ -56,7 +57,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
       <div className="min-h-dvh bg-background text-foreground flex items-center justify-center p-6">
         <div className="max-w-md text-center">
           <AlertOctagon className="h-10 w-10 mx-auto text-destructive" strokeWidth={1.5} />
-          <h1 className="mt-4 text-xl font-semibold">Box suspendido</h1>
+          <h1 className="mt-4 text-xl font-semibold">{currentTerms().Place} suspendido</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             {currentTenant.name} está temporalmente desactivado por la plataforma.
             Contacta con soporte para más información.

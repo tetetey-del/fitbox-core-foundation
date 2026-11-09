@@ -32,6 +32,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { MemberHero } from "@/components/member/MemberHero";
+import { currentTerms } from "@/lib/placeTerms";
 
 export const POST_ICONS = {
   aviso: AlertTriangle,
@@ -86,8 +87,8 @@ function FeedPage() {
     <AppLayout>
       <MemberHero />
       <PageHeader
-        title={isStaff ? "Feed" : "Novedades del box"}
-        description="Avisos, consejos, recetas y WODs del box."
+        title={isStaff ? "Feed" : `Novedades del ${currentTerms().place}`}
+        description={`Avisos, consejos, recetas y ${currentTerms().wods} del ${currentTerms().place}.`}
       >
         {isStaff && (
           <Button onClick={() => setCreating(true)}>

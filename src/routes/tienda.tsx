@@ -44,6 +44,7 @@ import { compressImage, dataUrlBytes } from "@/lib/image";
 import { formatDate } from "@/lib/date";
 import { currencySymbol, formatMoney } from "@/lib/format";
 import { NumberInput } from "@/components/ui/number-input";
+import { currentTerms } from "@/lib/placeTerms";
 
 export const Route = createFileRoute("/tienda")({
   head: () => ({ meta: [{ title: "Tienda — Kinflow" }] }),
@@ -57,11 +58,11 @@ function TiendaPage() {
   if (!enabled || !currentUser) return null;
   return (
     <AppLayout>
-      <PageHeader title="Tienda" description="Pide y recoge en el box." />
+      <PageHeader title="Tienda" description={`Pide y recoge en el ${currentTerms().place}.`} />
       {currentUser.role === "admin" ? (
         <StaffShop />
       ) : currentUser.role === "coach" ? (
-        <p className="text-sm text-muted-foreground">La tienda la gestiona el dueño del box.</p>
+        <p className="text-sm text-muted-foreground">La tienda la gestiona el dueño del {currentTerms().place}.</p>
       ) : (
         <MemberShop userId={currentUser.id} />
       )}
@@ -171,7 +172,7 @@ function MemberShop({ userId }: { userId: string }) {
             <DialogTitle>Confirmar pedido</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            Pasa a recogerlo por el box. Total: <span className="font-medium text-foreground">{formatMoney(total)}</span>.
+            Pasa a recogerlo por el {currentTerms().place}. Total: <span className="font-medium text-foreground">{formatMoney(total)}</span>.
           </p>
           <div>
             <Label>Notas (opcional)</Label>

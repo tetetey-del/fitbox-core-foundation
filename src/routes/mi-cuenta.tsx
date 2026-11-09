@@ -19,6 +19,7 @@ import { useModules } from "@/hooks/useModules";
 import { useDataVersion } from "@/lib/data-bus";
 import { monthlyAttendance, totalAttendance } from "@/components/members/memberDetail/attendance.helpers";
 import { missingOptionalData, needsProfileData, todayKey } from "@/lib/memberData";
+import { currentTerms } from "@/lib/placeTerms";
 
 
 export const Route = createFileRoute("/mi-cuenta")({
@@ -65,7 +66,7 @@ function MyAccountPage() {
         </Button>
 
         <p className="text-xs text-muted-foreground">
-          Kinflow es la app que usa tu box para organizarse. Las clases, los cobros y tus datos los gestiona tu box:
+          Kinflow es la app que usa tu {currentTerms().place} para organizarse. Las clases, los cobros y tus datos los gestiona tu {currentTerms().place}:
           cualquier consulta, escríbele a ellos.{" "}
           <Link to="/legal/terminos" className="underline">Términos</Link> ·{" "}
           <Link to="/legal/privacidad" className="underline">Privacidad</Link>
@@ -129,10 +130,10 @@ function MyDataCard({ onSaved }: { onSaved: () => void }) {
         <SectionTitle icon={IdCard}>Mis datos</SectionTitle>
         <p className="text-xs text-muted-foreground mt-1">
           {pending
-            ? "Completa tus datos para que tu box los tenga a mano. La fecha de nacimiento es obligatoria."
+            ? `Completa tus datos para que tu ${currentTerms().place} los tenga a mano. La fecha de nacimiento es obligatoria.`
             : missing.length
               ? `Te falta: ${missing.join(", ")}.`
-              : "Solo los ve el equipo de tu box."}
+              : `Solo los ve el equipo de tu ${currentTerms().place}.`}
         </p>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">

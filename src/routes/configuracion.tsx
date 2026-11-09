@@ -56,6 +56,7 @@ import { ModulesSection } from "@/components/config/ModulesSection";
 import { NumberInput } from "@/components/ui/number-input";
 import { PlanSection } from "@/components/plan/PlanSection";
 import { LocationsSection } from "@/components/config/LocationsSection";
+import { PLACE_WORDS, placeTerms, useTerms, type PlaceWord } from "@/lib/placeTerms";
 
 
 export const Route = createFileRoute("/configuracion")({ component: ConfigPage });
@@ -68,6 +69,8 @@ function ConfigPage() {
     currentTenant?.settings?.cancellationWindowHours ?? 1,
   );
   const [bookingWindow, setBookingWindow] = useState(currentTenant?.settings?.bookingWindowDays ?? 0);
+  const [placeWord, setPlaceWord] = useState<PlaceWord>(placeTerms(currentTenant).word);
+  const t = useTerms();
   const [currency, setCurrency] = useState<CurrencyCode>(currentTenant?.settings?.currency ?? "EUR");
   const [wodVisibility, setWodVisibility] = useState<WodVisibility>(
     currentTenant?.settings?.wodVisibility ?? "visible",
@@ -82,6 +85,7 @@ function ConfigPage() {
     setBookingWindow(currentTenant.settings?.bookingWindowDays ?? 0);
     setCurrency(currentTenant.settings?.currency ?? "EUR");
     setWodVisibility(currentTenant.settings?.wodVisibility ?? "visible");
+    setPlaceWord(placeTerms(currentTenant).word);
   }, [currentTenant]);
 
   const save = () => {
@@ -94,6 +98,7 @@ function ConfigPage() {
         bookingWindowDays: Math.max(0, Math.floor(bookingWindow || 0)),
         currency,
         wodVisibility,
+        placeWord,
       },
     });
     toast.success("Configuración guardada");
@@ -107,13 +112,13 @@ function ConfigPage() {
 
   return (
     <AppLayout>
-      <PageHeader title="Configuración" description="Ajustes del box, apariencia, módulos y datos." />
+      <PageHeader title="Configuración" description={`Ajustes del ${t.place}, apariencia, módulos y datos.`} />
 
       <RoleGate
         allowed={["admin"]}
         fallback={
           <p className="text-sm text-muted-foreground">
-            Solo el admin del box puede modificar la configuración.
+            Solo el admin del {t.place} puede modificar la configuración.
           </p>
         }
       >
@@ -121,13 +126,27 @@ function ConfigPage() {
           <PlanSection />
           <section className="space-y-4 rounded-lg border border-border bg-card p-6">
             <div>
-              <h2 className="text-base font-semibold">Datos del box</h2>
+              <h2 className="text-base font-semibold">Datos del {t.place}</h2>
               <p className="text-sm text-muted-foreground">Nombre y reglas básicas.</p>
             </div>
             <div className="space-y-3">
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">Nombre</Label>
                 <Input value={name} onChange={(e) => setName(e.target.value)} />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">¿Cómo lo llamas?</Label>
+                <Select value={placeWord} onValueChange={(v) => setPlaceWord(v as PlaceWord)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {PLACE_WORDS.map((w) => (
+                      <SelectItem key={w.id} value={w.id}>{w.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  La app usa esta palabra en todos lados ({PLACE_WORDS.find((w) => w.id === placeWord)?.example}).
+                </p>
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">
@@ -171,7 +190,7 @@ function ConfigPage() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">WOD del día</Label>
+                <Label className="text-xs text-muted-foreground">{t.Wod}</Label>
                 <Select value={wodVisibility} onValueChange={(v) => setWodVisibility(v as WodVisibility)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -181,7 +200,7 @@ function ConfigPage() {
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  Algunos boxes prefieren no mostrar el WOD antes para que nadie falte por el ejercicio que toca.
+                  Algunos prefieren no mostrar el {t.wod} antes para que nadie falte por el ejercicio que toca.
                 </p>
               </div>
             </div>
@@ -212,7 +231,7 @@ function ConfigPage() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>¿Borrar todos los datos?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Se eliminarán todos los boxes, socios, reservas y PRs guardados en este navegador.
+                    Se eliminarán todos los gimnasios, socios, reservas y PRs guardados en este navegador.
                     Esta acción no se puede deshacer.
                   </AlertDialogDescription>
                 </AlertDialogHeader>

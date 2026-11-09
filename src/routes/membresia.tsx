@@ -12,6 +12,7 @@ import { membershipPlansRepo } from "@/lib/storage/repositories/membershipPlans.
 import { daysBetween, formatDate, parseDateKey } from "@/lib/date";
 import { formatMoney, formatPlanPrice } from "@/lib/format";
 import { PAYMENT_METHOD_LABEL, PLAN_DURATION_LABEL } from "@/types";
+import { currentTerms } from "@/lib/placeTerms";
 
 export const Route = createFileRoute("/membresia")({
   head: () => ({ meta: [{ title: "Mi membresía — Kinflow" }] }),
@@ -92,7 +93,7 @@ function MembershipPage() {
             <>
               <div className="text-xs uppercase tracking-wider opacity-80">Tu plan</div>
               <div className="mt-1 text-xl font-semibold">Todavía no tienes un plan activo</div>
-              <p className="mt-2 text-sm opacity-90">Habla con tu box para elegir uno y empezar a reservar clases.</p>
+              <p className="mt-2 text-sm opacity-90">Habla con tu {currentTerms().place} para elegir uno y empezar a reservar clases.</p>
             </>
           )}
         </section>
@@ -133,7 +134,7 @@ function MembershipPage() {
           <section className="rounded-xl border border-border bg-card p-4">
             <h2 className="flex items-center gap-2 text-sm font-semibold">
               <Ticket className="h-4 w-4" strokeWidth={1.75} style={{ color: "var(--brand)" }} />
-              Planes del box
+              Planes del {currentTerms().place}
             </h2>
             <ul className="mt-2 divide-y divide-border">
               {plans.map((p) => (
@@ -155,7 +156,7 @@ function MembershipPage() {
                 </li>
               ))}
             </ul>
-            <p className="mt-2 text-xs text-muted-foreground">Para cambiar de plan o renovarlo, habla con tu box.</p>
+            <p className="mt-2 text-xs text-muted-foreground">Para cambiar de plan o renovarlo, habla con tu {currentTerms().place}.</p>
           </section>
         )}
       </div>

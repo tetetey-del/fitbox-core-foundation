@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { ChevronRight, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { placeTerms, type PlaceWord } from "@/lib/placeTerms";
 import { useAuth } from "@/contexts/AuthContext";
 import { tenantsRepo } from "@/lib/storage/repositories/tenants.repo";
 import { classTemplatesRepoFor } from "@/lib/storage/repositories/classTemplates.repo";
@@ -32,6 +33,7 @@ function OwnerOnboarding() {
   const [color, setColor] = useState("#14B8A6");
   const [themeId, setThemeId] = useState<ThemeId>(DEFAULT_THEME_ID);
   const [logo, setLogo] = useState<string>("");
+  const [placeWord, setPlaceWord] = useState<PlaceWord>("gimnasio");
 
   const [selectedSlots, setSelectedSlots] = useState<Set<string>>(
     new Set(["1-07:00", "1-19:00", "6-10:00"]),
@@ -51,6 +53,7 @@ function OwnerOnboarding() {
       setColor(currentTenant.brandColor);
       setThemeId(currentTenant.themeId ?? DEFAULT_THEME_ID);
       setLogo(currentTenant.logo ?? "");
+      setPlaceWord(placeTerms(currentTenant).word);
     }
   }, [session, currentTenant, navigate, boxName]);
 
@@ -77,14 +80,16 @@ function OwnerOnboarding() {
         brandColor: color,
         themeId,
         logo: logo || undefined,
+        settings: { ...currentTenant.settings, placeWord } as typeof currentTenant.settings,
       });
 
       const tplRepo = classTemplatesRepoFor(currentTenant.id);
       const sesRepo = classSessionsRepoFor(currentTenant.id);
       const defaultTpl = tplRepo.create({
         tenantId: currentTenant.id,
-        name: "WOD",
-        type: "wod",
+        // Box: clase de CrossFit (WOD); gimnasio, centro o estudio: clase funcional.
+        name: placeWord === "box" ? "WOD" : "Funcional",
+        type: placeWord === "box" ? "wod" : "funcional",
         durationMinutes: 60,
         defaultCapacity: 12,
         color,
@@ -142,7 +147,7 @@ function OwnerOnboarding() {
   };
 
   return (
-    <AuthShell title={`Paso ${step} de 4`} subtitle="Configura tu box en unos minutos.">
+    <AuthShell title={`Paso ${step} de 4`} subtitle="Configura tu gimnasio en unos minutos.">
       <div className="mb-6 flex gap-1.5">
         {[1, 2, 3, 4].map((n) => (
           <div
@@ -154,6 +159,8 @@ function OwnerOnboarding() {
 
       {step === 1 && (
         <StepBoxData
+          placeWord={placeWord}
+          onPlaceWordChange={setPlaceWord}
           boxName={boxName}
           onBoxNameChange={setBoxName}
           color={color}

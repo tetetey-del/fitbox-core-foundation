@@ -22,6 +22,7 @@ import {
   readBackupFile,
   type ImportResult,
 } from "@/lib/services/backup.service";
+import { currentTerms } from "@/lib/placeTerms";
 
 export function DataSection() {
   const { currentTenant, _setSession } = useAuth();
@@ -46,7 +47,7 @@ export function DataSection() {
     try {
       const payload = await readBackupFile(file);
       const result = importTenantData(payload);
-      toast.success(`Box importado: ${payload.tenant.name}`);
+      toast.success(`Datos importados: ${payload.tenant.name}`);
       setPending(result);
     } catch (err) {
       if (err instanceof BackupValidationError) {
@@ -82,17 +83,17 @@ export function DataSection() {
       <div>
         <h2 className="text-base font-semibold">Backup y datos</h2>
         <p className="text-sm text-muted-foreground">
-          Exporta todo el box a un archivo JSON o importa uno recibido de otro Kinflow.
+          Exporta todo el {currentTerms().place} a un archivo JSON o importa uno recibido de otro Kinflow.
         </p>
       </div>
       <div className="flex flex-wrap gap-2">
         <Button variant="outline" onClick={handleExport}>
           <Download className="h-4 w-4 mr-2" strokeWidth={1.5} />
-          Exportar box
+          Exportar datos
         </Button>
         <Button variant="outline" onClick={() => fileRef.current?.click()}>
           <Upload className="h-4 w-4 mr-2" strokeWidth={1.5} />
-          Importar box
+          Importar datos
         </Button>
         <input
           ref={fileRef}
@@ -104,13 +105,13 @@ export function DataSection() {
         />
       </div>
       <p className="text-xs text-muted-foreground">
-        El importado se crea como un box nuevo (no sobreescribe el actual).
+        El importado se crea como un {currentTerms().place} nuevo (no sobreescribe el actual).
       </p>
 
       <AlertDialog open={!!pending} onOpenChange={(o) => !o && setPending(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Box importado correctamente</AlertDialogTitle>
+            <AlertDialogTitle>Importado correctamente</AlertDialogTitle>
             <AlertDialogDescription>
               {pending && (
                 <span className="block space-y-1 text-xs">
@@ -125,7 +126,7 @@ export function DataSection() {
           <AlertDialogFooter>
             <AlertDialogCancel>Quedarme aquí</AlertDialogCancel>
             <AlertDialogAction onClick={enterImported} disabled={!pending?.ownerId}>
-              Entrar en el box importado
+              Entrar en el importado
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

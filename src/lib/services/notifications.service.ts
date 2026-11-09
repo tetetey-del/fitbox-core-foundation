@@ -10,6 +10,7 @@ import { listUsersOfTenant } from "@/lib/storage/repositories/users.repo";
 import { membershipsRepo } from "@/lib/storage/repositories/memberships.repo";
 import { daysBetween, parseDateKey } from "@/lib/date";
 import { sessionStore } from "@/lib/storage/session";
+import { currentTerms } from "@/lib/placeTerms";
 
 export interface NotifyInput {
   tenantId: string;
@@ -103,7 +104,7 @@ export function scanExpiringMembershipsForTenant(tenantId: string): void {
         title: "Tu plan expira pronto",
         body:
           days === 0
-            ? "Tu plan caduca hoy. Habla con el box para renovarlo."
+            ? `Tu plan caduca hoy. Habla con el ${currentTerms().place} para renovarlo.`
             : `Tu plan caduca en ${days} día${days === 1 ? "" : "s"}.`,
         linkTo: "/dashboard",
         dedupeKey: `expiring:${active.id}:${active.endDate}`,
