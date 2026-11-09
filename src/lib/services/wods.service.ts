@@ -12,6 +12,10 @@ import { sessionStore } from "@/lib/storage/session";
 import { notifyManyUsers } from "./notifications.service";
 import { formatDate, toDateKey } from "@/lib/date";
 import { tenantsRepo } from "@/lib/storage/repositories/tenants.repo";
+import { placeTerms } from "@/lib/placeTerms";
+
+/** "WOD" o "Entreno" según cómo se llame el lugar (gimnasio, box…). */
+const wodWord = (tenantId: string) => placeTerms(tenantsRepo.getById(tenantId)).wodShort;
 
 export function getWodByDate(date: string): Wod | null {
   return wodsRepo.list().find((w) => w.date === date) ?? null;
@@ -71,7 +75,7 @@ export function saveWod(input: SaveWodInput): Wod {
   const payload = {
     tenantId: s.tenantId,
     date: input.date,
-    title: input.title.trim() || `WOD ${formatDate(input.date)}`,
+    title: input.title.trim() || `${wodWord(s.tenantId)} ${formatDate(input.date)}`,
     blocks: input.blocks,
     published: input.publish,
     publishedBy: input.publish ? s.userId : existing?.publishedBy,
@@ -94,13 +98,13 @@ function publishWodSideEffects(wod: Wod) {
   // Crear post de feed (si no existe ya para ese WOD)
   const existingPost = postsRepo
     .list()
-    .find((p) => p.type === "wod" && p.title === `WOD ${formatDate(wod.date)} · ${wod.title}`);
+    .find((p) => p.type === "wod" && p.title === `${wodWord(wod.tenantId)} ${formatDate(wod.date)} · ${wod.title}`);
   if (!existingPost) {
     postsRepo.create({
       tenantId: wod.tenantId,
       authorId: wod.publishedBy ?? "",
       type: "wod",
-      title: `WOD ${formatDate(wod.date)} · ${wod.title}`,
+      title: `${wodWord(wod.tenantId)} ${formatDate(wod.date)} · ${wod.title}`,
       content: summarize(wod.blocks),
       pinned: false,
     });
@@ -111,7 +115,7 @@ function publishWodSideEffects(wod: Wod) {
     wod.tenantId,
     users.map((u) => u.id),
     "new_post",
-    "Nuevo WOD publicado",
+    `Nuevo ${wodWord(wod.tenantId).toLowerCase()} publicado`,
     `${wod.title} · ${formatDate(wod.date)}`,
     "/feed",
   );
@@ -140,7 +144,7 @@ export function seedWod(
       tenantId,
       authorId: publisherId,
       type: "wod",
-      title: `WOD ${formatDate(wod.date)} · ${wod.title}`,
+      title: `${wodWord(wod.tenantId)} ${formatDate(wod.date)} · ${wod.title}`,
       content: summarize(wod.blocks),
       pinned: false,
     });

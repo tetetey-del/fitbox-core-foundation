@@ -92,7 +92,7 @@ export function resolveInvitation(code: string): ResolvedInvitation | null {
   return {
     invitation: inv,
     status,
-    tenantName: tenant?.name ?? "Box",
+    tenantName: tenant?.name ?? "Gimnasio",
     tenantLogo: tenant?.logo,
     brandColor: tenant?.brandColor,
   };

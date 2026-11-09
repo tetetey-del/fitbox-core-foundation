@@ -18,6 +18,7 @@ import {
   getPlan,
 } from "@/lib/services/membership.service";
 import { useModules } from "@/hooks/useModules";
+import { currentTerms } from "@/lib/placeTerms";
 
 export const Route = createFileRoute("/dashboard")({ component: DashboardPage });
 
@@ -71,7 +72,7 @@ function DashboardPage() {
             <div className="font-medium text-amber-100">Tu plan expira pronto</div>
             <div className="text-amber-200/80 text-xs mt-0.5">
               {plan.name} · caduca en {daysToExpire} día{daysToExpire === 1 ? "" : "s"} ({formatDate(membership.endDate)}).
-              Habla con el box para renovarlo.
+              Habla con el {currentTerms().place} para renovarlo.
             </div>
           </div>
         </div>
@@ -79,7 +80,7 @@ function DashboardPage() {
 
       {isMember && membershipStatus === "none" && (
         <div className="mb-6 rounded-lg border border-border bg-muted/30 p-4 text-sm">
-          Aún no tienes ningún plan activo. Pide al box que te asigne uno para poder reservar.
+          Aún no tienes ningún plan activo. Pide al {currentTerms().place} que te asigne uno para poder reservar.
         </div>
       )}
 

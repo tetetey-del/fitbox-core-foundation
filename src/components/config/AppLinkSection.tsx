@@ -12,6 +12,7 @@ import { markLinkShared } from "@/components/dashboard/GettingStarted";
 import { isCloudSession } from "@/lib/cloud/bookings";
 import { sb } from "@/lib/cloud/client";
 import { BoxIcon } from "@/routes/login";
+import { currentTerms } from "@/lib/placeTerms";
 
 /** "La app de tus socios": link propio del box, su dirección y cómo se ve el ícono. Solo boxes reales. */
 export function AppLinkSection() {
@@ -43,7 +44,7 @@ export function AppLinkSection() {
     const { data: free, error } = await sb().rpc("kf_slug_available", { p_slug: next, p_tenant: currentTenant.id });
     if (error || !free) {
       setSaving(false);
-      return toast.error(error ? "No se pudo comprobar la dirección." : "Esa dirección ya la usa otro box. Prueba con otra.");
+      return toast.error(error ? "No se pudo comprobar la dirección." : "Esa dirección ya la usa otro gimnasio. Prueba con otra.");
     }
     tenantsRepo.update(currentTenant.id, { slug: next });
     notifyDataChanged();
@@ -60,7 +61,7 @@ export function AppLinkSection() {
           La app de tus socios
         </h2>
         <p className="text-sm text-muted-foreground">
-          Comparte este link con tus socios. Al instalar la app desde ahí, les queda con el logo y el nombre de tu box,
+          Comparte este link con tus socios. Al instalar la app desde ahí, les queda con el logo y el nombre de tu {currentTerms().place},
           y las notificaciones llegan con tu nombre.
         </p>
       </div>

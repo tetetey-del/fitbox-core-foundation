@@ -35,6 +35,7 @@ import {
   setInvitationPhone,
 } from "@/lib/services/invitations.service";
 import { membershipPlansRepoFor } from "@/lib/storage/repositories/membershipPlans.repo";
+import { currentTerms } from "@/lib/placeTerms";
 
 /**
  * Teléfono para WhatsApp: solo dígitos, con código de país.
@@ -53,7 +54,7 @@ export function waPhone(phone: string, currency?: string): string {
 
 /** Abre WhatsApp con el mensaje de invitación al número de la persona. */
 export function whatsappInviteUrl(boxName: string, link: string, phone?: string, currency?: string): string {
-  const text = `¡Hola! Te invito a la app de ${boxName} para reservar tus clases y ver el WOD. Crea tu cuenta aquí: ${link}`;
+  const text = `¡Hola! Te invito a la app de ${boxName} para reservar tus clases y ver el ${currentTerms().wod}. Crea tu cuenta aquí: ${link}`;
   const to = phone ? waPhone(phone, currency) : "";
   return `https://wa.me/${to}?text=${encodeURIComponent(text)}`;
 }
@@ -223,7 +224,7 @@ export function InviteMemberDialog({
               </Button>
               <Button asChild className="bg-[#25D366] text-white hover:bg-[#1eb957]">
                 <a
-                  href={whatsappInviteUrl(currentTenant?.name ?? "tu box", buildInvitationLink(created.code), phone || undefined, currentTenant?.settings?.currency)}
+                  href={whatsappInviteUrl(currentTenant?.name ?? `tu ${currentTerms().place}`, buildInvitationLink(created.code), phone || undefined, currentTenant?.settings?.currency)}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -304,7 +305,7 @@ export function PendingInvitations({ tenantId }: { tenantId: string }) {
                     title={i.phone ? `Enviar por WhatsApp a ${i.phone}` : "Enviar por WhatsApp"}
                     onClick={() => {
                       if (i.phone) {
-                        window.open(whatsappInviteUrl(currentTenant?.name ?? "tu box", buildInvitationLink(i.code), i.phone, currentTenant?.settings?.currency), "_blank", "noopener");
+                        window.open(whatsappInviteUrl(currentTenant?.name ?? `tu ${currentTerms().place}`, buildInvitationLink(i.code), i.phone, currentTenant?.settings?.currency), "_blank", "noopener");
                       } else {
                         setAsking(i);
                         setAskPhone("");
@@ -349,7 +350,7 @@ export function PendingInvitations({ tenantId }: { tenantId: string }) {
               if (!asking) return;
               setInvitationPhone(tenantId, asking.id, askPhone);
               notifyDataChanged();
-              window.open(whatsappInviteUrl(currentTenant?.name ?? "tu box", buildInvitationLink(asking.code), askPhone, currentTenant?.settings?.currency), "_blank", "noopener");
+              window.open(whatsappInviteUrl(currentTenant?.name ?? `tu ${currentTerms().place}`, buildInvitationLink(asking.code), askPhone, currentTenant?.settings?.currency), "_blank", "noopener");
               setAsking(null);
             }}
           >
@@ -380,7 +381,7 @@ function LimitNotice({ kind, max }: { kind: LimitKind; max: number }) {
       <SupportContact
         compact
         boxName={currentTenant?.name}
-        message={`Hola, soy de ${currentTenant?.name ?? "mi box"} y quiero pasarme al plan Pro de Kinflow.`}
+        message={`Hola, soy de ${currentTenant?.name ?? `mi ${currentTerms().place}`} y quiero pasarme al plan Pro de Kinflow.`}
       />
     </div>
   );

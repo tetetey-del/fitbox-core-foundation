@@ -26,6 +26,7 @@ import {
   exercisePRCount,
   updateExercise,
 } from "@/lib/services/prs.service";
+import { currentTerms } from "@/lib/placeTerms";
 
 export const EXERCISE_CATEGORY_ORDER: ExerciseCategory[] = ["fuerza", "olimpico", "benchmark_wod", "gimnastico", "cardio", "otro"];
 
@@ -45,8 +46,8 @@ export function ExercisesManager({ tenantId, exercises }: { tenantId: string; ex
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="max-w-xl text-sm text-muted-foreground">
-          Los ejercicios del box para marcas y para los avisos de los coaches. Agrega <strong>otros nombres</strong> (por
-          ejemplo "Peso muerto" para Deadlift) para que se reconozcan en el WOD.
+          Los ejercicios del {currentTerms().place} para marcas y para los avisos de los coaches. Agrega <strong>otros nombres</strong> (por
+          ejemplo "Peso muerto" para Deadlift) para que se reconozcan en el {currentTerms().wod}.
         </p>
         <Button onClick={() => setEditing("new")}>
           <Plus className="mr-1 h-4 w-4" strokeWidth={1.5} /> Nuevo ejercicio
@@ -158,7 +159,7 @@ function ExerciseDialog({ tenantId, exercise, onClose }: { tenantId: string; exe
               onChange={(e) => setAliases(e.target.value)}
               placeholder="Separados por comas. Ej. Peso muerto, DL"
             />
-            <p className="text-xs text-muted-foreground">Así se reconoce en el WOD aunque lo escriban distinto.</p>
+            <p className="text-xs text-muted-foreground">Así se reconoce en el {currentTerms().wod} aunque lo escriban distinto.</p>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">

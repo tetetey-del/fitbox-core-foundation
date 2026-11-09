@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { PLANS, isBlocked, subscriptionOf, trialDaysLeft } from "@/lib/plans";
 import { SupportContact } from "./SupportContact";
+import { currentTerms } from "@/lib/placeTerms";
 
 /** Aviso al dueño cuando faltan 5 días o menos para que termine la prueba. */
 export function TrialBanner() {
@@ -25,7 +26,7 @@ export function TrialBanner() {
             un plan: Starter {PLANS.starter.priceMonthly} €, Pro {PLANS.pro.priceMonthly} € o Business {PLANS.business.priceMonthly} € al mes.
           </p>
           <div className="flex flex-wrap gap-2">
-            <SupportContact compact boxName={currentTenant?.name} message={`Hola, soy de ${currentTenant?.name ?? "mi box"}. Mi prueba de Kinflow está por terminar y quiero elegir un plan.`} />
+            <SupportContact compact boxName={currentTenant?.name} message={`Hola, soy de ${currentTenant?.name ?? `mi ${currentTerms().place}`}. Mi prueba de Kinflow está por terminar y quiero elegir un plan.`} />
             <Button asChild size="sm" variant="ghost">
               <Link to="/configuracion" hash="plan">Ver planes</Link>
             </Button>
@@ -56,7 +57,7 @@ export function BlockedScreen({ onLogout }: { onLogout: () => void }) {
           <>
             <div>
               <h1 className="text-xl font-semibold">
-                {sub.status === "trial" ? "Tu prueba gratis terminó" : "Tu box está pausado en Kinflow"}
+                {sub.status === "trial" ? "Tu prueba gratis terminó" : `Tu ${currentTerms().place} está pausado en Kinflow`}
               </h1>
               <p className="mt-2 text-sm text-muted-foreground">
                 Tus datos están guardados y no se pierde nada. Para volver a usar la app, elige un plan y escríbeme:
@@ -79,14 +80,14 @@ export function BlockedScreen({ onLogout }: { onLogout: () => void }) {
             <SupportContact
               className="justify-center"
               boxName={currentTenant?.name}
-              message={`Hola, soy de ${currentTenant?.name ?? "mi box"} y quiero activar un plan de Kinflow.`}
+              message={`Hola, soy de ${currentTenant?.name ?? `mi ${currentTerms().place}`} y quiero activar un plan de Kinflow.`}
             />
           </>
         ) : (
           <div>
-            <h1 className="text-xl font-semibold">La app de {currentTenant?.name ?? "tu box"} no está disponible</h1>
+            <h1 className="text-xl font-semibold">La app de {currentTenant?.name ?? `tu ${currentTerms().place}`} no está disponible</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Por el momento no se puede usar. Consulta en recepción del box.
+              Por el momento no se puede usar. Consulta en recepción del {currentTerms().place}.
             </p>
           </div>
         )}

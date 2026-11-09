@@ -27,6 +27,7 @@ import { POST_TYPE_LABEL } from "@/types";
 
 import { compressImage, dataUrlBytes } from "@/lib/image";
 import { MAX_POST_IMAGE_BYTES } from "@/lib/constants";
+import { postTypeLabel } from "@/lib/placeTerms";
 
 async function readAsDataUrl(file: File): Promise<string> {
   const compressed = await compressImage(file);
@@ -110,7 +111,7 @@ export function PostFormDialog({
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {(Object.keys(POST_TYPE_LABEL) as PostType[]).map((k) => (
-                    <SelectItem key={k} value={k}>{POST_TYPE_LABEL[k]}</SelectItem>
+                    <SelectItem key={k} value={k}>{postTypeLabel(k)}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

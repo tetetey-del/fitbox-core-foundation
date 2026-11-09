@@ -27,7 +27,7 @@ export const Route = createFileRoute("/invitacion/$code")({
   head: () => ({
     meta: [
       { title: "Invitación — Kinflow" },
-      { name: "description", content: "Acepta tu invitación para unirte al box." },
+      { name: "description", content: "Acepta tu invitación para unirte a tu gimnasio." },
     ],
   }),
   component: InvitationPage,
@@ -129,9 +129,9 @@ function InvitationPage() {
     return (
       <AuthShell title="Todavía no puedes unirte">
         <p className="text-sm text-muted-foreground">
-          {resolved.tenantName ?? "El box"} llegó al límite de personas de su plan en Kinflow.
+          {resolved.tenantName ?? "El gimnasio"} llegó al límite de personas de su plan en Kinflow.
         </p>
-        <p className="mt-2 text-xs text-muted-foreground">Avísale al box para que lo revise y vuelve a abrir este enlace.</p>
+        <p className="mt-2 text-xs text-muted-foreground">Avísale al gimnasio para que lo revise y vuelve a abrir este enlace.</p>
         <Button className="mt-4 w-full" onClick={() => navigate({ to: "/" })}>Volver al inicio</Button>
       </AuthShell>
     );
@@ -147,7 +147,7 @@ function InvitationPage() {
     return (
       <AuthShell title="Invitación no válida">
         <p className="text-sm text-muted-foreground">{label}</p>
-        <p className="mt-2 text-xs text-muted-foreground">Pide al admin del box que te envíe una nueva.</p>
+        <p className="mt-2 text-xs text-muted-foreground">Pide al responsable del gimnasio que te envíe una nueva.</p>
         <Button className="mt-4 w-full" onClick={() => navigate({ to: "/" })}>Volver al inicio</Button>
       </AuthShell>
     );

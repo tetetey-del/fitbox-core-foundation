@@ -30,7 +30,7 @@ const SEEDED_KEY = buildKey(null, "seeded");
 const DEMO_CLEARED_KEY = buildKey(null, "demo_cleared");
 /** Versión del gimnasio de demo. Si cambia, los navegadores con la demo vieja se vuelven a sembrar. */
 const DEMO_VERSION_KEY = buildKey(null, "demo_version");
-const DEMO_VERSION = 12;
+const DEMO_VERSION = 13;
 /** Boxes de demos anteriores que se borran al actualizar: FitBox (v1) y versiones previas de Chia (v2 a v6). */
 const OLD_DEMO_SLUGS = ["crossfit-norte", "box-sur", "chia-training", "ritmo-crossfit", "bora-crossfit"];
 const OLD_SUPERADMIN_EMAILS = ["isaac@fitbox.io"];
@@ -199,6 +199,8 @@ interface DemoProfile {
   locations?: { name: string; address?: string }[];
   /** Logo del box (ruta en /public). */
   logo?: string;
+  /** Cómo se llama el lugar en la app (por defecto, gimnasio). */
+  placeWord?: "gimnasio" | "box" | "centro" | "estudio";
 }
 
 type DemoTemplate = {
@@ -214,11 +216,11 @@ type DemoTemplate = {
 type DemoSlot = { time: string; tpl: string; coach?: number; minutes?: number; loc?: number };
 
 const ES_POSTS: DemoPost[] = [
-  { type: "aviso", title: "¡Bienvenidos a la app de Chia!", content: "Desde ahora reservas tus clases, ves tus marcas y te enteras de todo desde aquí. Instálala en el móvil: menú del navegador → Añadir a pantalla de inicio. ¡Nos vemos en el box!", pinned: true, daysAgo: 0 },
-  { type: "aviso", title: "Festivo del lunes: horario especial", content: "El lunes abrimos de 9 a 13 con CrossFit a las 9, Funcional a las 10 y Open Box de 11 a 13. El martes volvemos al horario de siempre.", daysAgo: 1 },
-  { type: "aviso", title: "Nuevo Open Box de mediodía", content: "Añadimos Open Box de 12 a 14 de lunes a viernes para que entrenes a tu ritmo. Reserva tu plaza desde la app.", daysAgo: 3 },
-  { type: "consejo", title: "Movilidad: 10 minutos que cambian tu sentadilla", content: "1) 2 min de tobillo contra la pared. 2) 2 min de 90/90 de cadera. 3) 2 min de sentadilla profunda con apoyo. 4) 2 min de apertura torácica. 5) 2 min de hombros con banda. Hazlo antes de cada clase de Halterofilia.", daysAgo: 5 },
-  { type: "receta", title: "Batido post entreno", content: "300 ml de leche, 1 plátano, 2 cucharadas de avena, 1 cucharada de crema de cacahuete y canela. Bátelo y tómatelo en la media hora después del WOD.", daysAgo: 8 },
+  { type: "aviso", title: "¡Bienvenidos a la app de Chia!", content: "Desde ahora reservas tus clases, ves tus marcas y te enteras de todo desde aquí. Instálala en el móvil: menú del navegador → Añadir a pantalla de inicio. ¡Nos vemos en el gimnasio!", pinned: true, daysAgo: 0 },
+  { type: "aviso", title: "Festivo del lunes: horario especial", content: "El lunes abrimos de 9 a 13 con Funcional a las 9, Spinning a las 10 y Sala libre de 11 a 13. El martes volvemos al horario de siempre.", daysAgo: 1 },
+  { type: "aviso", title: "Nueva Sala libre de mediodía", content: "Añadimos Sala libre de 12 a 14 de lunes a viernes para que entrenes a tu ritmo. Reserva tu plaza desde la app.", daysAgo: 3 },
+  { type: "consejo", title: "Movilidad: 10 minutos que cambian tu sentadilla", content: "1) 2 min de tobillo contra la pared. 2) 2 min de 90/90 de cadera. 3) 2 min de sentadilla profunda con apoyo. 4) 2 min de apertura torácica. 5) 2 min de hombros con banda. Hazlo antes de cada clase de Funcional o CrossFit.", daysAgo: 5 },
+  { type: "receta", title: "Batido post entreno", content: "300 ml de leche, 1 plátano, 2 cucharadas de avena, 1 cucharada de crema de cacahuete y canela. Bátelo y tómatelo en la media hora después de entrenar.", daysAgo: 8 },
   { type: "wod", title: "Benchmark del mes: Cindy", content: "AMRAP 20 min: 5 pull-ups, 10 push-ups, 15 air squats. Apunta tus rondas en la app para el ranking del mes.", daysAgo: 12 },
 ];
 const ES_SHOP: DemoProduct[] = [
@@ -257,7 +259,7 @@ const DEMO_ES: DemoProfile = {
   posts: ES_POSTS,
   shop: ES_SHOP,
   challenges: {
-    attendance: { title: "12 clases este mes", description: "Ven al box 12 veces durante el reto y llévate la insignia." },
+    attendance: { title: "12 clases este mes", description: "Ven al gimnasio 12 veces durante el reto y llévate la insignia." },
     fran: { title: "Baja tu Fran", description: "Registra tu mejor Fran, RX o escalado, durante el reto." },
   },
 };
@@ -267,6 +269,7 @@ const DEMO_ES: DemoProfile = {
 const DEMO_AR: DemoProfile = {
   country: "ar",
   name: "Ritmo CrossFit",
+  placeWord: "box",
   brandColor: "#14B8A6",
   themeId: "flow" as ThemeId,
   currency: "ARS",
@@ -315,7 +318,7 @@ const DEMO_AR: DemoProfile = {
   idDoc: (i) => String(30000000 + i * 1234567),
   posts: [
     { type: "aviso", title: "¡Bienvenidos a la app de Ritmo!", content: "Desde ahora reservás tus clases, ves tus marcas y te enterás de todo desde acá. Instalala en el celu: menú del navegador → Agregar a pantalla de inicio. ¡Nos vemos en el box!", pinned: true, daysAgo: 0 },
-    { type: "aviso", title: "Feriado del lunes: horario especial", content: "El lunes abrimos de 9 a 13 con CrossFit a las 9, Funcional a las 10 y Open Box de 11 a 13. El martes volvemos al horario de siempre.", daysAgo: 1 },
+    { type: "aviso", title: "Feriado del lunes: horario especial", content: "El lunes abrimos de 9 a 13 con Funcional a las 9, Spinning a las 10 y Sala libre de 11 a 13. El martes volvemos al horario de siempre.", daysAgo: 1 },
     { type: "aviso", title: "Nuevo Open Box al mediodía", content: "Sumamos Open Box de 12 a 14 de lunes a viernes para que entrenes a tu ritmo. Reservá tu lugar desde la app.", daysAgo: 3 },
     { type: "consejo", title: "Movilidad: 10 minutos que cambian tu sentadilla", content: "1) 2 min de tobillo contra la pared. 2) 2 min de 90/90 de cadera. 3) 2 min de sentadilla profunda con apoyo. 4) 2 min de apertura torácica. 5) 2 min de hombros con banda. Hacelo antes de cada clase de Halterofilia.", daysAgo: 5 },
     { type: "receta", title: "Licuado post entreno", content: "300 ml de leche, 1 banana, 2 cucharadas de avena, 1 cucharada de mantequilla de maní y canela. Licuá y tomalo dentro de la media hora después del WOD.", daysAgo: 8 },
@@ -348,6 +351,7 @@ const BORA_PLAN: Record<string, string> = {
 const DEMO_BORA: DemoProfile = {
   ...DEMO_AR,
   name: "BORA CrossFit",
+  placeWord: "box",
   brandColor: "#DDDE00",
   logo: "/demo/bora-logo.png",
   themeId: "dark-carbon" as ThemeId,
@@ -459,7 +463,7 @@ function createChiaTenant(): SeedResult {
     themeId: P.themeId,
     ...(P.logo ? { logo: P.logo } : {}),
     status: "active",
-    settings: { cancellationWindowHours: 1, enabledModules: DEFAULT_MODULES, currency: P.currency, timezone: P.timezone },
+    settings: { cancellationWindowHours: 1, enabledModules: DEFAULT_MODULES, currency: P.currency, timezone: P.timezone, placeWord: P.placeWord ?? "gimnasio" },
   });
   const owner = createUserInTenant(tenant.id, { ...P.owner, role: "admin" });
   const coaches = P.coaches.map((c) => createUserInTenant(tenant.id, { name: c.name, email: c.email, role: "coach" }));
@@ -798,34 +802,35 @@ function seedClassesFor({ tenant, coaches, members }: SeedResult) {
   const tpl = {
     crossfit: templatesRepo.create({ tenantId: tenant.id, name: "CrossFit", type: "wod", durationMinutes: 60, defaultCapacity: 14, defaultCoachId: lucas?.id, color: "#14B8A6" }),
     funcional: templatesRepo.create({ tenantId: tenant.id, name: "Funcional", type: "funcional", durationMinutes: 60, defaultCapacity: 16, defaultCoachId: paula?.id, color: "#A3E635" }),
-    halterofilia: templatesRepo.create({ tenantId: tenant.id, name: "Halterofilia", type: "halterofilia", durationMinutes: 60, defaultCapacity: 8, defaultCoachId: ana?.id, color: "#38BDF8" }),
-    openBox: templatesRepo.create({ tenantId: tenant.id, name: "Open Box", type: "open_box", durationMinutes: 120, defaultCapacity: 10, color: "#94A3B8" }),
-    movilidad: templatesRepo.create({ tenantId: tenant.id, name: "Movilidad", type: "movilidad", durationMinutes: 60, defaultCapacity: 12, defaultCoachId: paula?.id, color: "#FBBF24" }),
+    gap: templatesRepo.create({ tenantId: tenant.id, name: "GAP", type: "gap", durationMinutes: 45, defaultCapacity: 16, defaultCoachId: ana?.id, color: "#F472B6" }),
+    spinning: templatesRepo.create({ tenantId: tenant.id, name: "Spinning", type: "spinning", durationMinutes: 45, defaultCapacity: 14, defaultCoachId: lucas?.id, color: "#38BDF8" }),
+    pilates: templatesRepo.create({ tenantId: tenant.id, name: "Pilates", type: "pilates", durationMinutes: 55, defaultCapacity: 10, defaultCoachId: paula?.id, color: "#FBBF24" }),
+    openBox: templatesRepo.create({ tenantId: tenant.id, name: "Sala libre", type: "open_box", durationMinutes: 120, defaultCapacity: 20, color: "#94A3B8" }),
   };
 
-  // Horario: lunes a viernes de 6 a 21, sábados de 9 a 13.
+  // Horario de gimnasio: lunes a viernes de 6 a 21, sábados de 9 a 13, con clases variadas.
   type Slot = { time: string; t: ClassTemplate; coach?: User; minutes?: number };
   const weekday = (d: number): Slot[] => {
     const monWedFri = d === 0 || d === 2 || d === 4;
     const slots: Slot[] = [
       { time: "06:00", t: tpl.crossfit, coach: lucas },
-      { time: "07:00", t: tpl.crossfit, coach: lucas },
+      { time: "07:00", t: tpl.spinning, coach: lucas },
       { time: "08:00", t: tpl.funcional, coach: paula },
-      { time: "09:00", t: tpl.crossfit, coach: ana },
-      monWedFri ? { time: "10:00", t: tpl.movilidad, coach: paula } : { time: "10:00", t: tpl.halterofilia, coach: ana },
+      { time: "09:00", t: monWedFri ? tpl.gap : tpl.pilates, coach: monWedFri ? ana : paula },
+      monWedFri ? { time: "10:00", t: tpl.pilates, coach: paula } : { time: "10:00", t: tpl.gap, coach: ana },
       { time: "12:00", t: tpl.openBox },
       { time: "17:00", t: tpl.funcional, coach: paula },
       { time: "18:00", t: tpl.crossfit, coach: lucas },
-      { time: "19:00", t: tpl.crossfit, coach: ana },
+      { time: "19:00", t: monWedFri ? tpl.spinning : tpl.gap, coach: monWedFri ? lucas : ana },
     ];
-    if (d === 0 || d === 2) slots.push({ time: "20:00", t: tpl.halterofilia, coach: lucas });
-    else if (d === 1 || d === 3) slots.push({ time: "20:00", t: tpl.movilidad, coach: paula });
+    if (d === 0 || d === 2) slots.push({ time: "20:00", t: tpl.crossfit, coach: ana });
+    else if (d === 1 || d === 3) slots.push({ time: "20:00", t: tpl.pilates, coach: paula });
     else slots.push({ time: "20:00", t: tpl.openBox, minutes: 60 });
     return slots;
   };
   const saturday: Slot[] = [
-    { time: "09:00", t: tpl.crossfit, coach: lucas },
-    { time: "10:00", t: tpl.funcional, coach: paula },
+    { time: "09:00", t: tpl.funcional, coach: paula },
+    { time: "10:00", t: tpl.spinning, coach: lucas },
     { time: "11:00", t: tpl.openBox },
   ];
 
@@ -1011,6 +1016,7 @@ function seedNotificationsFor({ tenant, members }: SeedResult) {
   const repo = notificationsRepoFor(tenant.id);
   const [ana, diego] = members;
   const now = Date.now();
+  const wodWord = (P.placeWord ?? "gimnasio") === "box" ? "WOD" : "Entreno";
   const mk = (
     userId: string,
     type: import("@/types").NotificationType,
@@ -1025,12 +1031,12 @@ function seedNotificationsFor({ tenant, members }: SeedResult) {
     repo.replaceAll(repo.list().map((x) => (x.id === n.id ? { ...x, createdAt: iso } : x)));
   };
   if (ana) {
-    mk(ana.id, "new_post", "Nuevo WOD publicado", "Fran · WOD del día", "/feed", 45);
+    mk(ana.id, "new_post", `Nuevo ${wodWord === "WOD" ? "WOD" : "entreno"} publicado`, `Fran · ${wodWord === "WOD" ? "WOD del día" : "Entreno del día"}`, "/feed", 45);
     mk(ana.id, "membership_expiring", "Tu plan vence pronto", "Tu plan de 12 clases vence en 6 días.", "/dashboard", 60 * 6);
     mk(ana.id, "waitlist_promoted", "¡Saliste de la lista de espera!", "CrossFit · mañana a las 19:00", "/reservas", 60 * 26, true);
   }
   if (diego) {
-    mk(diego.id, "new_post", "Nuevo WOD publicado", "Fran · WOD del día", "/feed", 30);
+    mk(diego.id, "new_post", `Nuevo ${wodWord === "WOD" ? "WOD" : "entreno"} publicado`, `Fran · ${wodWord === "WOD" ? "WOD del día" : "Entreno del día"}`, "/feed", 30);
     mk(diego.id, "session_cancelled", "Clase cancelada", "Se canceló el CrossFit del jueves a las 07:00.", "/reservas", 60 * 12);
   }
 }

@@ -47,8 +47,8 @@ function TerminosPage() {
 
       <LegalSectionBlock id="papel" title={SECTIONS[1].title}>
         <p>
-          Kinflow es una <strong>herramienta de software</strong> (SaaS) que los boxes de CrossFit, Hyrox y
-          gimnasios usan para organizar su actividad: reservas, socios, planes, cobros, WODs, marcas personales,
+          Kinflow es una <strong>herramienta de software</strong> (SaaS) que los gimnasios, boxes y centros
+          de entrenamiento usan para organizar su actividad: reservas, socios, planes, cobros, entrenos del día, marcas personales,
           publicaciones y tienda.
         </p>
         <p>Kinflow <strong>no</strong>:</p>

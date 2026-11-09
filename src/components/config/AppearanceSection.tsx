@@ -17,6 +17,7 @@ import { AppIconEditor } from "./AppIconEditor";
 import { isCloudSession } from "@/lib/cloud/bookings";
 import { planAllows } from "@/lib/plans";
 import { ProBadge } from "@/components/plan/UpgradeDialog";
+import { currentTerms } from "@/lib/placeTerms";
 
 export function AppearanceSection() {
   const { currentTenant, refresh } = useAuth();
@@ -83,7 +84,7 @@ export function AppearanceSection() {
       <div>
         <h2 className="text-base font-semibold">Apariencia</h2>
         <p className="text-sm text-muted-foreground">
-          Tema visual, color de acento y logo del box.
+          Tema visual, color de acento y logo del {currentTerms().place}.
         </p>
       </div>
 
@@ -91,7 +92,7 @@ export function AppearanceSection() {
         <div className="rounded-md border border-border p-3">
           <div className="flex items-center gap-2 text-sm font-medium">Tus colores y temas <ProBadge /></div>
           <p className="mt-1 text-xs text-muted-foreground">
-            En el plan Starter la app usa los colores de Kinflow con tu logo. Con el plan Pro eliges el tema y el color de tu box.
+            En el plan Starter la app usa los colores de Kinflow con tu logo. Con el plan Pro eliges el tema y el color de tu {currentTerms().place}.
           </p>
         </div>
       )}
@@ -195,7 +196,7 @@ export function AppearanceSection() {
           logo={logo}
           style={iconStyle}
           onChange={setIconStyle}
-          boxName={currentTenant?.name ?? "Tu box"}
+          boxName={currentTenant?.name ?? `Tu ${currentTerms().place}`}
           brandColor={brandColor}
         />
       )}

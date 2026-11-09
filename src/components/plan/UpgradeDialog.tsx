@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { useAuth } from "@/contexts/AuthContext";
 import { PLANS, limitMessage, type LimitKind } from "@/lib/plans";
 import { SupportContact } from "./SupportContact";
+import { currentTerms } from "@/lib/placeTerms";
 
 /** "Pásate a Pro": explica el límite del plan y qué se gana. */
 export function UpgradeDialog({
@@ -54,7 +55,7 @@ export function UpgradeDialog({
         <SupportContact
           compact
           boxName={currentTenant?.name}
-          message={`Hola, soy de ${currentTenant?.name ?? "mi box"} y quiero pasarme al plan ${pro.name} de Kinflow.`}
+          message={`Hola, soy de ${currentTenant?.name ?? `mi ${currentTerms().place}`} y quiero pasarme al plan ${pro.name} de Kinflow.`}
         />
       </DialogContent>
     </Dialog>

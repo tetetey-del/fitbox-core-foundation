@@ -12,7 +12,7 @@ export const Route = createFileRoute("/registro")({
   head: () => ({
     meta: [
       { title: "Crear cuenta — Kinflow" },
-      { name: "description", content: "Crea tu box en Kinflow en menos de un minuto." },
+      { name: "description", content: "Crea tu gimnasio en Kinflow en menos de un minuto." },
     ],
   }),
   component: RegisterPage,
@@ -43,7 +43,7 @@ function RegisterPage() {
       return;
     }
     if (!accepted) {
-      setError("Para crear tu box tienes que aceptar los términos y la política de privacidad.");
+      setError("Para crear tu cuenta tienes que aceptar los términos y la política de privacidad.");
       return;
     }
     setLoading(true);
@@ -67,7 +67,7 @@ function RegisterPage() {
         <div className="space-y-4 text-sm">
           <p>
             Te enviamos un enlace a <strong>{sentTo}</strong> para confirmar tu cuenta. Tócalo y después inicia
-            sesión: tu box ya va a estar creado.
+            sesión: tu gimnasio ya va a estar creado.
           </p>
           <p className="text-xs text-muted-foreground">
             Si no lo ves en unos minutos, revisa la carpeta de spam o promociones.
@@ -82,12 +82,12 @@ function RegisterPage() {
 
   return (
     <AuthShell
-      title="Crear tu box"
+      title="Crea tu gimnasio en Kinflow"
       subtitle="Configura tu cuenta de admin. Tardarás menos de un minuto."
     >
       <form onSubmit={submit} className="space-y-4">
-        <Field label="Nombre del box">
-          <Input value={boxName} onChange={(e) => setBoxName(e.target.value)} required autoFocus placeholder="Nombre de tu box" />
+        <Field label="Nombre">
+          <Input value={boxName} onChange={(e) => setBoxName(e.target.value)} required autoFocus placeholder="Nombre de tu gimnasio o box" />
         </Field>
         <Field label="Tu nombre">
           <Input value={ownerName} onChange={(e) => setOwnerName(e.target.value)} required placeholder="Sergio Torres" />
@@ -113,7 +113,7 @@ function RegisterPage() {
             <Link to="/legal/terminos" target="_blank" className="text-foreground underline">términos y condiciones</Link>{" "}
             y la{" "}
             <Link to="/legal/privacidad" target="_blank" className="text-foreground underline">política de privacidad</Link>.
-            Entiendo que mi box es el único responsable de su actividad (clases, entrenadores, cobros y seguridad) y
+            Entiendo que mi gimnasio es el único responsable de su actividad (clases, entrenadores, cobros y seguridad) y
             de los datos de sus socios, y que Kinflow es solo la herramienta.
           </span>
         </label>

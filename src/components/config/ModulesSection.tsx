@@ -8,16 +8,17 @@ import { notifyDataChanged } from "@/lib/data-bus";
 import { DEFAULT_MODULES, type TenantModules } from "@/types";
 import { modulesAllowedByPlan } from "@/lib/plans";
 import { ProBadge } from "@/components/plan/UpgradeDialog";
+import { currentTerms } from "@/lib/placeTerms";
 
 const DESCRIPTIONS: Record<keyof TenantModules, { label: string; desc: string }> = {
   reservas: { label: "Reservas", desc: "Calendario de clases, reservas de socios y check-ins." },
   socios: { label: "Socios", desc: "Fichas de socios, membresías y asignación de planes." },
-  prs: { label: "PRs", desc: "Marcas personales, historial y leaderboard del box." },
-  feed: { label: "Feed", desc: "Muro con avisos, consejos, recetas y WOD del día." },
+  prs: { label: "PRs", get desc() { return `Marcas personales, historial y ranking del ${currentTerms().place}.`; } },
+  feed: { label: "Feed", get desc() { return `Muro con avisos, consejos, recetas y ${currentTerms().wod}.`; } },
   pagos: { label: "Pagos", desc: "Precios, cobros y visibilidad de importes en la app." },
   challenges: { label: "Retos", desc: "Retos de asistencia y benchmarks con ranking." },
   programs: { label: "Rutinas", desc: "Programas semanales asignables a socios." },
-  shop: { label: "Tienda", desc: "Catálogo del box con pedidos y recogida presencial." },
+  shop: { label: "Tienda", get desc() { return `Catálogo del ${currentTerms().place} con pedidos y recogida presencial.`; } },
   health: { label: "Salud", desc: "Registro de peso, % graso y evolución del socio." },
 };
 
@@ -46,7 +47,7 @@ export function ModulesSection() {
       <div>
         <h2 className="text-base font-semibold">Módulos</h2>
         <p className="text-sm text-muted-foreground">
-          Activa o desactiva funcionalidades del box.
+          Activa o desactiva funcionalidades del {currentTerms().place}.
         </p>
       </div>
       <ul className="grid gap-3">

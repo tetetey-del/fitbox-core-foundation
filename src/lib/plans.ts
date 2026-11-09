@@ -37,19 +37,19 @@ export const PLANS: Record<PlanId, PlanInfo> = {
     id: "starter",
     name: "Starter",
     priceMonthly: 29,
-    desc: "Para boxes pequeños o que están empezando.",
+    desc: "Para gimnasios pequeños o que están empezando.",
     maxMembers: 50,
     maxCoaches: 1,
     maxAdmins: 1,
     maxLocations: 1,
     features: [],
-    highlights: ["Hasta 50 socios", "Reservas y cuotas", "Clases y WOD", "1 administrador y 1 coach", "Tu logo", "Comunidad del box"],
+    highlights: ["Hasta 50 socios", "Reservas y cuotas", "Clases y entreno del día", "1 administrador y 1 coach", "Tu logo", "Comunidad"],
   },
   pro: {
     id: "pro",
     name: "Pro",
     priceMonthly: 59,
-    desc: "Para boxes en crecimiento.",
+    desc: "Para gimnasios en crecimiento.",
     maxMembers: null,
     maxCoaches: null,
     maxAdmins: null,
@@ -149,13 +149,13 @@ export function limitMessage(kind: LimitKind, max: number): { title: string; bod
   if (kind === "members") {
     return {
       title: `Has llegado a los ${max} socios del plan Starter`,
-      body: "El plan Starter está pensado para boxes que están empezando y llega hasta 50 socios. Con el plan Pro tienes socios ilimitados, y además marcas y ranking, retos, rutinas, tienda y tus propios colores.",
+      body: "El plan Starter está pensado para gimnasios que están empezando y llega hasta 50 socios. Con el plan Pro tienes socios ilimitados, y además marcas y ranking, retos, rutinas, tienda y tus propios colores.",
     };
   }
   if (kind === "coaches") {
     return {
       title: "El plan Starter incluye 1 coach",
-      body: "Starter incluye 1 administrador y 1 coach, para boxes chicos donde el dueño también da clases. Si tu equipo crece, con el plan Pro tienes coaches ilimitados, cada uno con su propio acceso.",
+      body: "Starter incluye 1 administrador y 1 coach, para gimnasios pequeños donde el dueño también da clases. Si tu equipo crece, con el plan Pro tienes coaches ilimitados, cada uno con su propio acceso.",
     };
   }
   return {

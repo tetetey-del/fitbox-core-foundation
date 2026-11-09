@@ -7,6 +7,7 @@ import type { Order, OrderItem, OrderStatus, Product } from "@/types";
 import { productsRepo } from "@/lib/storage/repositories/products.repo";
 import { ordersRepo } from "@/lib/storage/repositories/orders.repo";
 import { notify } from "./notifications.service";
+import { currentTerms } from "@/lib/placeTerms";
 
 export class ShopError extends Error {}
 
@@ -76,7 +77,7 @@ export function setOrderStatus(orderId: string, status: OrderStatus): Order | nu
       userId: order.userId,
       type: "order_ready",
       title: "Tu pedido está listo",
-      body: `Pasa por el box a recoger tu pedido (${order.items.length} artículos).`,
+      body: `Pasa por el ${currentTerms().place} a recoger tu pedido (${order.items.length} artículos).`,
       linkTo: "/tienda",
       dedupeKey: `order_ready:${orderId}`,
     });

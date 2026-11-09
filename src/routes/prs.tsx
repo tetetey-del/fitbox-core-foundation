@@ -27,6 +27,7 @@ import { PRFormDialog } from "@/components/prs/PRFormDialog";
 import { LeaderboardTable } from "@/components/prs/LeaderboardTable";
 import { ExerciseDetailDialog } from "@/components/prs/ExerciseDetailDialog";
 import { ExercisesManager, EXERCISE_CATEGORY_ORDER } from "@/components/prs/ExercisesManager";
+import { currentTerms } from "@/lib/placeTerms";
 
 export const Route = createFileRoute("/prs")({ component: PRsPage });
 
@@ -93,7 +94,7 @@ function PRsPage() {
     return (
       <AppLayout>
         <PageHeader title="PRs" />
-        <p className="text-sm text-muted-foreground">Esta sección es para los socios y la gestiona el dueño del box.</p>
+        <p className="text-sm text-muted-foreground">Esta sección es para los socios y la gestiona el dueño del {currentTerms().place}.</p>
       </AppLayout>
     );
   }
@@ -102,7 +103,7 @@ function PRsPage() {
     <AppLayout>
       <PageHeader
         title="PRs & Benchmarks"
-        description="Registra tus marcas, sigue tu progresión y compite con el resto del box."
+        description={`Registra tus marcas, sigue tu progresión y compite con el resto del ${currentTerms().place}.`}
       >
         <Button onClick={() => setOpenForm(true)}>
           <Plus className="h-4 w-4 mr-1" strokeWidth={1.5} /> Registrar PR

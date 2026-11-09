@@ -27,9 +27,9 @@ interface DemoRole {
 
 const ROLES: Record<Country, DemoRole[]> = {
   es: [
-    { id: "owner", email: "marta@kinflow.app", title: "Como dueño del box", desc: "Panel, socios y cuotas, clases y WOD, pagos, tienda y configuración.", icon: Store, to: "/dashboard" },
+    { id: "owner", email: "marta@kinflow.app", title: "Como dueña del gimnasio", desc: "Panel, socios y cuotas, clases y entreno del día, pagos, tienda y configuración.", icon: Store, to: "/dashboard" },
     { id: "coach", email: "lucas@kinflow.app", title: "Como coach", desc: "Clases del día, check-in, notas de cada socio y marcas.", icon: Dumbbell, to: "/dashboard" },
-    { id: "member", email: "sofia@kinflow.app", title: "Como socio", desc: "La app que usan tus socios en el móvil: reservas, WOD, membresía y marcas.", icon: Smartphone, to: "/feed" },
+    { id: "member", email: "sofia@kinflow.app", title: "Como socio", desc: "La app que usan tus socios en el móvil: reservas, entreno del día, membresía y marcas.", icon: Smartphone, to: "/feed" },
   ],
   ar: [
     { id: "owner", email: "valeria.ar@kinflow.app", title: "Como dueño del box", desc: "Panel, socios y cuotas, clases y WOD, pagos, tienda y configuración.", icon: Store, to: "/dashboard" },
@@ -46,10 +46,10 @@ const ROLES: Record<Country, DemoRole[]> = {
 const TEXTS: Record<Country, { title: string; subtitle: string; note: string; ask: string; cta: string; error: string }> = {
   es: {
     title: "Prueba Kinflow",
-    subtitle: "Un box de ejemplo con socios, clases y WODs. Entra con un toque, sin crear cuenta.",
+    subtitle: "Un gimnasio de ejemplo con socios, clases (funcional, CrossFit, GAP, spinning, pilates…) y entrenos. Entra con un toque, sin crear cuenta.",
     note: "Es una demo: los datos son de ejemplo y se guardan solo en este navegador.",
     ask: "¿Te convence?",
-    cta: "Crea tu box",
+    cta: "Crea tu gimnasio",
     error: "No se pudo abrir la demo. Recarga la página e inténtalo de nuevo.",
   },
   ar: {

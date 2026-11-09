@@ -17,6 +17,7 @@ import { TemplatesTable } from "@/components/classes/manage/TemplatesTable";
 import { TemplateFormDialog } from "@/components/classes/manage/TemplateFormDialog";
 import { RecurringSessionsDialog } from "@/components/classes/manage/RecurringSessionsDialog";
 import { UpcomingSessionsList } from "@/components/classes/manage/UpcomingSessionsList";
+import { currentTerms } from "@/lib/placeTerms";
 
 export const Route = createFileRoute("/clases")({ component: ClasesPage });
 
@@ -55,7 +56,7 @@ function ClasesPage() {
         description={
           isAdmin
             ? "Gestiona las plantillas de clase y programa sesiones recurrentes."
-            : "Consulta las próximas sesiones y publica el WOD."
+            : `Consulta las próximas sesiones y publica el ${currentTerms().wod}.`
         }
       />
 
@@ -63,7 +64,7 @@ function ClasesPage() {
         <TabsList>
           {isAdmin && <TabsTrigger value="plantillas">Plantillas</TabsTrigger>}
           <TabsTrigger value="sesiones">Sesiones próximas</TabsTrigger>
-          <TabsTrigger value="wod">WOD del día</TabsTrigger>
+          <TabsTrigger value="wod">{currentTerms().Wod}</TabsTrigger>
         </TabsList>
 
         {isAdmin && <TabsContent value="plantillas" className="space-y-4">
@@ -131,7 +132,7 @@ function WodTabs() {
   return (
     <Tabs defaultValue="dia" className="max-w-3xl space-y-4">
       <TabsList>
-        <TabsTrigger value="dia">WOD por día</TabsTrigger>
+        <TabsTrigger value="dia">{currentTerms().wodShort} por día</TabsTrigger>
         <TabsTrigger value="ciclo">Ciclo de programación</TabsTrigger>
       </TabsList>
       <TabsContent value="dia">

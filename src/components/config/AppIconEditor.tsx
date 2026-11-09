@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { renderAppIcon, type AppIconStyle } from "@/lib/boxBrand";
 import { cn } from "@/lib/utils";
+import { currentTerms } from "@/lib/placeTerms";
 
 interface Props {
   logo: string;
@@ -45,7 +46,7 @@ export function AppIconEditor({ logo, style, onChange, boxName, brandColor }: Pr
   const options: { id: string; label: string; color?: string }[] = [
     { id: "auto", label: "Automático" },
     { id: "#FFFFFF", label: "Blanco", color: "#FFFFFF" },
-    { id: brandColor.toUpperCase(), label: "Color del box", color: brandColor },
+    { id: brandColor.toUpperCase(), label: `Color del ${currentTerms().place}`, color: brandColor },
     { id: "#000000", label: "Negro", color: "#000000" },
   ];
   const isCustom = bg !== "auto" && !options.some((o) => o.id === bg.toUpperCase());
