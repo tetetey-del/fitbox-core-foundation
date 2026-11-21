@@ -83,7 +83,7 @@ function MemberOnboarding() {
               Entra en <span className="font-medium">Reservas</span>, elige día y hora, y confirma. Si está llena, entrarás en lista de espera automática.
             </Hint>
             <Hint icon={<Newspaper className="h-4 w-4" strokeWidth={1.5} />} title={`El ${currentTerms().wod}`}>
-              Cada día encontrarás el WOD publicado en la portada del <span className="font-medium">Feed</span> y en la sección de reservas.
+              Cada día encontrarás el {currentTerms().wod} publicado en la portada del <span className="font-medium">Feed</span> y en la sección de reservas.
             </Hint>
             <Hint icon={<Trophy className="h-4 w-4" strokeWidth={1.5} />} title="Registra tus PRs">
               Anota tus marcas y compáralas con el resto del {currentTerms().place} en <span className="font-medium">PRs</span>.
