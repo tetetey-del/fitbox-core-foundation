@@ -76,7 +76,7 @@ function BoxLandingPage() {
       <main className="flex flex-1 flex-col items-center justify-center px-6 py-10 text-center">
         <BoxIcon brand={brand} className="h-24 w-24 text-2xl shadow-lg" />
         <h1 className="mt-5 text-2xl font-semibold tracking-tight">{brand.name}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Reserva tus clases, mira el WOD y sigue tu progreso.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Reserva tus clases, mira qué toca entrenar hoy y sigue tu progreso.</p>
 
         <div className="mt-8 w-full max-w-xs space-y-3">
           {inside ? (
